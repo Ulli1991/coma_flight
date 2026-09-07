@@ -1,5 +1,13 @@
 # Coma Flight
 
+**▶ Open the Coma Virtual Observatory: https://ulli1991.github.io/coma_flight/**
+
+The full-resolution build (`index.html`, streams ~30 MB of data from `data/`)
+runs on GitHub Pages at the link above: guided tour, gas / X-ray / temperature /
+intracluster-light modes, named galaxies, shareable views (L), PNG export (P).
+See `DEEP.md` for what is in it. The rest of this file describes the light
+self-contained artifact version.
+
 Interactive WebGL2 free flight through the z=0 snapshot of the Coma_011
 constrained re-simulation (TNG100 resolution) — the closing frame of the
 step_011 formation film.
