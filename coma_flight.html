@@ -34,6 +34,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
  <div>r<sub>BCG</sub>&nbsp; <b id="hr">--</b> cMpc/h &nbsp;&middot;&nbsp; r/R&#8322;&#8320;&#8320; <b id="hr2">--</b></div>
  <div>v&nbsp;&nbsp;&nbsp;&nbsp; <b id="hv">--</b> ckpc/h &middot; s&#8315;&sup1;</div>
  <div>field&nbsp; <b id="hf">gas density + cold gas</b></div>
+ <div style="color:var(--hud-dim)">fps <b id="hq" style="color:var(--hud-dim)">--</b></div>
 </div>
 <div class="hud" id="br">5-9 sights &middot; H hide HUD &middot; T autopilot &middot; M map &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1 2 3 fields &middot; R reset</div>
 <div class="hud" id="tr">
@@ -91,7 +92,7 @@ void main(){
  float t0=max(max(min(t1.x,t2.x),min(t1.y,t2.y)),min(t1.z,t2.z));
  float tE=min(min(max(t1.x,t2.x),max(t1.y,t2.y)),max(t1.z,t2.z));
  t0=max(t0,0.); if(tE<=t0){oc=vec4(0,0,0,1);return;}
- const int N=128; float dt=(tE-t0)/float(N);
+ const int N=104; float dt=(tE-t0)/float(N);
  float dj=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.55);
  vec3 C=vec3(0.); float A=0.;
  for(int i=0;i<N;i++){
@@ -259,8 +260,8 @@ function frameInner(){
  if(!ready){return;}
  const now=performance.now(),dt=Math.min((now-tp)/1000,0.05);tp=now;
  fA=fA*0.92+dt*0.08;
- if(now-lastQ>1500){if(fA>0.024&&qual>0.45){qual*=0.82;resize();lastQ=now;}
-  else if(fA<0.013&&qual<1.0){qual=Math.min(1.,qual*1.15);resize();lastQ=now;}}
+ if(now-lastQ>1500){if(fA>0.030&&qual>0.75){qual*=0.88;resize();lastQ=now;}
+  else if(fA<0.015&&qual<1.0){qual=Math.min(1.,qual*1.3);resize();lastQ=now;}}
  const[f,r,u]=basis();
  const sp3=(keys.ShiftLeft||keys.ShiftRight)?1.2:0.28;
  const ax=(keys.KeyD?1:0)-(keys.KeyA?1:0), az=(keys.KeyW?1:0)-(keys.KeyS?1:0),
@@ -314,6 +315,7 @@ function frameInner(){
  document.getElementById('hr').textContent=(kpc/1000).toFixed(2);
  document.getElementById('hr2').textContent=(kpc/META.r200).toFixed(2);
  const v=Math.hypot(vel[0],vel[1],vel[2])*META.half;
- document.getElementById('hv').textContent=v.toFixed(0);}
+ document.getElementById('hv').textContent=v.toFixed(0);
+ document.getElementById('hq').textContent=(1/fA).toFixed(0)+' @ '+Math.round(qual*100)+'%';}
 requestAnimationFrame(frame);
 </script>
