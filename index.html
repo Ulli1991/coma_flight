@@ -162,7 +162,7 @@ void main(){
  float px=clamp((1.1+1.6*l)/max(z,.05),1.2,4.);
  gl_PointSize=mix(px, clamp(px*3.6,4.,14.), uHalo);
  vc=mix(vec3(.30,.55,1.),vec3(1.,.52,.26),smoothstep(.05,.85,aG));
- vfade=clamp(uGain*(.08+2.2*l)/(z*z)*0.7,0.,1.)*mix(1.,.16,uHalo);
+ vfade=clamp(uGain*(.08+2.2*l)/(z*z)*0.7,0.,1.)*mix(1.,.16,uHalo)*(1.-smoothstep(.88,1.,length(aP)));
 }`;
 const SFS=`#version 300 es
 precision highp float;in vec3 vc;in float vfade;out vec4 oc;
@@ -210,7 +210,7 @@ void main(){
  gl_Position=vec4(xy,.5,1.);
  gl_PointSize=clamp((1.6+2.4*aR)/max(z,.05),1.5,7.);
  vc=mix(vec3(.12,.45,.55),vec3(.45,.95,1.),max(aS,aR*.6));
- vfade=clamp(uGain*(.05+.9*aR)/(z*z)*1.6,0.,1.);}`;
+ vfade=clamp(uGain*(.05+.9*aR)/(z*z)*1.6,0.,1.)*(1.-smoothstep(.88,1.,length(aP)));}`;
 const BVS=`#version 300 es
 layout(location=0) in vec3 aP;layout(location=1) in float aM;
 uniform vec3 uPos,uFwd,uRight,uUp;uniform vec2 uRes;uniform float uGain;
@@ -222,7 +222,7 @@ void main(){
  gl_Position=vec4(xy,.5,1.);
  gl_PointSize=clamp((1.5+7.*aM)/max(z,.03),2.,22.);
  vc=mix(vec3(.75,.55,1.),vec3(1.,.95,1.),aM);
- vfade=clamp(uGain*(.15+3.5*aM*aM)/(z*z)*0.9,0.,1.);}`;
+ vfade=clamp(uGain*(.15+3.5*aM*aM)/(z*z)*0.9,0.,1.)*(1.-smoothstep(.88,1.,length(aP)));}`;
 const PFS=`#version 300 es
 precision highp float;uniform sampler2D uT0;uniform vec2 uRes;uniform int uOp;uniform vec2 uDir;
 out vec4 oc;
