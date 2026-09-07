@@ -270,7 +270,7 @@ void main(){vec2 uv=gl_FragCoord.xy/uRes;
  vec3 c=texture(uT0,uv).rgb+texture(uT1,uv).rgb*0.8;
 
  float gr2=fract(sin(dot(gl_FragCoord.xy+uTm,vec2(12.98,78.23)))*43758.5)-.5;
- oc=vec4(clamp(c+gr2*0.010,0.,1.),1.);}`;
+ oc=vec4(clamp(c*0.5+gr2*0.010,0.,1.),1.);}`;
 const pV=prog(VS,FS_T.replace('NSTEPS','120'));let hiQ=false;let volScale=0.5;
 const pS=prog(SVS,SFS2), pG=prog(GVS,SFS), pB=prog(BVS,SFS), pP=prog(VS,PFS), pC=prog(VS,CFS), pU=prog(VS,UFS);
 let fboA=null,texA=null,fboB=null,texB=null,fboC=null,texC=null,fboV=null,texV=null,bw=0,bh=0,vw=0,vh=0,bvs=0;
