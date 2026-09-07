@@ -35,7 +35,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
  <div>v&nbsp;&nbsp;&nbsp;&nbsp; <b id="hv">--</b> ckpc/h &middot; s&#8315;&sup1;</div>
  <div>field&nbsp; <b id="hf">gas density + cold gas</b></div>
 </div>
-<div class="hud" id="br">5-9 sights &middot; H hide HUD &middot; T autopilot &middot; M map &middot; Q/E roll &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1 2 3 fields &middot; R reset</div>
+<div class="hud" id="br">5-9 sights &middot; H hide HUD &middot; T autopilot &middot; M map &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1 2 3 fields &middot; R reset</div>
 <div class="hud" id="tr">
  <button class="fbtn on" id="b1">1 DENSITY</button><button class="fbtn" id="b2">2 X-RAY</button><button class="fbtn" id="b3">3 TEMP</button>
 </div>
@@ -210,18 +210,15 @@ function gbuf(){gvao=gl.createVertexArray();gl.bindVertexArray(gvao);
   gph[i]=(i*2654435761>>>8&1023)/1023;}
  buf(0,gp,3);buf(1,gr,1);buf(2,gs,1);buf(3,gv,3);buf(4,gph,1);}
 // flight state
-let pos=[0,0.12,-1.38],yaw=0,pitch=-0.02,roll=0,vel=[0,0,0],mode=0,keys={},auto=false,atau=0;
+let pos=[0,0.12,-1.38],yaw=0,pitch=-0.02,vel=[0,0,0],mode=0,keys={},auto=false,atau=0;
 const names=['gas density + cold gas','X-ray emission','temperature'];
 function basis(){const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp2=Math.sin(pitch);
- const f=[sy*cp,sp2,cy*cp];let r=[cy,0,-sy];
- let u=[f[1]*r[2]-f[2]*r[1],f[2]*r[0]-f[0]*r[2],f[0]*r[1]-f[1]*r[0]];
- const cr=Math.cos(roll),sr=Math.sin(roll);
- const r2=[r[0]*cr+u[0]*sr,r[1]*cr+u[1]*sr,r[2]*cr+u[2]*sr];
- const u2=[u[0]*cr-r[0]*sr,u[1]*cr-r[1]*sr,u[2]*cr-r[2]*sr];
- return[f,r2,u2]}
+ const f=[sy*cp,sp2,cy*cp];const r=[cy,0,-sy];
+ const u=[f[1]*r[2]-f[2]*r[1],f[2]*r[0]-f[0]*r[2],f[0]*r[1]-f[1]*r[0]];
+ return[f,r,u]}
 addEventListener('keydown',e=>{keys[e.code]=1;
  if(e.code==='Digit1')setMode(0);if(e.code==='Digit2')setMode(1);if(e.code==='Digit3')setMode(2);
- if(e.code==='KeyR'){pos=[0,0.12,-1.38];yaw=0;pitch=-0.02;roll=0;vel=[0,0,0];auto=false;}
+ if(e.code==='KeyR'){pos=[0,0.12,-1.38];yaw=0;pitch=-0.02;vel=[0,0,0];auto=false;}
  if(e.code==='KeyT'){auto=!auto;atau=0;}
  if(e.code==='KeyM'){const m=document.getElementById('map');m.hidden=!m.hidden;}
  if(e.code==='KeyH'){document.querySelectorAll('.hud').forEach(el=>el.style.display=el.style.display==='none'?'':'none');}
@@ -230,7 +227,7 @@ addEventListener('keydown',e=>{keys[e.code]=1;
   const off=poi.d;let dir=L>0.01?[t[0]/L,t[1]/L,t[2]/L]:[0,0.15,-1];
   pos=[t[0]+dir[0]*off,t[1]+dir[1]*off+off*0.25,t[2]+dir[2]*off];vel=[0,0,0];
   const f3=[t[0]-pos[0],t[1]-pos[1],t[2]-pos[2]];const N3=Math.hypot(f3[0],f3[1],f3[2]);
-  yaw=Math.atan2(f3[0]/N3,f3[2]/N3);pitch=Math.asin(f3[1]/N3);roll=0;
+  yaw=Math.atan2(f3[0]/N3,f3[2]/N3);pitch=Math.asin(f3[1]/N3);
   const c=document.getElementById('cap');c.textContent=poi.n;c.style.opacity=1;
   clearTimeout(c._t);c._t=setTimeout(()=>c.style.opacity=0,3000);}});
 addEventListener('keyup',e=>{keys[e.code]=0});
@@ -270,7 +267,6 @@ function frameInner(){
        ay=(keys.Space?1:0)-(keys.KeyC?1:0);
  const ry=(keys.ArrowRight?1:0)-(keys.ArrowLeft?1:0), rp=(keys.ArrowUp?1:0)-(keys.ArrowDown?1:0);
  yaw+=ry*1.3*dt; pitch+=rp*1.3*dt; pitch=Math.max(-1.5,Math.min(1.5,pitch));
- roll+=((keys.KeyE?1:0)-(keys.KeyQ?1:0))*1.5*dt;
  if(ax||az||ay||ry||rp||drag)auto=false;
  if(auto){atau+=dt;const T=110,tt=atau%T;let r,az2,h;
   const ease=x=>x*x*(3-2*x);
@@ -280,7 +276,7 @@ function frameInner(){
   else{const q=ease((tt-90)/20);r=0.075+(0.90-0.075)*q;az2=7.7+q*1.4;h=0.02+0.14*q;}
   pos=[r*Math.sin(az2),h,-r*Math.cos(az2)];vel=[0,0,0];
   const L=Math.hypot(pos[0],pos[1],pos[2]);
-  yaw=Math.atan2(-pos[0],-pos[2]);pitch=Math.asin(-pos[1]/L);roll*=0.98;}
+  yaw=Math.atan2(-pos[0],-pos[2]);pitch=Math.asin(-pos[1]/L);}
  for(let k=0;k<3;k++){vel[k]+=(f[k]*az+r[k]*ax+u[k]*ay)*sp3*dt*3.2;vel[k]*=Math.pow(0.06,dt);}
  for(let k=0;k<3;k++)pos[k]+=vel[k]*dt;
  const rr=Math.hypot(pos[0],pos[1],pos[2]);
