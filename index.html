@@ -111,12 +111,12 @@ void main(){
  vec3 rd=normalize(uFwd+sc.x*.62*uRight+sc.y*.62*uUp);
  // clip to the sphere r<0.99 (everything outside is faded to zero anyway)
  const float R=0.99; float b=dot(uPos,rd); float c=dot(uPos,uPos)-R*R; float h=b*b-c;
- if(h<=0.){oc=vec4(sky(rd),1.);return;} h=sqrt(h);
+ if(h<=0.){oc=vec4(sky(rd),0.);return;} h=sqrt(h);
  float t0=max(-b-h,0.015), tE=-b+h;
- if(tE<=t0){oc=vec4(sky(rd),1.);return;}
+ if(tE<=t0){oc=vec4(sky(rd),0.);return;}
  const int N=NSTEPS; const float dt=2.*R/float(N);
  float dj=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.55);
- vec3 C=vec3(0.); float A=0.;
+ vec3 C=vec3(0.); float A=0.; float Ae=0.;
  for(int i=0;i<N;i++){
   float tcur=t0+(float(i)+dj)*dt;
   if(tcur>tE)break;
@@ -133,10 +133,10 @@ void main(){
   float d=pk.r;
   float v=smoothstep(0.24,1.0,d); v*=v;
   float aux=texture(uAux,uv).r;
-  vec3 col; float em;
+  vec3 col; float em; float cw=0.;
   if(uMode==0){
    col=magma(v);
-   float cw=(1.-smoothstep(.12,.32,aux))*v;
+   cw=(1.-smoothstep(.12,.32,aux))*v;
    col=mix(col,vec3(.45,.85,1.),.8*cw);
    float hw=smoothstep(.60,.78,aux)*(1.-smoothstep(.30,.55,v))*smoothstep(.02,.10,v);
    col=mix(col,vec3(1.,.62,.20),.85*hw);
@@ -154,13 +154,15 @@ void main(){
    C+=(1.-A)*clamp(sv*edge*nf*dt*uExpo*2.2,0.,.9)*scol;}
   float a=clamp(em*edge*nf*dt*uExpo*3.0,0.,.9);
   C+=(1.-A)*a*col; A+=(1.-A)*a*.9;
+  // cold (dusty) gas veils the galaxies behind it; the hot ICM is transparent
+  Ae+=(1.-Ae)*min(a*cw*2.,.9);
   if(A>0.985)break;
  }
  C+=(1.-A)*sky(rd);
  C=1.-exp(-1.45*C);
  float lum=dot(C,vec3(.299,.587,.114));
  C=clamp(mix(vec3(lum),C,1.45),0.,1.);
- oc=vec4(C,1.);}`;
+ oc=vec4(C,Ae*0.85);}`;
 const SVS=`#version 300 es
 layout(location=0) in vec3 aP;layout(location=1) in float aL;layout(location=2) in float aG;
 layout(location=3) in float aH;
@@ -278,7 +280,7 @@ void main(){vec2 uv=gl_FragCoord.xy/uRes;
   oc=vec4(a,1.);}}`;
 const UFS=`#version 300 es
 precision highp float;uniform sampler2D uT0;uniform vec2 uRes;out vec4 oc;
-void main(){oc=vec4(texture(uT0,gl_FragCoord.xy/uRes).rgb,1.);}`;
+void main(){oc=texture(uT0,gl_FragCoord.xy/uRes);}`;
 const CFS=`#version 300 es
 precision highp float;uniform sampler2D uT0,uT1,uT2;uniform vec2 uRes;uniform float uTm;
 out vec4 oc;
@@ -329,7 +331,7 @@ let gvao=null,graw=null;
 function gbuf(){gvao=gl.createVertexArray();gl.bindVertexArray(gvao);
  rawbuf(graw,8,[[0,3,gl.SHORT,0],[1,1,gl.UNSIGNED_BYTE,6],[2,1,gl.UNSIGNED_BYTE,7]]);}
 // flight state
-let pos=[0,0.10,-0.88],yaw=0,pitch=-0.02,vel=[0,0,0],mode=0,keys={},auto=false,atau=0;
+let pos=[0,0.10,-0.88],yaw=0,pitch=-0.02,vel=[0,0,0],mode=0,keys={},auto=true,atau=0;
 const names=['gas density + cold gas','X-ray emission','temperature'];
 function basis(){const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp2=Math.sin(pitch);
  const f=[sy*cp,sp2,cy*cp];const r=[cy,0,-sy];
@@ -408,21 +410,10 @@ function frameInner(){
  for(let k=0;k<3;k++)pos[k]+=vel[k]*dt;
  const rr=Math.hypot(pos[0],pos[1],pos[2]);
  const expo=Math.min(Math.max(Math.pow(rr/1.15,1.6),0.06),1.0);
- gl.useProgram(pV);
- gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_3D,tPk);gl.uniform1i(uV.uPk,0);
- gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_3D,mode===1?tX:tT);gl.uniform1i(uV.uAux,1);
- gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_3D,tIPk);gl.uniform1i(uV.uIPk,2);
- gl.uniform3fv(uV.uPos,pos);gl.uniform3fv(uV.uFwd,f);gl.uniform3fv(uV.uRight,r);gl.uniform3fv(uV.uUp,u);
  fbos();const tgt=postOn?fboA:null;
- gl.disable(gl.BLEND);
- if(fboV){gl.uniform2f(uV.uRes,vw,vh);gl.uniform1f(uV.uExpo,expo);gl.uniform1i(uV.uMode,mode);
-  gl.bindFramebuffer(gl.FRAMEBUFFER,fboV);gl.viewport(0,0,vw,vh);gl.drawArrays(gl.TRIANGLES,0,3);
-  gl.useProgram(pU);gl.bindFramebuffer(gl.FRAMEBUFFER,tgt);gl.viewport(0,0,bw,bh);
-  gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,texV);gl.uniform1i(uUu.uT0,5);gl.uniform2f(uUu.uRes,bw,bh);
-  gl.drawArrays(gl.TRIANGLES,0,3);}
- else{gl.uniform2f(uV.uRes,bw,bh);gl.uniform1f(uV.uExpo,expo);gl.uniform1i(uV.uMode,mode);
-  gl.bindFramebuffer(gl.FRAMEBUFFER,tgt);gl.viewport(0,0,bw,bh);gl.drawArrays(gl.TRIANGLES,0,3);}
- let bt0,bt1,bt2,bt3;if(BENCH){bsync();bt1=performance.now();}
+ // stars first (additive), then the volume composited over them with its cold-gas extinction
+ gl.bindFramebuffer(gl.FRAMEBUFFER,tgt);gl.viewport(0,0,bw,bh);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
+ let bt0,bt1,bt2,bt3;
  gl.useProgram(pS);gl.bindVertexArray(vao);
  gl.uniform3fv(uS.uPos,pos);gl.uniform3fv(uS.uFwd,f);gl.uniform3fv(uS.uRight,r);gl.uniform3fv(uS.uUp,u);
  gl.uniform2f(uS.uRes,cv.width,cv.height);gl.uniform1f(uS.uGain,Math.min(1.,expo*2.));
@@ -436,6 +427,22 @@ function frameInner(){
   gl.uniform3fv(uG.uPos,pos);gl.uniform3fv(uG.uFwd,f);gl.uniform3fv(uG.uRight,r);gl.uniform3fv(uG.uUp,u);
   gl.uniform2f(uG.uRes,cv.width,cv.height);gl.uniform1f(uG.uGain,Math.min(1.,expo*2.));
   gl.drawArrays(gl.POINTS,0,NG);}
+ if(BENCH){bsync();bt1=performance.now();}
+ gl.useProgram(pV);
+ gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_3D,tPk);gl.uniform1i(uV.uPk,0);
+ gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_3D,mode===1?tX:tT);gl.uniform1i(uV.uAux,1);
+ gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_3D,tIPk);gl.uniform1i(uV.uIPk,2);
+ gl.uniform3fv(uV.uPos,pos);gl.uniform3fv(uV.uFwd,f);gl.uniform3fv(uV.uRight,r);gl.uniform3fv(uV.uUp,u);
+ gl.disable(gl.BLEND);
+ if(fboV){gl.uniform2f(uV.uRes,vw,vh);gl.uniform1f(uV.uExpo,expo);gl.uniform1i(uV.uMode,mode);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,fboV);gl.viewport(0,0,vw,vh);gl.drawArrays(gl.TRIANGLES,0,3);
+  gl.useProgram(pU);gl.bindFramebuffer(gl.FRAMEBUFFER,tgt);gl.viewport(0,0,bw,bh);
+  gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+  gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,texV);gl.uniform1i(uUu.uT0,5);gl.uniform2f(uUu.uRes,bw,bh);
+  gl.drawArrays(gl.TRIANGLES,0,3);}
+ else{gl.uniform2f(uV.uRes,bw,bh);gl.uniform1f(uV.uExpo,expo);gl.uniform1i(uV.uMode,mode);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,tgt);gl.viewport(0,0,bw,bh);
+  gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.drawArrays(gl.TRIANGLES,0,3);}
  if(BENCH){bsync();bt2=performance.now();}
  // post: bright-pass -> blur -> composite
  if(postOn){
@@ -465,7 +472,7 @@ function frameInner(){
  gl.uniform2f(uCc.uRes,bw,bh);gl.uniform1f(uCc.uTm,BENCH?0.:now%997);
  gl.drawArrays(gl.TRIANGLES,0,3);}
  if(BENCH){gl.readPixels(cv.width>>1,cv.height>>1,1,1,gl.RGBA,gl.UNSIGNED_BYTE,BPX);bt3=performance.now();BT.n++;
-  if(BT.n>30){BT.vol+=bt1-now;BT.star+=bt2-bt1;BT.post+=bt3-bt2;BT.tot+=bt3-now;}
+  if(BT.n>30){BT.star+=bt1-now;BT.vol+=bt2-bt1;BT.post+=bt3-bt2;BT.tot+=bt3-now;}
   if(BT.n===30+parseInt(BENCH)){const m=BT.n-30;const r=`BENCH ${cv.width}x${cv.height} total ${(BT.tot/m).toFixed(2)}ms vol ${(BT.vol/m).toFixed(2)} stars ${(BT.star/m).toFixed(2)} load ${T_LOAD.toFixed(0)}ms post ${(BT.post/m).toFixed(2)} px ${BPX[0]},${BPX[1]},${BPX[2]}`;console.log(r);document.title=r;const sn=new URLSearchParams(location.search).get('shot');if(sn)fetch('/shot?name='+sn,{method:'POST',body:cv.toDataURL('image/png')});}}
  // HUD
  const kpc=rr*META.half;
