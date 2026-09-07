@@ -369,7 +369,7 @@ function frameInner(){
  if(!BENCH&&now-lastQ>1500){if(fA>0.030&&qual>0.75){qual*=0.88;resize();lastQ=now;}
   else if(fA<0.015&&qual<1.0){qual=Math.min(1.,qual*1.3);resize();lastQ=now;}}
  const[f,r,u]=basis();
- const sp3=(keys.ShiftLeft||keys.ShiftRight)?1.2:0.28;
+ const sp3=(keys.ShiftLeft||keys.ShiftRight)?0.6:0.14;
  const ax=(keys.KeyD?1:0)-(keys.KeyA?1:0), az=(keys.KeyW?1:0)-(keys.KeyS?1:0),
        ay=(keys.Space?1:0)-(keys.KeyC?1:0);
  const ry=(keys.ArrowRight?1:0)-(keys.ArrowLeft?1:0), rp=(keys.ArrowUp?1:0)-(keys.ArrowDown?1:0);
