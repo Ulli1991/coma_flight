@@ -272,7 +272,7 @@ const T_LOAD0=performance.now();let T_LOAD=0;
  tX=vol3d(xr,192);tT=vol3d(tm,192);
  tPk=vol3d(pack3(rho,sl,scl),384,3);tIPk=vol3d(pack3(ir,isl,isc),192,3);ready=true;T_LOAD=performance.now()-T_LOAD0;
  const g=document.getElementById('got'); if(g) g.textContent='ENGAGE'; const lb=document.getElementById('lbar'); if(lb) lb.hidden=true;
- // optional dark-matter cubes (see extract_dm.py); the mode appears only when both load
+ // optional dark-matter cubes (pack_cubes.py 139); the mode appears only when both load
  try{const [dm,idm]=await Promise.all([D_DM,D_IDM].map(ugz));tDM=vol3d(dm,384);tIDM=vol3d(idm,192);haveDM=true;document.getElementById('b5').hidden=false;if(wantMode===3)setMode(3);}catch(e){}
  // optional shock cubes (Mach number + dissipation, see pack_cubes.py): mode 4 SHOCKS appears when both load
  try{const [sk,isk]=await Promise.all([D_SHK,D_ISHK].map(ugz));tShk=vol3d(sk,384,2);tIShk=vol3d(isk,192,2);haveShk=true;document.getElementById('b7').hidden=false;if(wantMode===5)setMode(5);}catch(e){}

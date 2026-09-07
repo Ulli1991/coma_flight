@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 # Turn the raw cubes of extract_cubes.py into the u8.gz files the page loads.
-#   python pack_cubes.py calib   -> fits the u8 scalings of the existing z=0 cubes (data/*.u8.gz)
-#                                   against raw_139.h5 and writes cube_scales.json
+#   python pack_cubes.py check   -> centre / axis-order check of raw_139.h5 against the shipped rho384
+#   python pack_cubes.py calib   -> the check, then fits the u8 scalings of the existing z=0 cubes
+#                                   (data/*.u8.gz) against raw_139.h5 and writes cube_scales.json
 #   python pack_cubes.py 139     -> data/dm384.u8.gz idm192.u8.gz shock384.u8.gz ishock192.u8.gz
 #   python pack_cubes.py 27      -> data/ep027_{pk,xray,temp,dm,shock}192.u8.gz (same scales as z=0)
 # All cubes are C-ordered (x,y,z) uint8; the page samples them as uv.zyx.
@@ -41,8 +42,33 @@ def logq(q):
 def logT(f, suf=''):
     m = f['gas_m' + suf][:]; return np.where(m > 0, f['gas_mlt' + suf][:] / np.maximum(m, 1e-30), 0.)
 
+def check(f=None):
+    """Centre and axis order of raw_139.h5 against the shipped rho384: FFT cross-correlation of the smoothed,
+    u8-like stretched log mass histogram for all six axis permutations.  Expect axes (0, 1, 2) at zero shift
+    (corr ~0.9; the voxelwise fit in calib() then reaches r = 0.994).  A shift of s voxels means the centre
+    is off by s * 23.4 ckpc/h.  (Verification step of the former extract_raven.py, kept here.)"""
+    import itertools
+    f = f or h5py.File(RAW + '/raw_139.h5', 'r')
+    a = rd('rho384.u8.gz', 384).astype(np.float32); a -= a.mean(); n = a.shape[0]
+    m = f['gas_m384'][:]; lg = logq(gaussian_filter(m, 1.0)); lo, hi = np.percentile(lg[m > 0], [5, 99.9])
+    x = np.clip((lg - lo) / (hi - lo), 0, 1).astype(np.float32); del m, lg
+    fa = np.fft.rfftn(a); best = None
+    print('centre / axes (shipped rho384 vs smoothed mass histogram, 384^3):')
+    for perm in itertools.permutations(range(3)):
+        b = np.transpose(x, perm); b = b - b.mean()
+        c = np.fft.irfftn(fa * np.conj(np.fft.rfftn(b)), s=a.shape, axes=(0, 1, 2))
+        s = np.array(np.unravel_index(np.argmax(c), c.shape)); s[s > n // 2] -= n
+        r = float(c.max() / np.sqrt((a * a).sum() * (b * b).sum()))
+        print('  axes %s: shift %s voxels, corr %.3f' % (perm, s, r))
+        if best is None or r > best[0]: best = (r, perm, s)
+    ok = best[1] == (0, 1, 2) and not np.any(best[2])
+    print('  -> %s' % ('centre and axis order confirmed (corr %.3f)' % best[0] if ok else
+                      'MISMATCH: best axes %s, shift %s voxels = %s ckpc/h; fix cen139.npy / the transpose before packing' % (best[1], best[2], np.round(best[2] * 9000. / n, 1))))
+    return ok
+
 def calib():
     f = h5py.File(RAW + '/raw_139.h5', 'r'); S = {}
+    if not check(f): sys.exit('centre / axis check failed')
     print('density (384 mass histogram vs rho384; also with 1-voxel smoothing):')
     m384 = f['gas_m384'][:]; ref = rd('rho384.u8.gz', 384)
     fit(logq(m384), ref, 'raw', m384 > 0)                                  # r~0.37: the page cube is smoothed
@@ -55,7 +81,7 @@ def calib():
     print('star light (r-band luminosity per voxel vs slum384, g-r vs scol384):')
     L = f['st_L384'][:]; S['slum'] = fit(logq(L), rd('slum384.u8.gz', 384), 'logL', L > 0)       # r=0.9997, unsmoothed
     gr = np.where(L > 0, f['st_Lc384'][:] / np.maximum(L, 1e-30), np.nan); S['scol'] = fit(gr, rd('scol384.u8.gz', 384), 'g-r')   # r=0.9994
-    print('dark matter (384, extract_dm.py recipe: smooth 1, percentiles 35/99.95 of log):')
+    print('dark matter (384: smooth 1, percentiles 35/99.95 of log, the recipe of the former extract_dm.py):')
     g = gaussian_filter(f['dm_m384'][:], 1.0); lg = logq(g); lo, hi = np.percentile(lg[g > 0], [35, 99.95]); S['dm'] = [float(lo), float(hi), 1.0]
     print('  dm lo=%.4f hi=%.4f' % (lo, hi))
     print('shocks: max Mach per voxel (384) and log dissipation:')
@@ -104,6 +130,7 @@ def pack_epoch(snap):
 
 if __name__ == '__main__':
     a = sys.argv[1]
-    if a == 'calib': calib()
+    if a == 'check': sys.exit(0 if check() else 1)
+    elif a == 'calib': calib()
     elif a == '139': pack139()
     else: pack_epoch(int(a))
