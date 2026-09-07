@@ -243,8 +243,8 @@ addEventListener('keydown',e=>{keys[e.code]=1;
  if(e.code==='KeyM'){const m=document.getElementById('map');m.hidden=!m.hidden;}
  if(e.code==='KeyH'){document.querySelectorAll('.hud').forEach(el=>el.style.display=el.style.display==='none'?'':'none');}
  const poi=(META.pois||[]).find(q=>'Digit'+q.k===e.code);
- if(poi){auto=false;const t=poi.p;const L=Math.hypot(t[0],t[1],t[2])||1;
-  const off=poi.d;let dir=L>0.01?[t[0]/L,t[1]/L,t[2]/L]:[0,0.15,-1];
+ if(poi){auto=false;const t=poi.p;const L0=Math.hypot(t[0],t[1],t[2]);
+  const off=poi.d;let dir=L0>0.01?[t[0]/L0,t[1]/L0,t[2]/L0]:[0,0.15,-0.99];
   pos=[t[0]+dir[0]*off,t[1]+dir[1]*off+off*0.25,t[2]+dir[2]*off];vel=[0,0,0];
   const f3=[t[0]-pos[0],t[1]-pos[1],t[2]-pos[2]];const N3=Math.hypot(f3[0],f3[1],f3[2]);
   yaw=Math.atan2(f3[0]/N3,f3[2]/N3);pitch=Math.asin(f3[1]/N3);
