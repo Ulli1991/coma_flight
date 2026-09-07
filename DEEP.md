@@ -1,4 +1,4 @@
-# Coma Flight Deep
+# Coma Virtual Observatory
 
 High-resolution build of the Coma_011 z=0 fly-through, designed for
 GitHub Pages (no artifact size cap): `index.html` fetches its data files
