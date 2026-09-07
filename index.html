@@ -43,9 +43,9 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
  <div>field&nbsp; <b id="hf">gas density + cold gas</b></div>
  <div style="color:var(--hud-dim)">fps <b id="hq" style="color:var(--hud-dim)">--</b></div>
 </div>
-<div class="hud" id="br">5-9 sights &middot; G quality &middot; B bloom &middot; H hide HUD &middot; T autopilot &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1 2 3 fields &middot; R reset</div>
+<div class="hud" id="br">5-9 sights &middot; G quality &middot; B bloom &middot; H hide HUD &middot; T autopilot &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1-4 fields &middot; R reset</div>
 <div class="hud" id="tr">
- <button class="fbtn on" id="b1">1 DENSITY</button><button class="fbtn" id="b2">2 X-RAY</button><button class="fbtn" id="b3">3 TEMP</button>
+ <button class="fbtn on" id="b1">1 DENSITY</button><button class="fbtn" id="b2">2 X-RAY</button><button class="fbtn" id="b3">3 TEMP</button><button class="fbtn" id="b4">4 GAS</button>
 </div>
 <div class="hud" id="cap" style="left:50%;bottom:64px;transform:translateX(-50%);font-family:Unica One,monospace;font-size:22px;letter-spacing:.2em;color:var(--hud);opacity:0;transition:opacity .6s"></div>
 <div id="intro"><div class="card">
@@ -85,7 +85,7 @@ void main(){vec2 p=vec2(gl_VertexID==1?3.:-1.,gl_VertexID==2?3.:-1.);gl_Position
 const FS_T=`#version 300 es
 precision highp float;precision highp sampler3D;
 uniform sampler3D uPk,uAux,uIPk;uniform vec3 uPos,uFwd,uRight,uUp;
-uniform vec2 uRes;uniform float uExpo;uniform int uMode;out vec4 oc;
+uniform vec2 uRes;uniform float uExpo,uJit;uniform int uMode;out vec4 oc;
 vec3 magma(float v){
  return v<0.4?mix(vec3(.03,.02,.08),vec3(.52,.06,.52),v/.4)
   :v<0.7?mix(vec3(.45,.10,.42),vec3(1.,.34,.12),(v-.4)/.3)
@@ -115,7 +115,7 @@ void main(){
  float t0=max(-b-h,0.015), tE=-b+h;
  if(tE<=t0){oc=vec4(sky(rd),0.);return;}
  const int N=NSTEPS; const float dt=2.*R/float(N);
- float dj=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.55);
+ float dj=fract(sin(dot(gl_FragCoord.xy+uJit,vec2(12.9898,78.233)))*43758.55);
  vec3 C=vec3(0.); float A=0.; float Ae=0.;
  for(int i=0;i<N;i++){
   float tcur=t0+(float(i)+dj)*dt;
@@ -131,16 +131,16 @@ void main(){
   if(wig>0.){vec3 uvg=(p/0.2667*.5+.5).zyx;
    pk=mix(pk,texture(uIPk,uvg).rgb,wig);}
   float d=pk.r;
-  float v=smoothstep(0.24,1.0,d); v*=v;
+  float v=smoothstep(0.20,1.0,d); v*=v;
   float aux=texture(uAux,uv).r;
   vec3 col; float em; float cw=0.;
-  if(uMode==0){
+  if(uMode==0||uMode==3){
    col=magma(v);
    cw=(1.-smoothstep(.12,.32,aux))*v;
    col=mix(col,vec3(.45,.85,1.),.8*cw);
    float hw=smoothstep(.60,.78,aux)*(1.-smoothstep(.30,.55,v))*smoothstep(.02,.10,v);
    col=mix(col,vec3(1.,.62,.20),.85*hw);
-   em=v*(1.+.6*cw+1.2*hw);
+   em=v*(1.+.6*cw+1.2*hw); if(uMode==3)em*=2.0;
   }else if(uMode==1){
    float x=smoothstep(0.20,1.0,aux); x*=x; col=teal(x); em=x; v=x;
   }else{
@@ -149,10 +149,10 @@ void main(){
   // all-star light field (30M stars binned; colour = age)
   float sv=pk.g, sc2=pk.b;
   sv=sv*sv*sv;
-  if(sv>0.001){
+  if(sv>0.001&&uMode!=3){
    vec3 scol=mix(vec3(.45,.62,1.),vec3(1.,.62,.32),sc2);
    C+=(1.-A)*clamp(sv*edge*nf*dt*uExpo*2.2,0.,.9)*scol;}
-  float a=clamp(em*edge*nf*dt*uExpo*3.0,0.,.9);
+  float a=clamp(em*edge*nf*dt*uExpo*3.6,0.,.9);
   C+=(1.-A)*a*col; A+=(1.-A)*a*.9;
   // cold (dusty) gas veils the galaxies behind it; the hot ICM is transparent
   Ae+=(1.-Ae)*min(a*cw*2.,.9);
@@ -279,8 +279,16 @@ void main(){vec2 uv=gl_FragCoord.xy/uRes;
   a+=(texture(uT0,uv+4.*uDir/uRes).rgb+texture(uT0,uv-4.*uDir/uRes).rgb)*w4;
   oc=vec4(a,1.);}}`;
 const UFS=`#version 300 es
-precision highp float;uniform sampler2D uT0;uniform vec2 uRes;out vec4 oc;
-void main(){oc=texture(uT0,gl_FragCoord.xy/uRes);}`;
+precision highp float;uniform sampler2D uT0;uniform vec2 uRes,uSrc;out vec4 oc;
+// Catmull-Rom resample with 9 bilinear taps: sharper than bilinear; exact copy when uSrc==uRes
+void main(){vec2 uv=gl_FragCoord.xy/uRes;
+ vec2 p=uv*uSrc-0.5;vec2 f=fract(p);vec2 tc=floor(p)+0.5;
+ vec2 w0=f*(-0.5+f*(1.0-0.5*f)),w1=1.0+f*f*(-2.5+1.5*f),w2=f*(0.5+f*(2.0-1.5*f)),w3=f*f*(-0.5+0.5*f);
+ vec2 w12=w1+w2;vec2 t0=(tc-1.)/uSrc,t3=(tc+2.)/uSrc,t12=(tc+w2/w12)/uSrc;
+ vec4 c=texture(uT0,vec2(t0.x,t0.y))*w0.x*w0.y+texture(uT0,vec2(t12.x,t0.y))*w12.x*w0.y+texture(uT0,vec2(t3.x,t0.y))*w3.x*w0.y
+  +texture(uT0,vec2(t0.x,t12.y))*w0.x*w12.y+texture(uT0,vec2(t12.x,t12.y))*w12.x*w12.y+texture(uT0,vec2(t3.x,t12.y))*w3.x*w12.y
+  +texture(uT0,vec2(t0.x,t3.y))*w0.x*w3.y+texture(uT0,vec2(t12.x,t3.y))*w12.x*w3.y+texture(uT0,vec2(t3.x,t3.y))*w3.x*w3.y;
+ oc=max(c,0.);}`;
 const CFS=`#version 300 es
 precision highp float;uniform sampler2D uT0,uT1,uT2;uniform vec2 uRes;uniform float uTm;
 out vec4 oc;
@@ -293,7 +301,7 @@ void main(){vec2 uv=gl_FragCoord.xy/uRes;
  oc=vec4(clamp(c+gr2*0.010,0.,1.),1.);}`;
 const pV=prog(VS,FS_T.replace('NSTEPS','120'));let hiQ=false;let volScale=0.5;
 const pS=prog(SVS,SFS2), pG=prog(GVS,SFS), pB=prog(BVS,SFS), pP=prog(VS,PFS), pC=prog(VS,CFS), pU=prog(VS,UFS);
-let fboA=null,texA=null,fboB=null,texB=null,fboC=null,texC=null,fboD=null,texD=null,fboE=null,texE=null,fboV=null,texV=null,bw=0,bh=0,vw=0,vh=0,bvs=0;
+let fboAcc=null,texAcc=null,fboA=null,texA=null,fboB=null,texB=null,fboC=null,texC=null,fboD=null,texD=null,fboE=null,texE=null,fboV=null,texV=null,bw=0,bh=0,vw=0,vh=0,bvs=0;
 function mkTex(w,h){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
  gl.texStorage2D(gl.TEXTURE_2D,1,HDR?gl.RGBA16F:gl.RGBA8,w,h);
  gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
@@ -303,8 +311,8 @@ function mkTex(w,h){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
 function mkFbo(t){const q=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,q);
  gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,t,0);return q}
 function fbos(){if(cv.width===bw&&cv.height===bh&&fboA&&bvs===volScale)return;bw=cv.width;bh=cv.height;bvs=volScale;
- for(const t of[texA,texB,texC,texD,texE,texV])if(t)gl.deleteTexture(t);for(const f of[fboA,fboB,fboC,fboD,fboE,fboV])if(f)gl.deleteFramebuffer(f);
- texA=mkTex(bw,bh);fboA=mkFbo(texA);
+ for(const t of[texA,texAcc,texB,texC,texD,texE,texV])if(t)gl.deleteTexture(t);for(const f of[fboA,fboAcc,fboB,fboC,fboD,fboE,fboV])if(f)gl.deleteFramebuffer(f);
+ texA=mkTex(bw,bh);fboA=mkFbo(texA);texAcc=mkTex(bw,bh);fboAcc=mkFbo(texAcc);accN=0;
  vw=Math.max(1,Math.round(bw*volScale));vh=Math.max(1,Math.round(bh*volScale));
  texV=volScale<1?mkTex(vw,vh):null;fboV=texV?mkFbo(texV):null;
  const qw=Math.max(1,bw>>2),qh=Math.max(1,bh>>2);
@@ -332,13 +340,13 @@ function gbuf(){gvao=gl.createVertexArray();gl.bindVertexArray(gvao);
  rawbuf(graw,8,[[0,3,gl.SHORT,0],[1,1,gl.UNSIGNED_BYTE,6],[2,1,gl.UNSIGNED_BYTE,7]]);}
 // flight state
 let pos=[0,0.10,-0.88],yaw=0,pitch=-0.02,vel=[0,0,0],mode=0,keys={},auto=true,atau=0;
-const names=['gas density + cold gas','X-ray emission','temperature'];
+const names=['gas density + cold gas','X-ray emission','temperature','gas only'];
 function basis(){const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp2=Math.sin(pitch);
  const f=[sy*cp,sp2,cy*cp];const r=[cy,0,-sy];
  const u=[f[1]*r[2]-f[2]*r[1],f[2]*r[0]-f[0]*r[2],f[0]*r[1]-f[1]*r[0]];
  return[f,r,u]}
-addEventListener('keydown',e=>{keys[e.code]=1;
- if(e.code==='Digit1')setMode(0);if(e.code==='Digit2')setMode(1);if(e.code==='Digit3')setMode(2);
+addEventListener('keydown',e=>{keys[e.code]=1;accN=0;
+ if(e.code==='Digit1')setMode(0);if(e.code==='Digit2')setMode(1);if(e.code==='Digit3')setMode(2);if(e.code==='Digit4')setMode(3);
  if(e.code==='KeyR'){pos=[0,0.10,-0.88];yaw=0;pitch=-0.02;vel=[0,0,0];auto=false;}
  if(e.code==='KeyT'){auto=!auto;atau=0;}
  if(e.code==='KeyB'){postOn=!postOn;}
@@ -354,29 +362,29 @@ addEventListener('keydown',e=>{keys[e.code]=1;
   clearTimeout(c._t);c._t=setTimeout(()=>c.style.opacity=0,3000);}});
 addEventListener('keyup',e=>{keys[e.code]=0});
 let drag=false,lx=0,ly=0;
-cv.addEventListener('pointerdown',e=>{drag=true;lx=e.clientX;ly=e.clientY;cv.setPointerCapture(e.pointerId)});
+cv.addEventListener('pointerdown',e=>{drag=true;accN=0;lx=e.clientX;ly=e.clientY;cv.setPointerCapture(e.pointerId)});
 addEventListener('pointerup',()=>drag=false);
 addEventListener('pointermove',e=>{if(!drag)return;
  yaw+=(e.clientX-lx)*0.0035;pitch-=(e.clientY-ly)*0.0035;
  lx=e.clientX;ly=e.clientY;});
-const bs=[document.getElementById('b1'),document.getElementById('b2'),document.getElementById('b3')];
-function setMode(m){mode=m;document.getElementById('hf').textContent=names[m];
+const bs=[document.getElementById('b1'),document.getElementById('b2'),document.getElementById('b3'),document.getElementById('b4')];
+function setMode(m){mode=m;accN=0;document.getElementById('hf').textContent=names[m];
  bs.forEach((b,i)=>b.classList.toggle('on',i===m));}
 bs.forEach((b,i)=>b.addEventListener('click',()=>setMode(i)));
 document.getElementById('go').addEventListener('click',()=>document.getElementById('intro').remove());
-let qual=1.0,postOn=true;
+let qual=1.0,postOn=true;let stillT=0,accN=0;
 const BENCH=new URLSearchParams(location.search).get('bench');if(BENCH&&new URLSearchParams(location.search).get('vs')==='1')setTimeout(()=>{hiQ=true;volScale=1;},0);const BT={n:0,vol:0,star:0,post:0,tot:0};const BPX=new Uint8Array(4);function bsync(){gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,BPX);}
 function resize(){const k=BENCH?1:Math.min(devicePixelRatio,1.5)*qual;
  cv.width=innerWidth*k;cv.height=innerHeight*k;gl.viewport(0,0,cv.width,cv.height);}
 addEventListener('resize',resize);resize();
 const uS={};
 const uV={};
-for(const n of['uPk','uAux','uIPk','uPos','uFwd','uRight','uUp','uRes','uExpo','uMode'])uV[n]=gl.getUniformLocation(pV,n);
+for(const n of['uPk','uAux','uIPk','uPos','uFwd','uRight','uUp','uRes','uExpo','uJit','uMode'])uV[n]=gl.getUniformLocation(pV,n);
 for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain'])uS[n]=gl.getUniformLocation(pS,n);
 for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain'])uB[n]=gl.getUniformLocation(pB,n);
 for(const n of['uT0','uRes','uOp','uDir'])uPp[n]=gl.getUniformLocation(pP,n);
 for(const n of['uT0','uT1','uT2','uRes','uTm'])uCc[n]=gl.getUniformLocation(pC,n);
-const uUu={};for(const n of['uT0','uRes'])uUu[n]=gl.getUniformLocation(pU,n);
+const uUu={};for(const n of['uT0','uRes','uSrc'])uUu[n]=gl.getUniformLocation(pU,n);
 const uG={};for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain','uT'])uG[n]=gl.getUniformLocation(pG,n);
 let tp=performance.now(),fA=0.016,lastQ=0;
 function frame(){
@@ -389,7 +397,7 @@ function frameInner(){
  fA=fA*0.92+dt*0.08;
  if(BENCH){auto=true;if(BT.n===0)atau=parseFloat(new URLSearchParams(location.search).get('t0')||'0');}
  if(!BENCH&&now-lastQ>1500){if(fA>0.030&&qual>0.75){qual*=0.88;resize();lastQ=now;}
-  else if(fA<0.015&&qual<1.0){qual=Math.min(1.,qual*1.3);resize();lastQ=now;}}
+  else if(fA<0.0195&&qual<1.0){qual=Math.min(1.,qual*1.3);resize();lastQ=now;}}
  const[f,r,u]=basis();
  const sp3=(keys.ShiftLeft||keys.ShiftRight)?0.6:0.14;
  const ax=(keys.KeyD?1:0)-(keys.KeyA?1:0), az=(keys.KeyW?1:0)-(keys.KeyS?1:0),
@@ -397,6 +405,10 @@ function frameInner(){
  const ry=(keys.ArrowRight?1:0)-(keys.ArrowLeft?1:0), rp=(keys.ArrowUp?1:0)-(keys.ArrowDown?1:0);
  yaw+=ry*1.3*dt; pitch+=rp*1.3*dt; 
  if(ax||az||ay||ry||rp||drag)auto=false;
+ // still camera: full-res volume + jittered frame averaging; after 96 frames stop re-rendering the scene
+ const moving=drag||auto||ax||az||ay||ry||rp||Math.hypot(vel[0],vel[1],vel[2])>2e-4;
+ if(moving){stillT=0;accN=0;}else stillT+=dt;
+ const still=!BENCH&&postOn&&stillT>0.25, skipScene=still&&accN>=96;
  if(auto){atau+=dt;const T=110,tt=atau%T;let r,az2,h;
   const ease=x=>x*x*(3-2*x);
   if(tt<45){r=0.90;az2=tt/45*2.4;h=0.14;}
@@ -411,14 +423,15 @@ function frameInner(){
  const rr=Math.hypot(pos[0],pos[1],pos[2]);
  const expo=Math.min(Math.max(Math.pow(rr/1.15,1.6),0.06),1.0);
  fbos();const tgt=postOn?fboA:null;
+ let bt0,bt1,bt2,bt3;
+ if(!skipScene){
  // stars first (additive), then the volume composited over them with its cold-gas extinction
  gl.bindFramebuffer(gl.FRAMEBUFFER,tgt);gl.viewport(0,0,bw,bh);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
- let bt0,bt1,bt2,bt3;
  gl.useProgram(pS);gl.bindVertexArray(vao);
  gl.uniform3fv(uS.uPos,pos);gl.uniform3fv(uS.uFwd,f);gl.uniform3fv(uS.uRight,r);gl.uniform3fv(uS.uUp,u);
  gl.uniform2f(uS.uRes,cv.width,cv.height);gl.uniform1f(uS.uGain,Math.min(1.,expo*2.));
  gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE);
- gl.drawArrays(gl.POINTS,0,NS);
+ if(mode!==3)gl.drawArrays(gl.POINTS,0,NS);
  gl.useProgram(pB);gl.bindVertexArray(bvao);
  gl.uniform3fv(uB.uPos,pos);gl.uniform3fv(uB.uFwd,f);gl.uniform3fv(uB.uRight,r);gl.uniform3fv(uB.uUp,u);
  gl.uniform2f(uB.uRes,cv.width,cv.height);gl.uniform1f(uB.uGain,Math.min(1.,expo*2.));
@@ -433,23 +446,31 @@ function frameInner(){
  gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_3D,mode===1?tX:tT);gl.uniform1i(uV.uAux,1);
  gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_3D,tIPk);gl.uniform1i(uV.uIPk,2);
  gl.uniform3fv(uV.uPos,pos);gl.uniform3fv(uV.uFwd,f);gl.uniform3fv(uV.uRight,r);gl.uniform3fv(uV.uUp,u);
+ gl.uniform1f(uV.uJit,still?(accN%64)*3.7:0.);
  gl.disable(gl.BLEND);
- if(fboV){gl.uniform2f(uV.uRes,vw,vh);gl.uniform1f(uV.uExpo,expo);gl.uniform1i(uV.uMode,mode);
+ if(fboV&&!still){gl.uniform2f(uV.uRes,vw,vh);gl.uniform1f(uV.uExpo,expo);gl.uniform1i(uV.uMode,mode);
   gl.bindFramebuffer(gl.FRAMEBUFFER,fboV);gl.viewport(0,0,vw,vh);gl.drawArrays(gl.TRIANGLES,0,3);
   gl.useProgram(pU);gl.bindFramebuffer(gl.FRAMEBUFFER,tgt);gl.viewport(0,0,bw,bh);
   gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
-  gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,texV);gl.uniform1i(uUu.uT0,5);gl.uniform2f(uUu.uRes,bw,bh);
+  gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,texV);gl.uniform1i(uUu.uT0,5);gl.uniform2f(uUu.uRes,bw,bh);gl.uniform2f(uUu.uSrc,vw,vh);
   gl.drawArrays(gl.TRIANGLES,0,3);}
  else{gl.uniform2f(uV.uRes,bw,bh);gl.uniform1f(uV.uExpo,expo);gl.uniform1i(uV.uMode,mode);
   gl.bindFramebuffer(gl.FRAMEBUFFER,tgt);gl.viewport(0,0,bw,bh);
   gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.drawArrays(gl.TRIANGLES,0,3);}
+ }
  if(BENCH){bsync();bt2=performance.now();}
+ let srcA=texA;
+ if(still){if(!skipScene){accN++;
+  gl.useProgram(pU);gl.bindFramebuffer(gl.FRAMEBUFFER,fboAcc);gl.viewport(0,0,bw,bh);
+  gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,texA);gl.uniform1i(uUu.uT0,5);gl.uniform2f(uUu.uRes,bw,bh);gl.uniform2f(uUu.uSrc,bw,bh);
+  gl.enable(gl.BLEND);gl.blendColor(0,0,0,1/Math.min(accN,64));gl.blendFunc(gl.CONSTANT_ALPHA,gl.ONE_MINUS_CONSTANT_ALPHA);gl.drawArrays(gl.TRIANGLES,0,3);}
+  srcA=texAcc;}
  // post: bright-pass -> blur -> composite
  if(postOn){
  gl.disable(gl.BLEND);
  const qw=Math.max(1,bw>>2),qh=Math.max(1,bh>>2);
  gl.useProgram(pP);
- gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,texA);gl.uniform1i(uPp.uT0,5);
+ gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,srcA);gl.uniform1i(uPp.uT0,5);
  gl.bindFramebuffer(gl.FRAMEBUFFER,fboB);gl.viewport(0,0,qw,qh);
  gl.uniform2f(uPp.uRes,qw,qh);gl.uniform1i(uPp.uOp,0);gl.uniform2f(uPp.uDir,0,0);
  gl.drawArrays(gl.TRIANGLES,0,3);
@@ -466,7 +487,7 @@ function frameInner(){
  gl.bindTexture(gl.TEXTURE_2D,texE);gl.bindFramebuffer(gl.FRAMEBUFFER,fboD);
  gl.uniform2f(uPp.uDir,0,1);gl.drawArrays(gl.TRIANGLES,0,3);
  gl.useProgram(pC);gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,bw,bh);
- gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,texA);gl.uniform1i(uCc.uT0,5);
+ gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,srcA);gl.uniform1i(uCc.uT0,5);
  gl.activeTexture(gl.TEXTURE6);gl.bindTexture(gl.TEXTURE_2D,texB);gl.uniform1i(uCc.uT1,6);
  gl.activeTexture(gl.TEXTURE7);gl.bindTexture(gl.TEXTURE_2D,texD);gl.uniform1i(uCc.uT2,7);
  gl.uniform2f(uCc.uRes,bw,bh);gl.uniform1f(uCc.uTm,BENCH?0.:now%997);
@@ -480,7 +501,7 @@ function frameInner(){
  document.getElementById('hr2').textContent=(kpc/META.r200).toFixed(2);
  const v=Math.hypot(vel[0],vel[1],vel[2])*META.half;
  document.getElementById('hv').textContent=v.toFixed(0);
- document.getElementById('hq').textContent=(1/fA).toFixed(0)+' @ '+Math.round(qual*100)+'%'+(hiQ?' · vol 1:1':' · vol ½');}
+ document.getElementById('hq').textContent=(1/fA).toFixed(0)+' @ '+Math.round(qual*100)+'%'+(still?' · still '+Math.min(accN,96):hiQ?' · vol 1:1':' · vol ½');}
 requestAnimationFrame(frame);
 </script>
 
