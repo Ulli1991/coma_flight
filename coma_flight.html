@@ -143,7 +143,7 @@ void main(){
  float px=clamp((1.1+1.6*l)/max(z,.05),1.2,4.);
  gl_PointSize=px;
  vc=mix(vec3(.30,.55,1.),vec3(1.,.52,.26),smoothstep(.05,.85,aG));
- vfade=clamp(uGain*(.08+2.2*l)/(z*z)*2.6,0.,1.);
+ vfade=clamp(uGain*(.08+2.2*l)/(z*z)*0.7,0.,1.);
 }`;
 const SFS=`#version 300 es
 precision highp float;in vec3 vc;in float vfade;out vec4 oc;
