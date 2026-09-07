@@ -97,7 +97,7 @@ void main(){
  float t0=max(max(min(t1.x,t2.x),min(t1.y,t2.y)),min(t1.z,t2.z));
  float tE=min(min(max(t1.x,t2.x),max(t1.y,t2.y)),max(t1.z,t2.z));
  t0=max(t0,0.); if(tE<=t0){oc=vec4(0,0,0,1);return;}
- const int N=160; float dt=(tE-t0)/float(N);
+ const int N=120; float dt=(tE-t0)/float(N);
  float dj=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.55);
  vec3 C=vec3(0.); float A=0.;
  for(int i=0;i<N;i++){
