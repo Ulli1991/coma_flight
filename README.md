@@ -4,9 +4,11 @@
 
 The full-resolution build (`index.html`, streams ~30 MB of data from `data/`)
 runs on GitHub Pages at the link above: guided tour, gas / X-ray / temperature /
-intracluster-light modes, named galaxies, shareable views (L), PNG export (P).
-See `DEEP.md` for what is in it. The rest of this file describes the light
-self-contained artifact version.
+dark-matter / shock / intracluster-light modes, six epochs from z = 1.95 to today
+(keys , and .), named galaxies, shareable views (L), PNG export (P).
+See `DEEP.md` for what is in it and `TODO.md` for how the cubes are made
+(`extract_cubes.py`, `run_cubes.sbatch`, `pack_cubes.py` on raven). The rest of
+this file describes the light self-contained artifact version.
 
 Interactive WebGL2 free flight through the z=0 snapshot of the Coma_011
 constrained re-simulation (TNG100 resolution) — the closing frame of the

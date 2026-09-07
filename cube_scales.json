@@ -1,0 +1,58 @@
+{
+ "rho": [
+  -4.216982558696461,
+  -1.441040963140368,
+  0.9941280556902117
+ ],
+ "rho_s": [
+  -4.216982558696461,
+  -1.441040963140368,
+  0.9941280556902117
+ ],
+ "temp": [
+  7.1183,
+  8.0318,
+  0.9292
+ ],
+ "xray": [
+  -8.50316358568982,
+  -1.8425732246342905,
+  0.9481183069836472
+ ],
+ "xray_em": [
+  -12.017017329169164,
+  -5.542708152856561,
+  0.9306007381934092
+ ],
+ "slum": [
+  3.5894,
+  8.0063,
+  0.9997
+ ],
+ "slum_s": [
+  -18.324881228914048,
+  140.04984530115175,
+  0.1613991353683727
+ ],
+ "scol": [
+  0.1009701246701794,
+  1.1038364340893168,
+  0.9994476963967365
+ ],
+ "dm": [
+  -4.5162882804870605,
+  -0.398705455660775,
+  1.0
+ ],
+ "ed": [
+  1.5241085052490235,
+  4.564514534950351,
+  1.0
+ ],
+ "mach": [
+  1.0,
+  5.0,
+  1.0
+ ],
+ "note": "u8=255*(q-lo)/(hi-lo); rho: log10 mass/voxel (1e10 Msun/h) after 1-voxel gaussian, 384 grid; temp: mass-weighted log10 T[K]; xray: log10 sum m*rho*sqrt(T) (T>1e6K); slum: log10 r-band L/voxel (mag zero point), 384 grid; scol: L-weighted g-r; dm: log10 DM mass/voxel after 1-voxel gaussian, 384 grid; mach: max Mach in voxel; ed: log10 sum EnergyDissipation, 384 grid. 192 grids shift extensive quantities by log10(8)."
+}
