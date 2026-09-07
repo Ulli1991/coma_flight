@@ -309,7 +309,7 @@ let gvao=null,graw=null;
 function gbuf(){gvao=gl.createVertexArray();gl.bindVertexArray(gvao);
  rawbuf(graw,8,[[0,3,gl.SHORT,0],[1,1,gl.UNSIGNED_BYTE,6],[2,1,gl.UNSIGNED_BYTE,7]]);}
 // flight state
-let pos=[0,0.12,-1.38],yaw=0,pitch=-0.02,vel=[0,0,0],mode=0,keys={},auto=false,atau=0;
+let pos=[0,0.10,-0.88],yaw=0,pitch=-0.02,vel=[0,0,0],mode=0,keys={},auto=false,atau=0;
 const names=['gas density + cold gas','X-ray emission','temperature'];
 function basis(){const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp2=Math.sin(pitch);
  const f=[sy*cp,sp2,cy*cp];const r=[cy,0,-sy];
@@ -317,7 +317,7 @@ function basis(){const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp2=
  return[f,r,u]}
 addEventListener('keydown',e=>{keys[e.code]=1;
  if(e.code==='Digit1')setMode(0);if(e.code==='Digit2')setMode(1);if(e.code==='Digit3')setMode(2);
- if(e.code==='KeyR'){pos=[0,0.12,-1.38];yaw=0;pitch=-0.02;vel=[0,0,0];auto=false;}
+ if(e.code==='KeyR'){pos=[0,0.10,-0.88];yaw=0;pitch=-0.02;vel=[0,0,0];auto=false;}
  if(e.code==='KeyT'){auto=!auto;atau=0;}
  if(e.code==='KeyM'){const m=document.getElementById('map');m.hidden=!m.hidden;}
  if(e.code==='KeyB'){postOn=!postOn;}
