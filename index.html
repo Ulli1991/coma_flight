@@ -101,7 +101,9 @@ void main(){
  float dj=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.55);
  vec3 C=vec3(0.); float A=0.;
  for(int i=0;i<N;i++){
-  vec3 p=uPos+rd*(t0+(float(i)+dj)*dt);
+  float tcur=t0+(float(i)+dj)*dt;
+  vec3 p=uPos+rd*tcur;
+  float nf=smoothstep(.015,.11,tcur);
   vec3 uv=(p*.5+.5).zyx;
   float mc=max(abs(p.x),max(abs(p.y),abs(p.z)));
   float redge=length(p);
@@ -136,8 +138,8 @@ void main(){
   sv=sv*sv*sv;
   if(sv>0.001){
    vec3 scol=mix(vec3(.45,.62,1.),vec3(1.,.62,.32),sc2);
-   C+=(1.-A)*clamp(sv*edge*dt*uExpo*2.2,0.,.9)*scol;}
-  float a=clamp(em*edge*dt*uExpo*3.0,0.,.9);
+   C+=(1.-A)*clamp(sv*edge*nf*dt*uExpo*2.2,0.,.9)*scol;}
+  float a=clamp(em*edge*nf*dt*uExpo*3.0,0.,.9);
   C+=(1.-A)*a*col; A+=(1.-A)*a*.9;
   if(A>0.985)break;
  }
