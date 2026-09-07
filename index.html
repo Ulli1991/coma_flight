@@ -104,7 +104,8 @@ void main(){
   vec3 p=uPos+rd*(t0+(float(i)+dj)*dt);
   vec3 uv=(p*.5+.5).zyx;
   float mc=max(abs(p.x),max(abs(p.y),abs(p.z)));
-  float edge=clamp((1.-mc)/0.12,0.,1.); edge*=edge;
+  float redge=length(p);
+  float edge=clamp((0.99-redge)/0.15,0.,1.); edge*=edge;
   float d=texture(uRho,uv).r;
   float rr2=length(p);
   float wig=clamp((0.235-rr2)/0.07,0.,1.);
@@ -189,8 +190,6 @@ let tSL=null,tSC=null,tIS=null,tIC=null,tIR=null;
  tR=vol3d(await ugz(D_RHO),384);tX=vol3d(await ugz(D_XRAY),192);tT=vol3d(await ugz(D_TEMP),192);tIR=vol3d(await ugz(D_IRHO),192);
  tSL=vol3d(await ugz(D_SLUM),384);tSC=vol3d(await ugz(D_SCOL),384);
  tIS=vol3d(await ugz(D_ISLUM),192);tIC=vol3d(await ugz(D_ISCOL),192);ready=true;
- const iv=document.getElementById('intro');
- if(iv){iv.style.transition='opacity 1.2s';iv.style.opacity=0;setTimeout(()=>iv.remove(),1300);}
  const g=document.getElementById('go'); if(g) g.textContent='ENGAGE';
 }catch(e){const w=document.getElementById('warn');w.hidden=false;w.textContent='load error: '+e;}})();
 let sraw=null; const NS=META.nstars;
