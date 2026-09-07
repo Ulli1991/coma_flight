@@ -36,7 +36,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
  <div>field&nbsp; <b id="hf">gas density + cold gas</b></div>
  <div style="color:var(--hud-dim)">fps <b id="hq" style="color:var(--hud-dim)">--</b></div>
 </div>
-<div class="hud" id="br">5-9 sights &middot; H hide HUD &middot; T autopilot &middot; M map &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1 2 3 fields &middot; R reset</div>
+<div class="hud" id="br">5-9 sights &middot; G quality &middot; H hide HUD &middot; T autopilot &middot; M map &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1 2 3 fields &middot; R reset</div>
 <div class="hud" id="tr">
  <button class="fbtn on" id="b1">1 DENSITY</button><button class="fbtn" id="b2">2 X-RAY</button><button class="fbtn" id="b3">3 TEMP</button>
 </div>
@@ -58,8 +58,8 @@ const D_BH = [0.00023, -0.00129, 0.00167, 0.12381, 8e-05, 0.00329, -0.00244, 0.0
 const META = {"half": 4500.0, "r200": 1476.3539982975688, "n": 192, "nstars": 939637, "naux": 128, "innerHalf": 0.26666666666666666, "starsGz": true, "ngas": 200000, "pois": [{"k": "5", "n": "THE BCG", "p": [0.0, 0.0, 0.0], "d": 0.1}, {"k": "6", "n": "JELLYFISH GALAXY", "p": [-0.01586104929447174, -0.6161878108978271, -0.17097829282283783], "d": 0.06}, {"k": "7", "n": "MERGER SHOCK", "p": [0.08616187989556146, 0.23237597911227148, -0.19060052219321144], "d": 0.16}, {"k": "8", "n": "COLD FILAMENT", "p": [-0.25848563968668403, 0.43603133159268936, -0.1488250652741514], "d": 0.2}, {"k": "9", "n": "CLUSTER OVERVIEW", "p": [0.0, 0.0, 0.0], "d": 1.3}]};
 const D_ISLUM="data/islum192.u8.gz", D_ISCOL="data/iscol192.u8.gz",
  D_SLUM="data/slum384.u8.gz", D_SCOL="data/scol384.u8.gz",
- D_GAS="data/gas.bin.gz", D_RHO="data/rho384.u8.gz", D_XRAY="data/xray384.u8.gz",
- D_TEMP="data/temp384.u8.gz", D_STARS="data/stars.bin.gz", D_IRHO="data/irho192.u8.gz";
+ D_GAS="data/gas.bin.gz", D_RHO="data/rho384.u8.gz", D_XRAY="data/xray192.u8.gz",
+ D_TEMP="data/temp192.u8.gz", D_STARS="data/stars.bin.gz", D_IRHO="data/irho192.u8.gz";
 function ub(b64){const s=atob(b64),n=s.length,a=new Uint8Array(n);for(let i=0;i<n;i++)a[i]=s.charCodeAt(i);return a}
 async function ugz(url){const r=await fetch(url);
  if(!r.ok)throw new Error('fetch '+url+' '+r.status);
@@ -75,7 +75,7 @@ function prog(v,f){const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHA
  if(!gl.getProgramParameter(p,gl.LINK_STATUS))console.error(gl.getProgramInfoLog(p));return p}
 const VS=`#version 300 es
 void main(){vec2 p=vec2(gl_VertexID==1?3.:-1.,gl_VertexID==2?3.:-1.);gl_Position=vec4(p,0.,1.);}`;
-const FS=`#version 300 es
+const FS_T=`#version 300 es
 precision highp float;precision highp sampler3D;
 uniform sampler3D uRho,uAux,uSL,uSC,uISL,uISC,uIR;uniform vec3 uPos,uFwd,uRight,uUp;
 uniform vec2 uRes;uniform float uExpo;uniform int uMode;out vec4 oc;
@@ -97,7 +97,7 @@ void main(){
  float t0=max(max(min(t1.x,t2.x),min(t1.y,t2.y)),min(t1.z,t2.z));
  float tE=min(min(max(t1.x,t2.x),max(t1.y,t2.y)),max(t1.z,t2.z));
  t0=max(t0,0.); if(tE<=t0){oc=vec4(0,0,0,1);return;}
- const int N=120; float dt=(tE-t0)/float(N);
+ const int N=NSTEPS; float dt=(tE-t0)/float(N);
  float dj=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.55);
  vec3 C=vec3(0.); float A=0.;
  for(int i=0;i<N;i++){
@@ -184,7 +184,7 @@ let tSL=null,tSC=null,tIS=null,tIC=null,tIR=null;
 (async()=>{try{
  sraw=await ugz(D_STARS); decodeStars(); sbuf();
  graw=await ugz(D_GAS); gbuf();
- tR=vol3d(await ugz(D_RHO),384);tX=vol3d(await ugz(D_XRAY),384);tT=vol3d(await ugz(D_TEMP),384);tIR=vol3d(await ugz(D_IRHO),192);
+ tR=vol3d(await ugz(D_RHO),384);tX=vol3d(await ugz(D_XRAY),192);tT=vol3d(await ugz(D_TEMP),192);tIR=vol3d(await ugz(D_IRHO),192);
  tSL=vol3d(await ugz(D_SLUM),384);tSC=vol3d(await ugz(D_SCOL),384);
  tIS=vol3d(await ugz(D_ISLUM),192);tIC=vol3d(await ugz(D_ISCOL),192);ready=true;
  const g=document.getElementById('go'); if(g) g.textContent='ENGAGE';
@@ -241,7 +241,9 @@ void main(){vec2 uv=gl_FragCoord.xy/uRes;
  c*=1.-0.30*smoothstep(.6,1.4,length(q));
  float gr2=fract(sin(dot(gl_FragCoord.xy+uTm,vec2(12.98,78.23)))*43758.5)-.5;
  oc=vec4(clamp(c+gr2*0.010,0.,1.),1.);}`;
-const pV=prog(VS,FS), pS=prog(SVS,SFS), pG=prog(GVS,SFS), pB=prog(BVS,SFS), pP=prog(VS,PFS), pC=prog(VS,CFS);
+const FSq=FS_T.replace('NSTEPS','120'),FSp=FS_T.replace('NSTEPS','72');
+const pVq=prog(VS,FSq),pVp=prog(VS,FSp);let pV=pVq,hiQ=true;
+const pS=prog(SVS,SFS), pG=prog(GVS,SFS), pB=prog(BVS,SFS), pP=prog(VS,PFS), pC=prog(VS,CFS);
 let fboA=null,texA=null,fboB=null,texB=null,fboC=null,texC=null,bw=0,bh=0;
 function mkTex(w,h){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
  gl.texStorage2D(gl.TEXTURE_2D,1,gl.RGBA8,w,h);
@@ -287,6 +289,7 @@ addEventListener('keydown',e=>{keys[e.code]=1;
  if(e.code==='KeyR'){pos=[0,0.12,-1.38];yaw=0;pitch=-0.02;vel=[0,0,0];auto=false;}
  if(e.code==='KeyT'){auto=!auto;atau=0;}
  if(e.code==='KeyM'){const m=document.getElementById('map');m.hidden=!m.hidden;}
+ if(e.code==='KeyG'){hiQ=!hiQ;pV=hiQ?pVq:pVp;uV=hiQ?uVq:uVp;}
  if(e.code==='KeyH'){document.querySelectorAll('.hud').forEach(el=>el.style.display=el.style.display==='none'?'':'none');}
  const poi=(META.pois||[]).find(q=>'Digit'+q.k===e.code);
  if(poi){auto=false;const t=poi.p;const L0=Math.hypot(t[0],t[1],t[2]);
@@ -312,8 +315,9 @@ let qual=1.0;
 function resize(){const k=Math.min(devicePixelRatio,1.5)*qual;
  cv.width=innerWidth*k;cv.height=innerHeight*k;gl.viewport(0,0,cv.width,cv.height);}
 addEventListener('resize',resize);resize();
-const uV={},uS={};
-for(const n of['uRho','uAux','uSL','uSC','uISL','uISC','uIR','uPos','uFwd','uRight','uUp','uRes','uExpo','uMode'])uV[n]=gl.getUniformLocation(pV,n);
+const uS={};
+const uVq={},uVp={};let uV=uVq;
+for(const n of['uRho','uAux','uSL','uSC','uISL','uISC','uIR','uPos','uFwd','uRight','uUp','uRes','uExpo','uMode']){uVq[n]=gl.getUniformLocation(pVq,n);uVp[n]=gl.getUniformLocation(pVp,n);}
 for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain','uHalo'])uS[n]=gl.getUniformLocation(pS,n);
 for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain'])uB[n]=gl.getUniformLocation(pB,n);
 for(const n of['uT0','uRes','uOp','uDir'])uPp[n]=gl.getUniformLocation(pP,n);
