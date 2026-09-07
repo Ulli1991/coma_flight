@@ -42,7 +42,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
  <div>field&nbsp; <b id="hf">gas density + cold gas</b></div>
  <div style="color:var(--hud-dim)">fps <b id="hq" style="color:var(--hud-dim)">--</b></div>
 </div>
-<div class="hud" id="br">5-9 sights &middot; G quality &middot; H hide HUD &middot; T autopilot &middot; M map &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1 2 3 fields &middot; R reset</div>
+<div class="hud" id="br">5-9 sights &middot; G quality &middot; B bloom &middot; H hide HUD &middot; T autopilot &middot; M map &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1 2 3 fields &middot; R reset</div>
 <div class="hud" id="tr">
  <button class="fbtn on" id="b1">1 DENSITY</button><button class="fbtn" id="b2">2 X-RAY</button><button class="fbtn" id="b3">3 TEMP</button>
 </div>
@@ -299,6 +299,7 @@ addEventListener('keydown',e=>{keys[e.code]=1;
  if(e.code==='KeyR'){pos=[0,0.12,-1.38];yaw=0;pitch=-0.02;vel=[0,0,0];auto=false;}
  if(e.code==='KeyT'){auto=!auto;atau=0;}
  if(e.code==='KeyM'){const m=document.getElementById('map');m.hidden=!m.hidden;}
+ if(e.code==='KeyB'){postOn=!postOn;}
  if(e.code==='KeyG'){hiQ=!hiQ;pV=hiQ?pVq:pVp;uV=hiQ?uVq:uVp;}
  if(e.code==='KeyH'){document.querySelectorAll('.hud').forEach(el=>el.style.display=el.style.display==='none'?'':'none');}
  const poi=(META.pois||[]).find(q=>'Digit'+q.k===e.code);
@@ -321,7 +322,7 @@ function setMode(m){mode=m;document.getElementById('hf').textContent=names[m];
  bs.forEach((b,i)=>b.classList.toggle('on',i===m));}
 bs.forEach((b,i)=>b.addEventListener('click',()=>setMode(i)));
 document.getElementById('go').addEventListener('click',()=>document.getElementById('intro').remove());
-let qual=1.0;
+let qual=1.0,postOn=true;
 function resize(){const k=Math.min(devicePixelRatio,1.5)*qual;
  cv.width=innerWidth*k;cv.height=innerHeight*k;gl.viewport(0,0,cv.width,cv.height);}
 addEventListener('resize',resize);resize();
@@ -375,7 +376,7 @@ function frameInner(){
  gl.activeTexture(gl.TEXTURE8);gl.bindTexture(gl.TEXTURE_3D,tIR||tR);gl.uniform1i(uV.uIR,8);
  gl.uniform3fv(uV.uPos,pos);gl.uniform3fv(uV.uFwd,f);gl.uniform3fv(uV.uRight,r);gl.uniform3fv(uV.uUp,u);
  gl.uniform2f(uV.uRes,cv.width,cv.height);gl.uniform1f(uV.uExpo,expo);gl.uniform1i(uV.uMode,mode);
- fbos();gl.bindFramebuffer(gl.FRAMEBUFFER,fboA);gl.viewport(0,0,bw,bh);
+ fbos();gl.bindFramebuffer(gl.FRAMEBUFFER,postOn?fboA:null);gl.viewport(0,0,postOn?bw:cv.width,postOn?bh:cv.height);
  gl.disable(gl.BLEND);gl.drawArrays(gl.TRIANGLES,0,3);
  gl.useProgram(pS);gl.bindVertexArray(vao);
  gl.uniform3fv(uS.uPos,pos);gl.uniform3fv(uS.uFwd,f);gl.uniform3fv(uS.uRight,r);gl.uniform3fv(uS.uUp,u);
@@ -391,7 +392,8 @@ function frameInner(){
   gl.uniform3fv(uG.uPos,pos);gl.uniform3fv(uG.uFwd,f);gl.uniform3fv(uG.uRight,r);gl.uniform3fv(uG.uUp,u);
   gl.uniform2f(uG.uRes,cv.width,cv.height);gl.uniform1f(uG.uGain,Math.min(1.,expo*2.));
   gl.drawArrays(gl.POINTS,0,NG);}
- // post: bright-pass -> blur -> composite (bloom + vignette + grain)
+ // post: bright-pass -> blur -> composite
+ if(postOn){
  gl.disable(gl.BLEND);
  const qw=Math.max(1,bw>>2),qh=Math.max(1,bh>>2);
  gl.useProgram(pP);
@@ -407,7 +409,7 @@ function frameInner(){
  gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,texA);gl.uniform1i(uCc.uT0,5);
  gl.activeTexture(gl.TEXTURE6);gl.bindTexture(gl.TEXTURE_2D,texB);gl.uniform1i(uCc.uT1,6);
  gl.uniform2f(uCc.uRes,bw,bh);gl.uniform1f(uCc.uTm,now%997);
- gl.drawArrays(gl.TRIANGLES,0,3);
+ gl.drawArrays(gl.TRIANGLES,0,3);}
  // HUD
  const mapEl=document.getElementById('map');
  if(!mapEl.hidden){
