@@ -11,6 +11,7 @@
 html,body{margin:0;height:100%;background:var(--bg);overflow:hidden}
 body{font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--mist)}
 canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+[hidden]{display:none!important}
 .hud{position:fixed;padding:10px 14px;pointer-events:none;font-size:12.5px;line-height:1.55;
  font-variant-numeric:tabular-nums;text-shadow:0 0 6px rgba(0,0,0,.9)}
 #tl{top:8px;left:10px}
@@ -42,11 +43,10 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
  <div>field&nbsp; <b id="hf">gas density + cold gas</b></div>
  <div style="color:var(--hud-dim)">fps <b id="hq" style="color:var(--hud-dim)">--</b></div>
 </div>
-<div class="hud" id="br">5-9 sights &middot; G quality &middot; B bloom &middot; H hide HUD &middot; T autopilot &middot; M map &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1 2 3 fields &middot; R reset</div>
+<div class="hud" id="br">5-9 sights &middot; G quality &middot; B bloom &middot; H hide HUD &middot; T autopilot &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1 2 3 fields &middot; R reset</div>
 <div class="hud" id="tr">
  <button class="fbtn on" id="b1">1 DENSITY</button><button class="fbtn" id="b2">2 X-RAY</button><button class="fbtn" id="b3">3 TEMP</button>
 </div>
-<canvas id="map" width="150" height="150" hidden style="position:fixed;top:56px;right:12px;border:1px solid var(--line);background:rgba(5,6,10,.5)"></canvas>
 <div class="hud" id="cap" style="left:50%;bottom:64px;transform:translateX(-50%);font-family:Unica One,monospace;font-size:22px;letter-spacing:.2em;color:var(--hud);opacity:0;transition:opacity .6s"></div>
 <div id="intro"><div class="card">
  <h1>COMA FLIGHT</h1>
@@ -319,7 +319,6 @@ addEventListener('keydown',e=>{keys[e.code]=1;
  if(e.code==='Digit1')setMode(0);if(e.code==='Digit2')setMode(1);if(e.code==='Digit3')setMode(2);
  if(e.code==='KeyR'){pos=[0,0.10,-0.88];yaw=0;pitch=-0.02;vel=[0,0,0];auto=false;}
  if(e.code==='KeyT'){auto=!auto;atau=0;}
- if(e.code==='KeyM'){const m=document.getElementById('map');m.hidden=!m.hidden;}
  if(e.code==='KeyB'){postOn=!postOn;}
  if(e.code==='KeyG'){hiQ=!hiQ;volScale=hiQ?1.0:0.5;}
  if(e.code==='KeyH'){document.querySelectorAll('.hud').forEach(el=>el.style.display=el.style.display==='none'?'':'none');}
@@ -440,17 +439,6 @@ function frameInner(){
   if(BT.n>30){BT.vol+=bt1-now;BT.star+=bt2-bt1;BT.post+=bt3-bt2;BT.tot+=bt3-now;}
   if(BT.n===30+parseInt(BENCH)){const m=BT.n-30;const r=`BENCH ${cv.width}x${cv.height} total ${(BT.tot/m).toFixed(2)}ms vol ${(BT.vol/m).toFixed(2)} stars ${(BT.star/m).toFixed(2)} load ${T_LOAD.toFixed(0)}ms post ${(BT.post/m).toFixed(2)} px ${BPX[0]},${BPX[1]},${BPX[2]}`;console.log(r);document.title=r;const sn=new URLSearchParams(location.search).get('shot');if(sn)fetch('/shot?name='+sn,{method:'POST',body:cv.toDataURL('image/png')});}}
  // HUD
- const mapEl=document.getElementById('map');
- if(!mapEl.hidden){
- const mc=mapEl.getContext('2d');
- mc.clearRect(0,0,150,150);
- mc.strokeStyle='rgba(159,216,232,.35)';mc.beginPath();
- mc.arc(75,75,META.r200/META.half*70,0,6.2832);mc.stroke();
- mc.strokeStyle='rgba(159,216,232,.15)';mc.strokeRect(5,5,140,140);
- const mx=75+pos[0]*70,my=75+pos[2]*70;
- mc.fillStyle='#e8a24a';mc.beginPath();mc.arc(mx,my,3,0,6.2832);mc.fill();
- const[f2]=basis();mc.strokeStyle='#e8a24a';mc.beginPath();mc.moveTo(mx,my);
- mc.lineTo(mx+f2[0]*10,my+f2[2]*10);mc.stroke();}
  const kpc=rr*META.half;
  document.getElementById('hr').textContent=(kpc/1000).toFixed(2);
  document.getElementById('hr2').textContent=(kpc/META.r200).toFixed(2);

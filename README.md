@@ -16,12 +16,12 @@ Live copy: https://claude.ai/code/artifact/04ee4360-12d9-4361-bb20-76108562c6c6
   blue young → red old), 16-bit positions
 - 200k densest cold/star-forming gas cells (cyan layer, jellyfish tails)
 - HUD in real units (r_BCG, r/R200, speed), sights on keys 5–9,
-  T autopilot, H photo mode, M minimap, adaptive render quality
+  T autopilot, H photo mode, adaptive render quality
 
 ## Controls
 drag / arrows look · WASD fly · SPACE/C rise/sink · SHIFT boost ·
 Q/E roll · 1/2/3 density / X-ray / temperature · 5–9 sights · T autopilot ·
-H hide HUD · M map · R reset
+H hide HUD · R reset
 
 ## Data provenance
 Built from /ptmp/uli/movie011/grids/freeze_139.h5, epoch_139{,_vel}.h5,
