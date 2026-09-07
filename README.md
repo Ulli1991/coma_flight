@@ -29,7 +29,7 @@ Live copy: https://claude.ai/code/artifact/04ee4360-12d9-4361-bb20-76108562c6c6
 ## Controls
 drag / arrows look · WASD fly · SPACE/C rise/sink · SHIFT boost ·
 Q/E roll · 1/2/3 density / X-ray / temperature · 5–9 sights · T autopilot ·
-H hide HUD · P photo (PNG) · L copy link to this view · I intracluster light · 4 gas only · 0 dark matter (if cubes present) · R reset
+H hide HUD · P photo (PNG) · L copy link to this view · I intracluster light · 0 dark matter (if cubes present) · R reset
 
 ## Data provenance
 Built from /ptmp/uli/movie011/grids/freeze_139.h5, epoch_139{,_vel}.h5,

@@ -49,9 +49,9 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
  <div>field&nbsp; <b id="hf">gas density + cold gas</b></div>
  <div style="color:var(--hud-dim)">fps <b id="hq" style="color:var(--hud-dim)">--</b></div>
 </div>
-<div class="hud" id="br">5-9 sights &middot; G quality &middot; B bloom &middot; H hide HUD &middot; P photo &middot; L link &middot; T tour &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1-4 fields &middot; R reset</div>
+<div class="hud" id="br">5-9 sights &middot; G quality &middot; B bloom &middot; H hide HUD &middot; P photo &middot; L link &middot; T tour &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1 2 3 fields &middot; R reset</div>
 <div class="hud" id="tr">
- <button class="fbtn on" id="b1">1 DENSITY</button><button class="fbtn" id="b2">2 X-RAY</button><button class="fbtn" id="b3">3 TEMP</button><button class="fbtn" id="b4">4 GAS</button><button class="fbtn" id="b5" hidden>0 DM</button><button class="fbtn" id="b6">I ICL</button>
+ <button class="fbtn on" id="b1">1 DENSITY</button><button class="fbtn" id="b2">2 X-RAY</button><button class="fbtn" id="b3">3 TEMP</button><button class="fbtn" id="b5" hidden>0 DM</button><button class="fbtn" id="b6">I ICL</button>
 </div>
 <div class="hud" id="cap" style="left:50%;bottom:64px;transform:translateX(-50%);font-family:Unica One,monospace;font-size:22px;letter-spacing:.2em;color:var(--hud);opacity:0;transition:opacity .6s"></div>
 <div class="hud" id="sb"><div id="sbl" style="width:120px"></div><div id="sbt">--</div></div>
@@ -149,18 +149,18 @@ void main(){
   float v=smoothstep(0.20,1.0,d); v*=v;
   float aux=texture(uAux,uv).r;
   vec3 col; float em; float cw=0.;
-  if(uMode==0||uMode==3){
+  if(uMode==0){
    col=magma(v);
    cw=(1.-smoothstep(.12,.32,aux))*v;
    col=mix(col,vec3(.45,.85,1.),.8*cw);
    float hw=smoothstep(.60,.78,aux)*(1.-smoothstep(.30,.55,v))*smoothstep(.02,.10,v);
    col=mix(col,vec3(1.,.62,.20),.85*hw);
-   em=v*(1.+.6*cw+1.2*hw); if(uMode==3)em*=2.0;
-  }else if(uMode==4){
+   em=v*(1.+.6*cw+1.2*hw);
+  }else if(uMode==3){
    float dd=texture(uDM,uv).r;
    if(wig>0.){vec3 uvg=(p/0.2667*.5+.5).zyx;dd=mix(dd,texture(uIDM,uvg).r,wig);}
    float x=smoothstep(0.12,1.0,dd); x*=x; col=dmmap(x); em=x*1.4; v=x;
-  }else if(uMode==5){
+  }else if(uMode==4){
    // intracluster light: log stretch of the binned star light, no gas, no sprites
    float x=log(1.+60.*pk.g)/log(61.); col=mix(vec3(.55,.62,1.),vec3(1.,.78,.50),pk.b); em=x*1.5; v=x;
   }else if(uMode==1){
@@ -171,7 +171,7 @@ void main(){
   // all-star light field (30M stars binned; colour = age)
   float sv=pk.g, sc2=pk.b;
   sv=sv*sv*sv;
-  if(sv>0.001&&uMode!=3&&uMode!=4&&uMode!=5){
+  if(sv>0.001&&uMode!=3&&uMode!=4){
    vec3 scol=mix(vec3(.45,.62,1.),vec3(1.,.62,.32),sc2);
    C+=(1.-A)*clamp(sv*edge*nf*dt*uExpo*2.2,0.,.9)*scol;}
   float a=clamp(em*edge*nf*dt*uExpo*3.6,0.,.9);
@@ -252,7 +252,7 @@ const T_LOAD0=performance.now();let T_LOAD=0;
  tPk=vol3d(pack3(rho,sl,scl),384,3);tIPk=vol3d(pack3(ir,isl,isc),192,3);ready=true;T_LOAD=performance.now()-T_LOAD0;
  const g=document.getElementById('got'); if(g) g.textContent='ENGAGE'; const lb=document.getElementById('lbar'); if(lb) lb.hidden=true;
  // optional dark-matter cubes (see extract_dm.py); the mode appears only when both load
- try{const [dm,idm]=await Promise.all([D_DM,D_IDM].map(ugz));tDM=vol3d(dm,384);tIDM=vol3d(idm,192);haveDM=true;document.getElementById('b5').hidden=false;if(wantMode===4)setMode(4);}catch(e){}
+ try{const [dm,idm]=await Promise.all([D_DM,D_IDM].map(ugz));tDM=vol3d(dm,384);tIDM=vol3d(idm,192);haveDM=true;document.getElementById('b5').hidden=false;if(wantMode===3)setMode(3);}catch(e){}
 }catch(e){const w=document.getElementById('warn');w.hidden=false;w.textContent='load error: '+e;}})();
 let sraw=null; const NS=META.nstars;
 
@@ -365,17 +365,17 @@ function gbuf(){gvao=gl.createVertexArray();gl.bindVertexArray(gvao);
 // flight state
 let pos=[0,0.10,-0.88],yaw=0,pitch=-0.02,vel=[0,0,0],mode=0,keys={},auto=true,atau=0;
 let stillT=0,accN=0;
-const names=['gas density + cold gas','X-ray emission','temperature','gas only','dark matter','intracluster light'];
+const names=['gas density + cold gas','X-ray emission','temperature','dark matter','intracluster light'];
 function basis(){const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp2=Math.sin(pitch);
  const f=[sy*cp,sp2,cy*cp];const r=[cy,0,-sy];
  const u=[f[1]*r[2]-f[2]*r[1],f[2]*r[0]-f[0]*r[2],f[0]*r[1]-f[1]*r[0]];
  return[f,r,u]}
 addEventListener('keydown',e=>{keys[e.code]=1;accN=0;
- if(e.code==='Digit1')setMode(0);if(e.code==='Digit2')setMode(1);if(e.code==='Digit3')setMode(2);if(e.code==='Digit4')setMode(3);if(e.code==='Digit0'&&haveDM)setMode(4);
+ if(e.code==='Digit1')setMode(0);if(e.code==='Digit2')setMode(1);if(e.code==='Digit3')setMode(2);if(e.code==='Digit0'&&haveDM)setMode(3);
  if(e.code==='KeyR'){pos=[0,0.10,-0.88];yaw=0;pitch=-0.02;vel=[0,0,0];auto=false;}
  if(e.code==='KeyT'){auto=!auto;atau=0;}
  if(e.code==='KeyB'){postOn=!postOn;}
- if(e.code==='KeyI')setMode(5);
+ if(e.code==='KeyI')setMode(4);
  if(e.code==='KeyP')shotReq=true;
  if(e.code==='KeyL'){writeHash();navigator.clipboard.writeText(location.href).then(()=>showCap('LINK COPIED'),()=>showCap(location.hash));}
  if(e.code==='KeyG'){hiQ=!hiQ;volScale=hiQ?1.0:0.5;}
@@ -389,7 +389,7 @@ addEventListener('pointerup',()=>drag=false);
 addEventListener('pointermove',e=>{if(!drag)return;
  yaw+=(e.clientX-lx)*0.0035;pitch-=(e.clientY-ly)*0.0035;
  lx=e.clientX;ly=e.clientY;});
-const bs=[document.getElementById('b1'),document.getElementById('b2'),document.getElementById('b3'),document.getElementById('b4'),document.getElementById('b5'),document.getElementById('b6')];
+const bs=[document.getElementById('b1'),document.getElementById('b2'),document.getElementById('b3'),document.getElementById('b5'),document.getElementById('b6')];
 function setMode(m){mode=m;accN=0;document.getElementById('hf').textContent=names[m];
  bs.forEach((b,i)=>b.classList.toggle('on',i===m));}
 bs.forEach((b,i)=>b.addEventListener('click',()=>setMode(i)));
@@ -404,7 +404,7 @@ const poiK=k=>((META.pois||[]).find(q=>q.k===k)||{p:[0,0,0]}).p;
 const TOUR=[
  {n:'COMA CLUSTER · z = 0',t:[0,0,0],r:0.9,orbit:true,d:26,m:0},
  {n:'NGC 4889 · THE BRIGHTEST CLUSTER GALAXY',t:[0,0,0],off:0.075,d:16},
- {n:'INTRACLUSTER LIGHT',t:[0,0,0],off:0.16,d:14,m:5},
+ {n:'INTRACLUSTER LIGHT',t:[0,0,0],off:0.16,d:14,m:4},
  {n:'JELLYFISH GALAXY · RAM-PRESSURE STRIPPING',t:poiK('6'),off:0.06,d:16,m:0},
  {n:'MERGER SHOCK',t:poiK('7'),off:0.16,d:14},
  {n:'COLD FILAMENT',t:poiK('8'),off:0.2,d:14},
@@ -430,7 +430,7 @@ function writeHash(){history.replaceState(null,'','#p='+pos.map(v=>v.toFixed(4))
 (function readHash(){const h=new URLSearchParams(location.hash.slice(1));if(!h.has('p'))return;
  const p=h.get('p').split(',').map(Number);if(p.length!==3||p.some(isNaN))return;
  pos=p;yaw=+h.get('y')||0;pitch=+h.get('pi')||0;vel=[0,0,0];auto=false;
- const m=+h.get('m');if(m>=0&&m<=5&&m!==4)setMode(m);else if(m===4)wantMode=4;})();
+ const m=+h.get('m');if(m>=0&&m<=4&&m!==3)setMode(m);else if(m===3)wantMode=3;})();
 document.getElementById('go').addEventListener('click',()=>document.getElementById('intro').remove());
 let qual=1.0,postOn=true;
 const BENCH=new URLSearchParams(location.search).get('bench');if(BENCH&&new URLSearchParams(location.search).get('vs')==='1')setTimeout(()=>{hiQ=true;volScale=1;},0);const BT={n:0,vol:0,star:0,post:0,tot:0};const BPX=new Uint8Array(4);function bsync(){gl.readPixels(0,0,1,1,gl.RGBA,gl.UNSIGNED_BYTE,BPX);}
@@ -485,12 +485,12 @@ function frameInner(){
  gl.uniform3fv(uS.uPos,pos);gl.uniform3fv(uS.uFwd,f);gl.uniform3fv(uS.uRight,r);gl.uniform3fv(uS.uUp,u);
  gl.uniform2f(uS.uRes,cv.width,cv.height);gl.uniform1f(uS.uGain,Math.min(1.,expo*2.));
  gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE);
- if(mode!==3&&mode!==5)gl.drawArrays(gl.POINTS,0,NS);
+ if(mode!==4)gl.drawArrays(gl.POINTS,0,NS);
  gl.useProgram(pB);gl.bindVertexArray(bvao);
  gl.uniform3fv(uB.uPos,pos);gl.uniform3fv(uB.uFwd,f);gl.uniform3fv(uB.uRight,r);gl.uniform3fv(uB.uUp,u);
  gl.uniform2f(uB.uRes,cv.width,cv.height);gl.uniform1f(uB.uGain,Math.min(1.,expo*2.));
  gl.drawArrays(gl.POINTS,0,NB);
- if(gvao&&mode!==4&&mode!==5){gl.useProgram(pG);gl.bindVertexArray(gvao);
+ if(gvao&&mode!==3&&mode!==4){gl.useProgram(pG);gl.bindVertexArray(gvao);
   gl.uniform3fv(uG.uPos,pos);gl.uniform3fv(uG.uFwd,f);gl.uniform3fv(uG.uRight,r);gl.uniform3fv(uG.uUp,u);
   gl.uniform2f(uG.uRes,cv.width,cv.height);gl.uniform1f(uG.uGain,Math.min(1.,expo*2.));
   gl.drawArrays(gl.POINTS,0,NG);}
