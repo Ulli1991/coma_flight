@@ -130,7 +130,7 @@ void main(){
 const SVS=`#version 300 es
 layout(location=0) in vec3 aP;layout(location=1) in float aL;layout(location=2) in float aG;
 layout(location=3) in float aH;
-uniform vec3 uPos,uFwd,uRight,uUp;uniform vec2 uRes;uniform float uGain;
+uniform vec3 uPos,uFwd,uRight,uUp;uniform vec2 uRes;uniform float uGain,uHalo;
 out vec3 vc;out float vfade;
 void main(){
  vec3 rel=aP-uPos;
@@ -142,9 +142,9 @@ void main(){
  float l=pow(aL,2.5);
  // point masses; colour = age proxy (g-r): young blue -> old gold
  float px=clamp((1.1+1.6*l)/max(z,.05),1.2,4.);
- gl_PointSize=px;
+ gl_PointSize=mix(px, clamp(px*3.6,4.,14.), uHalo);
  vc=mix(vec3(.30,.55,1.),vec3(1.,.52,.26),smoothstep(.05,.85,aG));
- vfade=clamp(uGain*(.08+2.2*l)/(z*z)*0.7,0.,1.);
+ vfade=clamp(uGain*(.08+2.2*l)/(z*z)*0.7,0.,1.)*mix(1.,.16,uHalo);
 }`;
 const SFS=`#version 300 es
 precision highp float;in vec3 vc;in float vfade;out vec4 oc;
@@ -249,7 +249,7 @@ function resize(){const k=Math.min(devicePixelRatio,1.5)*qual;
 addEventListener('resize',resize);resize();
 const uV={},uS={};
 for(const n of['uRho','uAux','uIn','uInOn','uPos','uFwd','uRight','uUp','uRes','uExpo','uMode'])uV[n]=gl.getUniformLocation(pV,n);
-for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain'])uS[n]=gl.getUniformLocation(pS,n);
+for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain','uHalo'])uS[n]=gl.getUniformLocation(pS,n);
 const uG={};for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain','uT'])uG[n]=gl.getUniformLocation(pG,n);
 let tp=performance.now(),fA=0.016,lastQ=0;
 function frame(){
@@ -294,7 +294,9 @@ function frameInner(){
  gl.useProgram(pS);gl.bindVertexArray(vao);
  gl.uniform3fv(uS.uPos,pos);gl.uniform3fv(uS.uFwd,f);gl.uniform3fv(uS.uRight,r);gl.uniform3fv(uS.uUp,u);
  gl.uniform2f(uS.uRes,cv.width,cv.height);gl.uniform1f(uS.uGain,Math.min(1.,expo*2.));
- gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE);gl.drawArrays(gl.POINTS,0,NS);
+ gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE);
+ gl.uniform1f(uS.uHalo,1.);gl.drawArrays(gl.POINTS,0,NS);
+ gl.uniform1f(uS.uHalo,0.);gl.drawArrays(gl.POINTS,0,NS);
  if(gvao){gl.useProgram(pG);gl.bindVertexArray(gvao);
   gl.uniform3fv(uG.uPos,pos);gl.uniform3fv(uG.uFwd,f);gl.uniform3fv(uG.uRight,r);gl.uniform3fv(uG.uUp,u);
   gl.uniform2f(uG.uRes,cv.width,cv.height);gl.uniform1f(uG.uGain,Math.min(1.,expo*2.));
