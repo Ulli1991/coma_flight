@@ -230,8 +230,7 @@ precision highp float;uniform sampler2D uT0,uT1;uniform vec2 uRes;uniform float 
 out vec4 oc;
 void main(){vec2 uv=gl_FragCoord.xy/uRes;
  vec3 c=texture(uT0,uv).rgb+texture(uT1,uv).rgb*0.8;
- vec2 q=uv*2.-1.;
- c*=1.-0.30*smoothstep(.6,1.4,length(q));
+
  float gr2=fract(sin(dot(gl_FragCoord.xy+uTm,vec2(12.98,78.23)))*43758.5)-.5;
  oc=vec4(clamp(c+gr2*0.010,0.,1.),1.);}`;
 const pV=prog(VS,FS), pS=prog(SVS,SFS), pG=prog(GVS,SFS), pB=prog(BVS,SFS), pP=prog(VS,PFS), pC=prog(VS,CFS);
