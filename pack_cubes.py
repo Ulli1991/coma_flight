@@ -361,7 +361,8 @@ def pack_movie():
         rho = u8(logq(gaussian_filter(m, 0.7)), S['rho'][0] + sh, S['rho'][1] + sh)
         t = u8(lt, S['temp'][0], S['temp'][1], 0, 4); sl = u8(logq(L), S['slum'][0] + sh, S['slum'][1] + sh, 0, 4)
         wr('mv/mv_%03d.u8.gz' % snap, np.stack([rho, t, sl], -1)); meta.append(e)
-    meta.sort(key=lambda e: e['s']); json.dump(meta, open(os.path.join(DATA, 'movie.json'), 'w'), separators=(',', ':'))
+    meta.sort(key=lambda e: e['s']); movie_flow(meta)
+    json.dump(meta, open(os.path.join(DATA, 'movie.json'), 'w'), separators=(',', ':'))
     print('wrote movie.json: %d snapshots, z %.2f .. %.2f, total %.0f MB' % (len(meta), meta[0]['z'], meta[-1]['z'], sum(os.path.getsize(os.path.join(DATA, 'mv', 'mv_%03d.u8.gz' % e['s'])) for e in meta) / 1e6))
 
 def sky():
@@ -398,6 +399,32 @@ def pack_temp():
         ok = m > 0; print('snap %d: log T pct 1/10/50/90 = %s, below 1e7 K %.0f%%' % (snap, np.round(np.percentile(lt[ok], [1, 10, 50, 90]), 2), 100 * (lt[ok] < 7).mean()))
         wr(epname(snap, 'temp192.u8.gz'), u8(lt, TEMP2[0], TEMP2[1]))
 
+DMAX = 0.06                  # displacement byte: 128 + d / DMAX * 127, d in cube-width units (9000 ckpc/h) per snapshot interval
+def movie_flow(meta):
+    """the advected time interpolation: for every snapshot the comoving displacement of the gas to the NEXT snapshot,
+    (v - v_core) dt / a on the 48^3 grid (extract_movie.py SNAP more: gas_mV, gas_mv*), as data/mv/dv_SNAP.u8.gz
+    (RGB8, DMAX); and data/movie_gal.json: per snapshot the subhaloes [id, x, y, z, log M*, g-r, SF, log M_BH] so
+    the page can match neighbours by the most-bound particle id and slide the galaxies along the slider"""
+    gal = []; nflow = 0
+    for i, e in enumerate(meta):
+        path = RAW + '/movie/mv_%03d.h5' % e['s']
+        with h5py.File(path, 'r') as f:
+            if 'gal' in f:
+                g = f['gal'][:]; gal.append([[int(r[0]), round(float(r[1]), 4), round(float(r[2]), 4), round(float(r[3]), 4), round(float(r[4]), 2), round(float(r[5]), 2), int(r[6]), round(float(r[7]), 2)] for r in g])
+            else: gal.append([])
+            if 'gas_mV' not in f or i == len(meta) - 1: continue
+            mV = f['gas_mV'][:]; ok = mV > 0; v = np.stack([np.where(ok, f['gas_mv' + c][:] / np.maximum(mV, 1e-30), 0.) for c in 'xyz'], -1)
+        n = mV.shape[0]; c = (np.arange(n) + 0.5) / n * 2 - 1; X_, Y_, Z_ = np.meshgrid(c, c, c, indexing='ij'); core = ok & (np.sqrt(X_ ** 2 + Y_ ** 2 + Z_ ** 2) < 300. / HALF)
+        vc = (v[core] * mV[core, None]).sum(0) / mV[core].sum()          # the frame (progenitor) velocity: mass-weighted core mean
+        zm = 0.5 * (e['z'] + meta[i + 1]['z']); dt = e['t'] - meta[i + 1]['t']   # Gyr to the next snapshot
+        # km/s * Gyr = 1.0227 kpc physical; comoving kpc/h = physical * (1 + z) * h; cube width = 2 HALF ckpc/h
+        d = (v - vc) * dt * 1.0227 * (1 + zm) * 0.681 / (2 * HALF); d[~ok] = 0.
+        u = np.clip(np.round(128 + d / DMAX * 127), 1, 255).astype(np.uint8); u[~ok] = 128
+        wr('mv/dv_%03d.u8.gz' % e['s'], u); e['flow'] = 1; nflow += 1
+        if i % 20 == 0: print('   flow %d: |d| pct 50/99 = %s cube widths (max %.3f), dt %.3f Gyr' % (e['s'], np.round(np.percentile(np.linalg.norm(d[ok], axis=1), [50, 99]), 4), np.abs(d).max(), dt))
+    json.dump(gal, open(os.path.join(DATA, 'movie_gal.json'), 'w'), separators=(',', ':'))
+    print('wrote movie_gal.json (%d snapshots, %d galaxies in all, %.0f kB) and %d flow fields' % (len(gal), sum(len(g) for g in gal), os.path.getsize(os.path.join(DATA, 'movie_gal.json')) / 1e3, nflow))
+
 def pack_mag():
     """magnetic field: mass-weighted |B| [uG] of the non-star-forming gas per 192^3 voxel (extract_cubes.py mag),
     physical uG at every epoch on one log10 scale, 0.001 .. 10 uG (z=0 profile: 3.3 uG within 100 kpc/h, 1.2 at
@@ -427,6 +454,8 @@ if __name__ == '__main__':
     elif a == 'galaxies': galaxies()
     elif a == 'sky': sky()
     elif a == 'temp': pack_temp()
+    elif a == 'flow':   # the flow fields + galaxy tracks only (movie.json exists; its `flow` flags are updated)
+        meta = json.load(open(os.path.join(DATA, 'movie.json'))); movie_flow(meta); json.dump(meta, open(os.path.join(DATA, 'movie.json'), 'w'), separators=(',', ':'))
     elif a == 'kin': pack_kin()
     elif a == 'met': pack_met()
     elif a == 'bvec': pack_bvec()

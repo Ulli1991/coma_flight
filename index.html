@@ -52,7 +52,16 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
 #gi b{color:var(--hud);font-weight:500}#gi .t{color:var(--amber);letter-spacing:.08em;margin-bottom:3px}
 #gm{position:fixed;left:0;top:0;width:26px;height:26px;border:1px solid var(--amber);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%)}
 #pr{left:10px;top:78px;font-size:10.5px;color:var(--hud-dim)}#pr .t{color:var(--hud);font-size:11px;margin-bottom:4px;letter-spacing:.08em}
-#tsw{margin-top:6px;pointer-events:auto}#ts{width:250px;vertical-align:middle;accent-color:#e8a24a;margin:0}#tsz{margin-left:6px;color:var(--amber);font-size:11px}
+#tsw{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);width:min(72vw,960px);pointer-events:auto;text-align:center;padding:8px 14px 6px;background:rgba(5,6,10,.55);border:1px solid var(--line)}
+#tsw .row{display:flex;align-items:center;gap:12px}#tsp{font-size:20px;line-height:1;color:var(--amber);cursor:pointer;width:26px;user-select:none}
+#ts{flex:1;height:22px;margin:0;-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer}
+#ts::-webkit-slider-runnable-track{height:6px;background:linear-gradient(90deg,var(--amber) var(--p,0%),rgba(159,216,232,.5) var(--p,0%));border-radius:3px}
+#ts::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--amber);border:2px solid #05060a;margin-top:-6px;box-shadow:0 0 8px rgba(232,162,74,.8)}
+#ts::-moz-range-track{height:6px;background:rgba(159,216,232,.5);border-radius:3px}#ts::-moz-range-progress{height:6px;background:var(--amber);border-radius:3px}
+#ts::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--amber);border:2px solid #05060a;box-shadow:0 0 8px rgba(232,162,74,.8)}
+#tsz{font-family:'Unica One',ui-monospace,monospace;font-size:19px;letter-spacing:.12em;color:var(--amber);min-width:270px;text-align:right}
+#tst{position:relative;height:14px;margin:2px 26px 0 38px}#tst span{position:absolute;top:0;transform:translateX(-50%);font-size:10px;color:var(--hud-dim);cursor:pointer;letter-spacing:0}#tst span:before{content:'';position:absolute;left:50%;top:-5px;height:5px;border-left:1px solid var(--hud-dim)}#tst span:hover{color:var(--amber)}
+#tsi{font-size:10px;color:var(--hud-dim);margin-top:3px;letter-spacing:.04em}
 #ov{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
 #cbl{margin-top:4px;text-align:right}#cbl .sw{display:inline-block;width:22px;height:7px;vertical-align:middle;border:1px solid var(--line)}
 </style>
@@ -71,11 +80,13 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
 <div class="hud" id="tr">
  <button class="fbtn" id="eb" hidden>E EARTH VIEW</button><button class="fbtn" data-m="3" hidden>1 DM</button><button class="fbtn on" data-m="0">2 DENSITY</button><button class="fbtn" data-m="2">3 TEMP</button><button class="fbtn" data-m="1">4 X-RAY</button><button class="fbtn" data-m="9">5 COMPTON y</button><button class="fbtn" data-m="6">6 ENTROPY</button><button class="fbtn" data-m="8" hidden>7 MAGNETIC</button><button class="fbtn" data-m="5" hidden>8 SHOCKS</button><button class="fbtn" data-m="7" hidden>9 RADIO</button><button class="fbtn" data-m="4">0 ICL</button><button class="fbtn" data-m="10" hidden>K VELOCITY</button><button class="fbtn" data-m="11" hidden>U TURBULENCE</button><button class="fbtn" data-m="12" hidden>M METALS</button><button class="fbtn" data-m="13" hidden>F FARADAY</button><button class="fbtn" data-m="14" hidden>O RADIO HALO</button>
  <div id="ep"></div>
- <div id="tsw" hidden><input type="range" id="ts" min="0" max="1" step="0.002" value="1"><span id="tsz"></span></div>
+
 </div>
 <div class="hud" id="cap" style="left:50%;bottom:64px;transform:translateX(-50%);font-family:Unica One,monospace;font-size:22px;letter-spacing:.2em;color:var(--hud);opacity:0;transition:opacity .6s"></div>
 <div class="hud" id="sb"><div id="sbl" style="width:120px"></div><div id="sbt">--</div></div>
 <div class="hud" id="labels" style="padding:0"></div>
+<div id="tsw" hidden><div class="row"><span id="tsp" title="play / pause (Z)">&#9654;</span><input type="range" id="ts" min="0" max="1" step="0.002" value="1"><span id="tsz"></span></div><div id="tst"></div>
+ <div id="tsi">drag the handle or press Z to play &middot; [ ] one snapshot &middot; + &minus; speed &middot; Y loop &middot; the ticks are the nine full-resolution epochs, click one to switch to it &middot; , . leave the movie</div></div>
 <div class="hud" id="gi" hidden><div class="t"><span id="gin"></span> <span id="gix" style="cursor:pointer;color:var(--hud-dim)">&nbsp;&times;</span></div><div id="gib"></div><div id="gif" style="color:var(--amber);cursor:pointer;margin-top:4px;letter-spacing:.08em">FLY THERE</div></div>
 <div id="gm" hidden></div>
 <div class="hud" id="pr" hidden><div class="t">RADIAL PROFILES</div><canvas id="prc" width="250" height="318"></canvas></div>
@@ -131,8 +142,8 @@ const VS=`#version 300 es
 void main(){vec2 p=vec2(gl_VertexID==1?3.:-1.,gl_VertexID==2?3.:-1.);gl_Position=vec4(p,0.,1.);}`;
 const FS_T=`#version 300 es
 precision highp float;precision highp sampler3D;
-uniform sampler3D uPk,uAux,uIPk,uDM,uIDM,uShk,uIShk,uVel,uMet,uBv,uOut,uMv0,uMv1;uniform vec3 uPos,uFwd,uRight,uUp;
-uniform vec2 uRes;uniform float uExpo,uJit,uInner,uStars,uCold,uFov,uSky;uniform int uMode;uniform vec4 uKt,uPy,uKin,uRm;uniform vec2 uBv0;uniform float uWide,uMovie,uMvT;out vec4 oc;
+uniform sampler3D uPk,uAux,uIPk,uDM,uIDM,uShk,uIShk,uVel,uMet,uBv,uOut,uMv0,uMv1,uMvV;uniform vec3 uPos,uFwd,uRight,uUp;
+uniform vec2 uRes;uniform float uExpo,uJit,uInner,uStars,uCold,uFov,uSky;uniform int uMode;uniform vec4 uKt,uPy,uKin,uRm;uniform vec2 uBv0;uniform float uWide,uMovie,uMvT,uMvD;out vec4 oc;
 // entropy: low (cool core, cold fronts) deep blue -> teal -> green -> high (shocked, outskirts) yellow
 vec3 entmap(float v){
  return v<0.33?mix(vec3(.05,.03,.25),vec3(.13,.30,.55),v/.33)
@@ -227,7 +238,11 @@ void main(){
   float edge=clamp((0.99-redge)/0.15,0.,1.); edge*=edge;
   vec3 pk; float aux;
   // the time slider: two neighbouring 128^3 snapshots (r = density, g = temperature, b = star light) blended in time
-  if(uMovie>0.5){vec3 mv=mix(texture(uMv0,uv).rgb,texture(uMv1,uv).rgb,uMvT); pk=vec3(mv.r,mv.b,0.55); aux=mv.g;}
+  if(uMovie>0.5){
+   // advected: the displacement field (to the next snapshot, cube units, xyz -> the texture's zyx) moves snapshot i
+   // forward by t and snapshot i+1 back by 1-t before the blend, so moving clumps move instead of ghosting
+   vec3 dd=(texture(uMvV,uv).rgb-0.5)*2.*uMvD; dd=dd.zyx;
+   vec3 mv=mix(texture(uMv0,uv-dd*uMvT).rgb,texture(uMv1,uv+dd*(1.-uMvT)).rgb,uMvT); pk=vec3(mv.r,mv.b,0.55); aux=mv.g;}
   else{pk=texture(uPk,uv).rgb; aux=texture(uAux,uv).r;}
   float rr2=redge;
   float wig=clamp((0.235-rr2)/0.07,0.,1.)*uInner;
@@ -572,6 +587,9 @@ addEventListener('keydown',e=>{keys[e.code]=1;accN=0;
  if(e.code.startsWith('Digit')){const m=ORDER[(+e.code.slice(5)+9)%10];if(modeOK(m))setMode(m);}
  if(e.code==='Comma'){stopTimelapse();stopMovie();setEpoch(ep-1);}if(e.code==='Period'){stopTimelapse();stopMovie();setEpoch(ep+1);}
  if(e.code==='KeyZ'){if(MV){if(mvOn&&mvPlay)mvPlay=false;else{if(!mvOn){mvT=0;mvReq=1;}else if(mvT>=MV.length-1)mvT=0;mvPlay=true;}}else if(tlActive)stopTimelapse();else timelapse();}
+ if(mvOn&&MV){if(e.code==='BracketLeft'){mvPlay=false;mvT=Math.max(0,Math.round(mvT)-1);}if(e.code==='BracketRight'){mvPlay=false;mvT=Math.min(MV.length-1,Math.round(mvT)+1);}
+  if(e.code==='Equal'||e.code==='NumpadAdd'){mvSpeed=Math.min(4,mvSpeed*1.5);showCap('SPEED ×'+mvSpeed.toFixed(1));}if(e.code==='Minus'||e.code==='NumpadSubtract'){mvSpeed=Math.max(0.2,mvSpeed/1.5);showCap('SPEED ×'+mvSpeed.toFixed(1));}
+  if(e.code==='KeyY'){mvLoop=!mvLoop;showCap(mvLoop?'LOOP ON':'LOOP OFF');}}
  if(e.code==='KeyR'){if(earth)toggleEarth();pos=[0,0.10,-0.88];yaw=0;pitch=-0.02;vel=[0,0,0];auto=false;stopMovie();}
  if(e.code==='KeyT'){auto=!auto;atau=0;}
  if(e.code==='KeyB'){bloomOn=!bloomOn;showCap(bloomOn?'BLOOM ON':'BLOOM OFF');}
@@ -686,20 +704,45 @@ function toggleEarth(){if(!SKY)return;earth=!earth;accN=0;document.getElementByI
 function earthBasis(){const n=SKY.n,u=SKY.up;return [n.slice(),[n[1]*u[2]-n[2]*u[1],n[2]*u[0]-n[0]*u[2],n[0]*u[1]-n[1]*u[0]],u.slice()];}   // f, r = n x up (west: east on the left), u
 // ---- the time slider: every snapshot 27 .. 139 as a 128^3 cube (extract_movie.py, pack_cubes.py movie), streamed
 // around the slider position, two neighbours blended in the shader; the tracked galaxies leave their orbits ----
-let MV=null,mvOn=false,mvT=0,mvPlay=false,mvReq=0,mvShow=null,mvPrev=0;const MVC={},MVOK=new Set([0,2,6,9]),MVRATE=3.1;   // snapshots per second when playing
+let MV=null,mvOn=false,mvT=0,mvPlay=false,mvReq=0,mvShow=null,mvPrev=0,mvSpeed=1,mvLoop=false,MVG=null;const MVC={},MVOK=new Set([0,2,6,9]),MVRATE=3.1,MVDMAX=0.06;   // snapshots per second when playing
+// the galaxy tracks: data/movie_gal.json = per snapshot [id, x, y, z, log M*, g-r, SF, log M_BH]; neighbours are matched by id
+fetch('data/movie_gal.json').then(r=>r.ok?r.json():null).then(g=>{if(g)MVG=g.map(arr=>{const m=new Map();for(const q of arr)m.set(q[0],q);return m;});}).catch(()=>{});
+let mvGalBuf=null,mvGalVao=null,mvBhBuf=null,mvBhVao=null,mvGalN=0,mvBhN=0,mvGalT=-1;
+function mvGalaxies(){   // rebuild the sprite buffers for the current slider time: matched galaxies slide, unmatched fade at the ends
+ if(!MVG||mvGalT===mvT)return;mvGalT=mvT;const i0=Math.floor(mvT),i1=Math.min(i0+1,MV.length-1),f=mvT-i0,A=MVG[i0]||new Map(),B=MVG[i1]||new Map();
+ const rec=[],bh=[];const push=(p,ms,gr,sf,mb,w)=>{const l=Math.min(1,Math.max(0,(ms-9)/3.5))*w;
+  rec.push([p,Math.round(20+235*Math.pow(l,0.7)),Math.round(255*Math.min(1,Math.max(0,(gr-SCL.scol[0])/(SCL.scol[1]-SCL.scol[0])))),sf?60:90]);
+  if(mb>6)bh.push([p,Math.min(1,Math.max(0.01583,(mb-5.833)/4.419))*w]);};
+ for(const [id,a] of A){const b=B.get(id);if(b){const p=[a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f,a[3]+(b[3]-a[3])*f];push(p,a[4]+(b[4]-a[4])*f,a[5],a[6],a[7],1);}else push([a[1],a[2],a[3]],a[4],a[5],a[6],a[7],1-f);}
+ for(const [id,b] of B)if(!A.has(id))push([b[1],b[2],b[3]],b[4],b[5],b[6],b[7],f);
+ const buf=new Uint8Array(rec.length*10),dv=new DataView(buf.buffer);
+ rec.forEach((r,k)=>{for(let j=0;j<3;j++)dv.setInt16(k*10+2*j,Math.max(-32768,Math.min(32767,Math.round(r[0][j]*32767))),true);buf[k*10+6]=r[1];buf[k*10+7]=r[2];buf[k*10+8]=r[3];});
+ if(!mvGalVao){mvGalVao=gl.createVertexArray();gl.bindVertexArray(mvGalVao);mvGalBuf=rawbuf(buf,10,SREC);}else{gl.bindBuffer(gl.ARRAY_BUFFER,mvGalBuf);gl.bufferData(gl.ARRAY_BUFFER,buf,gl.DYNAMIC_DRAW);}
+ mvGalN=rec.length;
+ const bp=new Float32Array(bh.length*3),bm=new Float32Array(bh.length);bh.forEach((b,k)=>{bp.set(b[0],k*3);bm[k]=b[1];});
+ if(!mvBhVao){mvBhVao=gl.createVertexArray();gl.bindVertexArray(mvBhVao);mvBhBuf=[buf0(0,bp,3),buf0(1,bm,1)];}
+ else{gl.bindBuffer(gl.ARRAY_BUFFER,mvBhBuf[0]);gl.bufferData(gl.ARRAY_BUFFER,bp,gl.DYNAMIC_DRAW);gl.bindBuffer(gl.ARRAY_BUFFER,mvBhBuf[1]);gl.bufferData(gl.ARRAY_BUFFER,bm,gl.DYNAMIC_DRAW);}
+ mvBhN=bh.length;}
+function buf0(loc,arr,n){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,arr,gl.DYNAMIC_DRAW);gl.enableVertexAttribArray(loc);gl.vertexAttribPointer(loc,n,gl.FLOAT,false,0,0);return b}
 fetch('data/movie.json').then(r=>r.ok?r.json():null).then(m=>{if(!m||m.length<2)return;MV=m;mvT=m.length-1;const t=document.getElementById('ts');t.max=m.length-1;t.value=mvT;
+ {const w=document.getElementById('tst');EPOCHS.forEach((q,j)=>{const k=m.findIndex(e=>e.s===q.s);if(k<0)return;const e=document.createElement('span');e.style.left=(100*k/(m.length-1)).toFixed(1)+'%';e.textContent=q.z;e.title='z = '+q.z+': click for the full-resolution epoch';
+  e.addEventListener('click',()=>{stopMovie();setEpoch(j);});w.appendChild(e);});}
  document.getElementById('tsz').textContent='z '+m[m.length-1].z;
  const b=document.createElement('span');b.className='epb';b.id='mvb';b.textContent='MOVIE';b.title='all 113 snapshots on a time slider (Z plays)';b.addEventListener('click',()=>{if(mvOn)stopMovie();else mvReq=1;});document.getElementById('ep').appendChild(b);
- t.addEventListener('input',()=>{mvT=+t.value;mvPlay=false;if(!mvOn)mvReq=1;});}).catch(()=>{});
-function mvFetch(i){if(!MV||MVC[i]||i<0||i>=MV.length)return;MVC[i]={};
- ugz('data/mv/mv_'+String(MV[i].s).padStart(3,'0')+'.u8.gz').then(a=>{if(MVC[i])MVC[i].tex=vol3d(a,128,3);}).catch(()=>{delete MVC[i];});}
+ t.addEventListener('input',()=>{mvT=+t.value;mvPlay=false;if(!mvOn)mvReq=1;});
+ document.getElementById('tsp').addEventListener('click',()=>{if(mvPlay)mvPlay=false;else{if(mvT>=MV.length-1)mvT=0;mvPlay=true;}});}).catch(()=>{});
+function mvFetch(i){if(!MV||MVC[i]||i<0||i>=MV.length)return;MVC[i]={};const nm=String(MV[i].s).padStart(3,'0');
+ ugz('data/mv/mv_'+nm+'.u8.gz').then(a=>{if(MVC[i])MVC[i].tex=vol3d(a,128,3);}).catch(()=>{delete MVC[i];});
+ if(MV[i].flow)ugz('data/mv/dv_'+nm+'.u8.gz').then(a=>{if(MVC[i])MVC[i].flow=vol3d(a,48,3);}).catch(()=>{});}
 const mvHas=i=>!!(MVC[i]&&MVC[i].tex);
 function mvReady(t){const i0=Math.floor(t);return mvHas(i0)&&mvHas(Math.min(i0+1,MV.length-1));}
 function mvUpdate(){const i0=Math.floor(mvT),i1=Math.min(i0+1,MV.length-1);
  for(let k=0;k<=8;k++){mvFetch(i0+k);if(k<3)mvFetch(i0-k);}   // ahead in time first, a little behind
- const keys=Object.keys(MVC).map(Number);if(keys.length>26)for(const k of keys)if(Math.abs(k-mvT)>12&&MVC[k].tex){gl.deleteTexture(MVC[k].tex);delete MVC[k];}
- if(mvHas(i0)&&mvHas(i1))mvShow=[MVC[i0].tex,MVC[i1].tex,mvT-i0];else showCap('LOADING z = '+MV[i0].z);
- const e=MV[Math.round(mvT)];document.getElementById('ts').value=mvT;document.getElementById('tsz').textContent='z '+e.z.toFixed(2)+' · '+e.t.toFixed(1)+' Gyr ago';}
+ const keys=Object.keys(MVC).map(Number);if(keys.length>26)for(const k of keys)if(Math.abs(k-mvT)>12&&MVC[k].tex){gl.deleteTexture(MVC[k].tex);if(MVC[k].flow)gl.deleteTexture(MVC[k].flow);delete MVC[k];}
+ if(mvHas(i0)&&mvHas(i1))mvShow=[MVC[i0].tex,MVC[i1].tex,mvT-i0,MVC[i0].flow||null];else showCap('LOADING z = '+MV[i0].z);
+ mvGalaxies();
+ const e=MV[Math.round(mvT)],t=document.getElementById('ts');t.value=mvT;t.style.setProperty('--p',(100*mvT/(MV.length-1)).toFixed(1)+'%');
+ document.getElementById('tsz').textContent='z = '+e.z.toFixed(2)+' · '+(e.t>0.05?e.t.toFixed(1)+' GYR AGO':'TODAY');document.getElementById('tsp').innerHTML=mvPlay?'&#10074;&#10074;':'&#9654;';}
 function mvPos(name){if(!MV||!mvOn)return null;const i0=Math.floor(mvT),i1=Math.min(i0+1,MV.length-1),f=mvT-i0,a=MV[i0].lab&&MV[i0].lab[name],b=MV[i1].lab&&MV[i1].lab[name];
  if(!a||!b)return a||b||null;return [0,1,2].map(k=>a[k]+(b[k]-a[k])*f);}
 function stopMovie(){if(mvOn){mvPlay=false;mvReq=-1;}}
@@ -794,7 +837,7 @@ const LABELS=[{n:'NGC 4889 · BCG',p:[0,0,0]},{n:'NGC 4874',p:[0.0293,-0.0716,-0
  .concat((META.pois||[]).filter(q=>q.k!=='5'&&q.k!=='9').map(q=>({n:q.n,p:q.p,dim:true,d:q.d})));
 {const w=document.getElementById('labels');for(const l of LABELS){const e=document.createElement('div');e.className='lab';e.innerHTML='<span>'+l.n+'</span><i></i>';if(l.dim)e.style.color='var(--hud-dim)';
  e.addEventListener('click',()=>{if(l.cur)goSight(l.cur,l.d||0.075,l.n);});w.appendChild(e);l.el=e;l.tx=e.firstChild;l.ld=e.lastChild;}}
-const HUDS=['tl','tr','bl','br','cb','sb','gi','pr'];   // HUD panels the labels keep clear of
+const HUDS=['tl','tr','bl','br','cb','sb','gi','pr','tsw'];   // HUD panels the labels keep clear of
 // ---- galaxy inspector: click a galaxy at z = 0 for its subhalo catalogue entry (data/galaxies.json, pack_cubes.py galaxies) ----
 let GAL=null,gsel=null;fetch('data/galaxies.json').then(r=>r.ok?r.json():null).then(g=>{GAL=g;}).catch(()=>{});
 function galName(g){const l=LABELS.find(l=>!l.dim&&Math.hypot(l.p[0]-g.p[0],l.p[1]-g.p[1],l.p[2]-g.p[2])<0.02);return l?l.n:'GALAXY · SUBHALO '+g.i;}
@@ -857,7 +900,7 @@ function resize(){const k=BENCH?1:Math.min(devicePixelRatio,1.5)*qual;
 addEventListener('resize',resize);resize();
 const uS={};
 const uV={};
-for(const n of['uPk','uAux','uIPk','uDM','uIDM','uShk','uIShk','uPos','uFwd','uRight','uUp','uRes','uExpo','uJit','uStars','uCold','uMode','uInner','uKt','uPy','uVel','uMet','uBv','uOut','uKin','uRm','uBv0','uWide','uMv0','uMv1','uMovie','uMvT','uFov','uSky'])uV[n]=gl.getUniformLocation(pV,n);
+for(const n of['uPk','uAux','uIPk','uDM','uIDM','uShk','uIShk','uPos','uFwd','uRight','uUp','uRes','uExpo','uJit','uStars','uCold','uMode','uInner','uKt','uPy','uVel','uMet','uBv','uOut','uKin','uRm','uBv0','uWide','uMv0','uMv1','uMovie','uMvT','uFov','uSky','uMvV','uMvD'])uV[n]=gl.getUniformLocation(pV,n);
 for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain','uFov'])uS[n]=gl.getUniformLocation(pS,n);
 for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain','uFov'])uB[n]=gl.getUniformLocation(pB,n);
 for(const n of['uT0','uRes','uOp','uDir'])uPp[n]=gl.getUniformLocation(pP,n);
@@ -908,7 +951,7 @@ function frameInner(){
  if(pendingMode>=0){if(pendingMode!==mode){holdFrame(now,500);applyMode(pendingMode);}pendingMode=-1;}
  if(mvReq){holdFrame(now,600);if(mvReq>0){mvOn=true;mvPrev=mode;if(!MVOK.has(mode))applyMode(0);select(null);showCap('TIME SLIDER · Z PLAYS · , . BACK TO THE EPOCHS');}else{mvOn=false;mvShow=null;if(MVOK.has(mode)&&!MVOK.has(mvPrev)&&modeOK(mvPrev))applyMode(mvPrev);}
   document.getElementById('tsw').hidden=!mvOn;document.getElementById('mvb').classList.toggle('on',mvOn);EPOCHS.forEach((r,j)=>r.el.classList.toggle('on',!mvOn&&j===ep));mvReq=0;accN=0;}
- if(mvOn){if(mvPlay){const nx=Math.min(mvT+dt*MVRATE,MV.length-1);if(mvReady(nx))mvT=nx;if(mvT>=MV.length-1){mvPlay=false;mvReq=-1;}}
+ if(mvOn){if(mvPlay){const nx=Math.min(mvT+dt*MVRATE*mvSpeed,MV.length-1);if(mvReady(nx))mvT=nx;if(mvT>=MV.length-1){if(mvLoop)mvT=0;else{mvPlay=false;mvReq=-1;}}}
   if(mvT!==mvLast){accN=0;mvLast=mvT;}mvUpdate();}
  const fadeK=Math.min(1,(now-fadeT0)/fadeMs);
  let bt0,bt1,bt2,bt3;
@@ -920,6 +963,7 @@ function frameInner(){
  gl.uniform2f(uS.uRes,cv.width,cv.height);gl.uniform1f(uS.uGain,Math.min(1.,expo*2.)*fadeK*(earth?SKY.Du*SKY.Du*0.35:1));gl.uniform1f(uS.uFov,FOV);
  gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE);
  // galaxy sprites: the z=0 set, or the epoch's own set when it shipped one
+ if(mvOn&&showStars&&mvGalVao&&mvGalN){gl.bindVertexArray(mvGalVao);gl.drawArrays(gl.POINTS,0,mvGalN);}
  if(!NOGAL.has(mode)&&showStars&&!mvOn){if(ep===EP0)gl.drawArrays(gl.POINTS,0,NS);
   else if(EPOCHS[ep].svao){gl.bindVertexArray(EPOCHS[ep].svao);gl.drawArrays(gl.POINTS,0,EPOCHS[ep].ns);}}
  gl.useProgram(pB);gl.bindVertexArray(bvao);
@@ -928,6 +972,7 @@ function frameInner(){
  // black holes and cold gas: the z=0 sets, or the epoch's own (meta.json / ep*_gas.bin.gz) when it shipped them
  const EQ=EPOCHS[ep];
  if(showStars&&!mvOn){if(ep===EP0)gl.drawArrays(gl.POINTS,0,NB);else if(EQ.bh){gl.bindVertexArray(EQ.bh.vao);gl.drawArrays(gl.POINTS,0,EQ.bh.n);}}
+ if(mvOn&&showStars&&mvBhVao&&mvBhN){gl.bindVertexArray(mvBhVao);gl.drawArrays(gl.POINTS,0,mvBhN);}
  const gv=ep===EP0?gvao:EQ.gvao,gn=ep===EP0?NG:EQ.ng;
  if(gv&&SPRITES(mode)&&showCold&&!mvOn){gl.useProgram(pG);gl.bindVertexArray(gv);
   gl.uniform3fv(uG.uPos,pos);gl.uniform3fv(uG.uFwd,f);gl.uniform3fv(uG.uRight,r);gl.uniform3fv(uG.uUp,u);
@@ -948,7 +993,8 @@ function frameInner(){
  {const zz=EPOCHS[ep].z;gl.uniform4f(uV.uKin,SCL.vel,VLIM,3.24*(1+zz)*(1+zz),0.);gl.uniform4f(uV.uRm,NE0,4500/0.681/(1+zz),RMLIM,0.);
   gl.uniform2f(uV.uBv0,SCL.bvec[0],Math.asinh(SCL.bvec[1]/SCL.bvec[0]));gl.uniform1f(uV.uWide,wide?1.:0.);}
  const mvUse=mvOn&&mvShow;gl.uniform1f(uV.uMovie,mvUse?1.:0.);
- if(mvUse){gl.activeTexture(gl.TEXTURE15);gl.bindTexture(gl.TEXTURE_3D,mvShow[0]);gl.uniform1i(uV.uMv0,15);gl.activeTexture(gl.TEXTURE6);gl.bindTexture(gl.TEXTURE_3D,mvShow[1]);gl.uniform1i(uV.uMv1,6);gl.uniform1f(uV.uMvT,mvShow[2]);}
+ if(mvUse){gl.activeTexture(gl.TEXTURE15);gl.bindTexture(gl.TEXTURE_3D,mvShow[0]);gl.uniform1i(uV.uMv0,15);gl.activeTexture(gl.TEXTURE6);gl.bindTexture(gl.TEXTURE_3D,mvShow[1]);gl.uniform1i(uV.uMv1,6);gl.uniform1f(uV.uMvT,mvShow[2]);
+  gl.activeTexture(gl.TEXTURE7);gl.bindTexture(gl.TEXTURE_3D,mvShow[3]||mvShow[0]);gl.uniform1i(uV.uMvV,7);gl.uniform1f(uV.uMvD,mvShow[3]?MVDMAX:0.);}
  gl.uniform1f(uV.uInner,ep===EP0&&!mvUse?1.:0.);gl.uniform4f(uV.uKt,KT[0],KT[1],KT[2],0.);gl.uniform4f(uV.uPy,PY[0],PY[1],PY[2],PY[3]);
  gl.uniform3fv(uV.uPos,pos);gl.uniform3fv(uV.uFwd,f);gl.uniform3fv(uV.uRight,r);gl.uniform3fv(uV.uUp,u);
  gl.uniform1f(uV.uJit,still?(accN%64)*3.7:0.);gl.uniform1f(uV.uStars,showStars?1.:0.);gl.uniform1f(uV.uCold,showCold?1.:0.);gl.uniform1f(uV.uFov,FOV);gl.uniform1f(uV.uSky,showStars&&!earth?1.:0.);
@@ -1041,15 +1087,9 @@ function frameInner(){
    boxes.push([c.sx-w/2-5,c.sy-16-dy-th-4,c.sx+w/2+5,c.sy-16-dy+4]);
    c.l.ld.style.height=(14+dy)+'px';c.l.el.style.pointerEvents='auto';
    c.l.el.style.transform='translate('+c.sx.toFixed(0)+'px,'+c.sy.toFixed(0)+'px) translate(-50%,-100%)';c.l.el.style.opacity=c.op.toFixed(2);}}
- // orbits of the tracked galaxies on the time slider (the overlay canvas): the past solid, the future faint
+ // the overlay canvas (the Earth view draws on it; the movie's tracked galaxies are labelled instead of drawn as orbits)
  {const ov=document.getElementById('ov');if(ov.width!==innerWidth||ov.height!==innerHeight){ov.width=innerWidth;ov.height=innerHeight;}
-  const c=ov.getContext('2d');c.clearRect(0,0,ov.width,ov.height);
-  if(mvOn&&MV){const asp=innerWidth/innerHeight,proj=q=>{const rel=[q[0]-pos[0],q[1]-pos[1],q[2]-pos[2]];const z=rel[0]*f[0]+rel[1]*f[1]+rel[2]*f[2];if(z<0.02)return null;
-    return [((rel[0]*r[0]+rel[1]*r[1]+rel[2]*r[2])/(z*FOV)/asp+1)/2*innerWidth,(1-(rel[0]*u[0]+rel[1]*u[1]+rel[2]*u[2])/(z*FOV))/2*innerHeight];};
-   c.lineWidth=1;for(const l of LABELS){if(l.dim)continue;let prev=null;
-    for(let k=0;k<MV.length;k++){const q=MV[k].lab&&MV[k].lab[l.n],pt=q?proj(q):null;
-     if(pt&&prev){c.strokeStyle=k<=mvT?'rgba(159,216,232,.55)':'rgba(159,216,232,.15)';c.beginPath();c.moveTo(prev[0],prev[1]);c.lineTo(pt[0],pt[1]);c.stroke();}
-     prev=pt;}}}}
+  ov.getContext('2d').clearRect(0,0,ov.width,ov.height);}
  if(earth&&SKY){const c=document.getElementById('ov').getContext('2d'),asp=innerWidth/innerHeight,E=SKY.east,U=SKY.up,N=SKY.n;
   c.strokeStyle='rgba(232,162,74,.85)';c.lineWidth=1;
   for(const g of SKY.gal){const tx=Math.tan(g[0]*Math.PI/180),ty=Math.tan(g[1]*Math.PI/180);const d=[N[0]+tx*E[0]+ty*U[0],N[1]+tx*E[1]+ty*U[1],N[2]+tx*E[2]+ty*U[2]];

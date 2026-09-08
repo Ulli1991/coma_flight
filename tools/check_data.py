@@ -22,7 +22,11 @@ for s, hi in snaps:
 # the time slider: every snapshot listed in movie.json as a 128^3 RGB cube; the galaxy table
 if os.path.exists(D + '/data/movie.json'):
     mv = json.load(open(D + '/data/movie.json')); print('movie.json: %d snapshots, z %.2f .. %.2f, labels in %d' % (len(mv), mv[0]['z'], mv[-1]['z'], sum('lab' in e for e in mv)))
-    for e in mv: files['mv/mv_%03d.u8.gz' % e['s']] = 3 * 128 ** 3
+    for e in mv:
+        files['mv/mv_%03d.u8.gz' % e['s']] = 3 * 128 ** 3
+        if e.get('flow'): files['mv/dv_%03d.u8.gz' % e['s']] = 3 * 48 ** 3
+    if os.path.exists(D + '/data/movie_gal.json'):
+        mg = json.load(open(D + '/data/movie_gal.json')); print('movie_gal.json: %d snapshots, galaxies per snapshot %d .. %d' % (len(mg), min(len(g) for g in mg), max(len(g) for g in mg)))
 if os.path.exists(D + '/data/galaxies.json'):
     gal = json.load(open(D + '/data/galaxies.json')); print('galaxies.json: %d subhaloes, brightest %s' % (len(gal), gal[0]))
 if os.path.exists(D + '/data/sky.json'):

@@ -192,6 +192,18 @@ Sept 8, fourth round ("beyond state of the art"): new physics, the cosmic web, t
   `movie` was repacked. Shader thresholds are now physical: cold tint below ~1e6 K, hot-wind tint 5e7..7e7 K,
   the temperature ramp 3e6 .. 9e7 K, entropy and Compton y only above ~2e6 K. The cyan tint at z = 0 therefore
   marks truly cold gas (1e4 K tails and filaments), no longer everything below 1.7e7 K.
+- Movie, second version (the user: "good prototype but this needs to be improved", items 1-4 of the list, within
+  ~15 MB): (1) advected interpolation -- `extract_movie.py SNAP more` adds a 48^3 mass-weighted gas velocity and
+  the subhalo table to each mv file, `pack_cubes.py flow` (also run by `movie`) writes `data/mv/dv_SNAP.u8.gz`
+  = the displacement (v - v_core) dt / a to the next snapshot in cube-width units (RGB8, DMAX = 0.06) and the
+  shader moves snapshot i forward by t and i+1 back by 1-t before blending, so clumps move instead of ghosting;
+  (2) resolution stays 128^3 (a bump triples the data; judge after seeing the advection); (3) galaxies from the
+  subhalo catalogue of every snapshot (`data/movie_gal.json`: id of the most-bound particle, position, log M*,
+  g-r, SF flag, log M_BH), matched between neighbours by that id and slid along the slider, drawn with the
+  galaxy-sprite and black-hole programs (size by M*, colour by g-r), unmatched ones fade in / out; the tracked
+  names move with their galaxies, the orbit lines are gone (the user preferred labels); (4) the timeline: a wide
+  bar at the bottom centre with a play button, amber progress, a glowing handle, a large z / lookback readout,
+  ticks for the nine full-resolution epochs (click = switch to it), [ ] step, + - speed, Y loop.
 - Floors at high redshift (audit of the z = 1.95 cubes against z = 0): X-ray 8% nonzero (core byte 184), DM 38%, metals
   11%, star light 0.5%, sigma 18% -- the cores sit mid-scale, only the outskirts fall below, physical. Shocks: 56% of
   the z = 2 voxels carry a Mach number vs 10% today (accretion everywhere); if the shock mode is a wall there, raise
