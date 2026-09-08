@@ -1,6 +1,7 @@
 #!/bin/bash -l
 # Cube extraction for the Coma Virtual Observatory, one snapshot per job:
-#   for s in 139 27 56 77 109 121; do sbatch --export=SNAP=$s -J cubes_$s run_cubes.sbatch; done
+#   for s in 139 27 41 56 65 77 91 109 121; do sbatch --export=SNAP=$s -J cubes_$s run_cubes.sbatch; done
+#   sbatch --export=ALL,SNAP=109,PARTS=sp+hires -J cubes_109 run_cubes.sbatch   # add parts to an existing raw file
 #SBATCH -o /ptmp/uli/coma_cubes/slurm_%x_%j.out
 #SBATCH -e /ptmp/uli/coma_cubes/slurm_%x_%j.out
 #SBATCH -D ./
@@ -14,4 +15,4 @@ module purge
 module load anaconda/3/2023.03
 export OMP_NUM_THREADS=1
 export SLURM_CPUS_PER_TASK=16
-python extract_cubes.py ${SNAP:?set SNAP}
+python extract_cubes.py ${SNAP:?set SNAP} ${PARTS}

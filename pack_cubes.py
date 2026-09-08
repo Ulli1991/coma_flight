@@ -3,8 +3,12 @@
 #   python pack_cubes.py check   -> centre / axis-order check of raw_139.h5 against the shipped rho384
 #   python pack_cubes.py calib   -> the check, then fits the u8 scalings of the existing z=0 cubes
 #                                   (data/*.u8.gz) against raw_139.h5 and writes cube_scales.json
+#   python pack_cubes.py calib_sp -> fits the galaxy-sprite encoding (sp_lum, sp_col, sp_min) of the shipped
+#                                   data/stars.bin.gz against the star particles of raw_139.h5 (sp_* datasets)
 #   python pack_cubes.py 139     -> data/dm384.u8.gz idm192.u8.gz shock384.u8.gz ishock192.u8.gz
 #   python pack_cubes.py 27      -> data/ep027_{pk,xray,temp,dm,shock}192.u8.gz (same scales as z=0)
+#                                   + ep027_stars.bin.gz (galaxy sprites) + ep027_pk384.u8.gz where the raw
+#                                   file has the 384^3 grids (snapshots 109, 121)
 # All cubes are C-ordered (x,y,z) uint8; the page samples them as uv.zyx.
 import sys, os, json, gzip, numpy as np, h5py
 from scipy.ndimage import gaussian_filter, maximum_filter
@@ -12,6 +16,8 @@ RAW = '/ptmp/uli/coma_cubes'; DATA = os.path.join(os.path.dirname(os.path.abspat
 SC = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cube_scales.json')
 LOG8 = np.log10(8.)          # a 192^3 voxel holds 8x the mass of a 384^3 voxel
 DMF = 28                     # DM shader: smoothstep(0.12,1.0,dd) -> u8 < 31 is invisible
+HALF = 4500.                 # sprite positions: int16 = pos / HALF * 32767
+SP_CAP = 1200000             # at most this many sprites per epoch (~7 MB gzipped)
 
 def rd(name, n):
     return np.frombuffer(gzip.decompress(open(os.path.join(DATA, name), 'rb').read()), np.uint8).reshape(n, n, n)
@@ -67,7 +73,7 @@ def check(f=None):
     return ok
 
 def calib():
-    f = h5py.File(RAW + '/raw_139.h5', 'r'); S = {}
+    f = h5py.File(RAW + '/raw_139.h5', 'r'); S = json.load(open(SC)) if os.path.exists(SC) else {}   # keep sp_* of calib_sp
     if not check(f): sys.exit('centre / axis check failed')
     print('density (384 mass histogram vs rho384; also with 1-voxel smoothing):')
     m384 = f['gas_m384'][:]; ref = rd('rho384.u8.gz', 384)
@@ -103,6 +109,64 @@ def shock_pack(M, ed, S, sh=0.):
     g = (e * 255 + .5).astype(np.uint8); g[r == 0] = 0; g = (g // 16) * 16              # brightness modulation only: 16 levels
     return np.stack([r, g], axis=-1)
 
+def rd_stars(name):
+    """the page's sprite record: int16 xyz (/32767*HALF ckpc/h), bytes lum, g-r, h, pad -> (n, 10) uint8"""
+    raw = gzip.decompress(open(name, 'rb').read()); n = len(raw) // 10
+    return np.frombuffer(raw, np.uint8).reshape(n, 10)
+
+def stars_pack(f, S):
+    """galaxy sprites of one snapshot in the stars.bin.gz record format, on the calibrated z=0 encoding:
+    star particles with log L_r >= sp_min (the z=0 threshold), brightest SP_CAP if there are more"""
+    lr = f['sp_lr'][:]; keep = lr >= S['sp_min']
+    if keep.sum() > SP_CAP: keep = lr >= np.sort(lr)[-SP_CAP]
+    pos = f['sp_pos'][:][keep]; lr = lr[keep]; gr = f['sp_gr'][:][keep]; n = len(lr)
+    rec = np.zeros((n, 10), np.uint8)
+    rec[:, :6] = np.clip(np.round(pos / HALF * 32767.), -32768, 32767).astype('<i2').view(np.uint8).reshape(n, 6)
+    rec[:, 6] = qmap(lr, S['sp_lum']); rec[:, 7] = qmap(gr, S['sp_col']); rec[:, 8] = 90
+    print('  sprites: %d star particles (log L_r >= %.3f)' % (n, lr.min()), flush=True)
+    return rec
+
+QK = [0, 0.1, 0.5, 1, 2, 5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 98, 99, 99.5, 99.9, 99.99, 100]   # knot quantiles
+
+def qmap(x, table):
+    """monotone piecewise-linear map x -> byte through the (x, byte) knots of cube_scales.json"""
+    t = np.asarray(table); return (np.interp(x, t[:, 0], t[:, 1]) + 0.5).astype(np.uint8)
+
+def qq_table(x, y, name):
+    """quantile-quantile lookup: the byte distribution of the shipped file as a function of the particle
+    quantity, matched quantile by quantile (both sorted); knots at QK, ties in x broken by a tiny slope"""
+    x = np.sort(x.astype(np.float64)); y = np.sort(y.astype(np.float64))
+    kx = np.percentile(x, QK); ky = np.percentile(y, QK)
+    kx = np.maximum.accumulate(kx + np.arange(len(kx)) * 1e-6)
+    print('  %-4s knots (x -> byte):' % name, ' '.join('%.3g:%.0f' % (a, b) for a, b in zip(kx, ky)))
+    return [[float(a), float(b)] for a, b in zip(kx, ky)]
+
+def calib_sp():
+    """The shipped stars.bin.gz (built on viper) holds the 939637 brightest star particles; its lum and g-r
+    bytes are noisy, non-linear functions of the particle's own r-band luminosity and g-r (r ~ 0.7, 0.8 per
+    particle).  Match the *distributions* instead: luminosity threshold = the n-th brightest particle at
+    z=0, and a quantile-quantile lookup table byte(log L_r), byte(g-r) over those particles, so an epoch
+    file drawn with the same shader looks like the z=0 file at z=0 (same byte histograms)."""
+    S = json.load(open(SC)); f = h5py.File(RAW + '/raw_139.h5', 'r')
+    ship = rd_stars(os.path.join(DATA, 'stars.bin.gz')); n = len(ship)
+    lr = f['sp_lr'][:]; gr = f['sp_gr'][:]
+    order = np.argsort(lr)[::-1][:n]; thr = float(lr[order[-1]])
+    print('shipped sprites %d, threshold log L_r = %.4f (of %d particles with log L_r >= %.1f)' % (n, thr, len(lr), lr.min()))
+    S['sp_lum'] = qq_table(lr[order], ship[:, 6], 'lum'); S['sp_col'] = qq_table(gr[order], ship[:, 7], 'g-r'); S['sp_min'] = thr; S['sp_n'] = n
+    json.dump(S, open(SC, 'w'), indent=1); print('wrote', SC)
+    # how close is the regenerated z=0 file to the shipped one?  histogram of the bytes and a 96^3 map of the
+    # sprite light (0.08 + 2.2 (byte/255)^2.5, as the shader) -- correlation of the two maps
+    new = stars_pack(f, S); open(RAW + '/stars139_regen.bin.gz', 'wb').write(gzip.compress(new.tobytes(), 9))
+    for k, nm in ((6, 'lum'), (7, 'g-r')):
+        print('  %s byte pct 1/10/50/90/99: shipped %s  regenerated %s' % (nm, np.percentile(ship[:, k], [1, 10, 50, 90, 99]), np.percentile(new[:, k], [1, 10, 50, 90, 99])))
+    def lmap(rec):
+        xyz = rec[:, :6].copy().view('<i2').reshape(len(rec), 3).astype(np.float64) / 32767.
+        i = np.clip(((xyz + 1) / 2 * 96).astype(np.int64), 0, 95); idx = (i[:, 0] * 96 + i[:, 1]) * 96 + i[:, 2]
+        return np.bincount(idx, 0.08 + 2.2 * (rec[:, 6] / 255.) ** 2.5, minlength=96 ** 3)
+    a, b = lmap(ship), lmap(new); m = (a > 0) | (b > 0)
+    print('  96^3 sprite-light maps: corr(log) = %.4f over %d cells, total light ratio new/shipped = %.3f' % (np.corrcoef(np.log10(a[m] + .1), np.log10(b[m] + .1))[0, 1], m.sum(), b.sum() / a.sum()))
+    print('  wrote', RAW + '/stars139_regen.bin.gz', '(not shipped; copy over data/stars.bin.gz to use the regenerated z=0 sprites)')
+
 def pack139():
     S = json.load(open(SC)); f = h5py.File(RAW + '/raw_139.h5', 'r')
     lo, hi = S['dm'][:2]
@@ -127,10 +191,17 @@ def pack_epoch(snap):
     wr(p + 'xray192.u8.gz', u8(logq(f['gas_xr'][:]), S['xray'][0], S['xray'][1]))
     wr(p + 'dm192.u8.gz', u8(logq(gaussian_filter(f['dm_m'][:], 1.0)), S['dm'][0] + LOG8, S['dm'][1] + LOG8, DMF, 4))
     wr(p + 'shock192.u8.gz', shock_pack(f['max_mach'][:], f['gas_ed'][:], S, LOG8))
+    if 'gas_m384' in f:      # late epochs: density + star light at the z=0 resolution (extract_cubes.py "hires")
+        rho = u8(logq(gaussian_filter(f['gas_m384'][:], 1.0)), S['rho'][0], S['rho'][1])
+        L = f['st_L384'][:]; sl = u8(logq(L), S['slum'][0], S['slum'][1])
+        gr = np.where(L > 0, f['st_Lc384'][:] / np.maximum(L, 1e-30), S['scol'][0]); sc = u8(gr, S['scol'][0], S['scol'][1]); del L, gr
+        wr(p + 'pk384.u8.gz', np.stack([rho, sl, sc], axis=-1))
+    if 'sp_lr' in f and 'sp_min' in S: wr(p + 'stars.bin.gz', stars_pack(f, S))
 
 if __name__ == '__main__':
     a = sys.argv[1]
     if a == 'check': sys.exit(0 if check() else 1)
     elif a == 'calib': calib()
+    elif a == 'calib_sp': calib_sp()
     elif a == '139': pack139()
     else: pack_epoch(int(a))

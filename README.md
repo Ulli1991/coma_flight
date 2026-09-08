@@ -4,8 +4,9 @@
 
 The full-resolution build (`index.html`, streams ~30 MB of data from `data/`)
 runs on GitHub Pages at the link above: guided tour, gas / X-ray / temperature /
-dark-matter / shock / intracluster-light modes, six epochs from z = 1.95 to today
-(keys , and .), named galaxies, shareable views (L), PNG export (P).
+dark-matter / shock / intracluster-light modes with colour bars, nine epochs from
+z = 1.95 to today (keys , and .) with the galaxies of each epoch, named galaxies,
+shareable views (L), PNG export (P).
 See `DEEP.md` for what is in it and `TODO.md` for how the cubes are made
 (`extract_cubes.py`, `run_cubes.sbatch`, `pack_cubes.py` on raven). The rest of
 this file describes the light self-contained artifact version.
@@ -49,5 +50,6 @@ minutes each) writes raw float cubes to `/ptmp/uli/coma_cubes/raw_SNAP.h5`, and
 scales of the shipped z=0 cubes (`cube_scales.json`). The centre is FoF group 0
 of snapshot 139; `pack_cubes.py check` confirms it against the shipped
 `data/rho384.u8.gz` by cross-correlation (zero-voxel shift, axis order x,y,z).
-Earlier epochs (snapshots 27, 56, 77, 109, 121 = z 1.95, 1.0, 0.5, 0.2, 0.1)
-follow the main progenitor via the 3000 most-bound DM particles of the z=0 BCG.
+Earlier epochs (snapshots 27, 41, 56, 65, 77, 91, 109, 121 = z 1.95, 1.5, 1.0, 0.7,
+0.5, 0.35, 0.2, 0.1) follow the main progenitor via the 3000 most-bound DM particles
+of the z=0 BCG; each ships its own galaxy sprites (`ep*_stars.bin.gz`).
