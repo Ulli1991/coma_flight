@@ -63,7 +63,7 @@ key `e` for the epoch, this page uses `,` `.` and `z`.
 
 ## Controls (current)
 drag / arrows look · WASD fly · SPACE/C rise/sink · SHIFT boost · Q/E roll
-, . step epoch · Z time-lapse · X galaxies on/off
+, . step epoch · Z time-lapse · X galaxies on/off · N dense gas on/off
 1 density · 2 X-ray · 3 temperature · 0 dark matter · 4 shocks · I intracluster light
 , . step through epochs · 5–9 sights · T tour · H hide HUD · G volume 1:1 · B bloom on/off
 P save PNG · L copy link (includes the epoch) · R reset

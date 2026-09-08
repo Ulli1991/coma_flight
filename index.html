@@ -51,7 +51,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
  <div>field&nbsp; <b id="hf">gas density + cold gas</b></div>
  <div style="color:var(--hud-dim)">fps <b id="hq" style="color:var(--hud-dim)">--</b></div>
 </div>
-<div class="hud" id="br">5-9 sights &middot; , . epoch &middot; Z time-lapse &middot; X galaxies &middot; G quality &middot; B bloom &middot; H hide HUD &middot; P photo &middot; L link &middot; T tour &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1 2 3 fields &middot; R reset</div>
+<div class="hud" id="br">5-9 sights &middot; , . epoch &middot; Z time-lapse &middot; X galaxies &middot; N dense gas &middot; G quality &middot; B bloom &middot; H hide HUD &middot; P photo &middot; L link &middot; T tour &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1 2 3 fields &middot; R reset</div>
 <div class="hud" id="tr">
  <button class="fbtn on" id="b1">1 DENSITY</button><button class="fbtn" id="b2">2 X-RAY</button><button class="fbtn" id="b3">3 TEMP</button><button class="fbtn" id="b5" hidden>0 DM</button><button class="fbtn" id="b6">I ICL</button><button class="fbtn" id="b7" hidden>4 SHOCKS</button>
  <div id="ep"></div>
@@ -107,7 +107,7 @@ void main(){vec2 p=vec2(gl_VertexID==1?3.:-1.,gl_VertexID==2?3.:-1.);gl_Position
 const FS_T=`#version 300 es
 precision highp float;precision highp sampler3D;
 uniform sampler3D uPk,uAux,uIPk,uDM,uIDM,uShk,uIShk;uniform vec3 uPos,uFwd,uRight,uUp;
-uniform vec2 uRes;uniform float uExpo,uJit,uInner,uStars;uniform int uMode;out vec4 oc;
+uniform vec2 uRes;uniform float uExpo,uJit,uInner,uStars,uCold;uniform int uMode;out vec4 oc;
 vec3 dmmap(float v){
  return v<0.5?mix(vec3(.01,.02,.10),vec3(.22,.12,.62),v/.5):mix(vec3(.22,.12,.62),vec3(.92,.88,1.),(v-.5)/.5);}
 // shock Mach number: weak (M~1.5) deep teal -> M~3 cyan -> strong (M>4) white-yellow
@@ -165,7 +165,7 @@ void main(){
   vec3 col; float em; float cw=0.;
   if(uMode==0){
    col=magma(v);
-   cw=(1.-smoothstep(.12,.32,aux))*v;
+   cw=(1.-smoothstep(.12,.32,aux))*v*uCold;
    col=mix(col,vec3(.45,.85,1.),.8*cw);
    float hw=smoothstep(.60,.78,aux)*(1.-smoothstep(.30,.55,v))*smoothstep(.02,.10,v);
    col=mix(col,vec3(1.,.62,.20),.85*hw);
@@ -408,6 +408,7 @@ addEventListener('keydown',e=>{keys[e.code]=1;accN=0;
  if(e.code==='KeyB'){bloomOn=!bloomOn;showCap(bloomOn?'BLOOM ON':'BLOOM OFF');}
  if(e.code==='KeyI')setMode(4);
  if(e.code==='KeyX'){showStars=!showStars;showCap(showStars?'GALAXIES ON':'GALAXIES OFF');}
+ if(e.code==='KeyN'){showCold=!showCold;showCap(showCold?'DENSE GAS ON':'DENSE GAS OFF');}
  if(e.code==='KeyP')shotReq=true;
  if(e.code==='KeyL'){writeHash();navigator.clipboard.writeText(location.href).then(()=>showCap('LINK COPIED'),()=>showCap(location.hash));}
  if(e.code==='KeyG'){hiQ=!hiQ;volScale=hiQ?1.0:0.5;}
@@ -429,7 +430,7 @@ function showCap(t){const c=document.getElementById('cap');c.textContent=t;c.sty
 // ---- epochs: swap the volume cubes, camera stays put; sprites/labels/BHs are z=0 objects and hide ----
 let ep=EP0;
 {const w=document.getElementById('ep');EPOCHS.forEach((q,i)=>{const e=document.createElement('span');e.className='epb'+(i===EP0?' on':'');e.textContent='z '+q.z;e.title=q.t||'';e.addEventListener('click',()=>setEpoch(i));w.appendChild(e);q.el=e;});}
-let showStars=true,lastSrc=null,pendingEp=-1,fadeT0=-1e9,tlRun=0,tlActive=false;
+let showStars=true,showCold=true,lastSrc=null,pendingEp=-1,fadeT0=-1e9,tlRun=0,tlActive=false;
 function fetchEpoch(q){if(q.tex)return Promise.resolve();if(q.loading)return q.loading;
  const b='data/ep'+String(q.s).padStart(3,'0')+'_';
  q.loading=Promise.all(['pk192.u8.gz','xray192.u8.gz','temp192.u8.gz','dm192.u8.gz','shock192.u8.gz'].map(f=>ugz(b+f)))
@@ -493,12 +494,12 @@ const LABELS=[{n:'NGC 4889 · BCG',p:[0,0,0]},{n:'NGC 4874',p:[0.029,-0.071,-0.0
  .concat((META.pois||[]).filter(q=>q.k!=='5'&&q.k!=='9').map(q=>({n:q.n,p:q.p,dim:true})));
 {const w=document.getElementById('labels');for(const l of LABELS){const e=document.createElement('div');e.className='lab';e.innerHTML=l.n+'<i></i>';if(l.dim)e.style.color='var(--hud-dim)';w.appendChild(e);l.el=e;}}
 // ---- shareable view: #p=x,y,z&y=yaw&pi=pitch&m=mode ----
-function writeHash(){history.replaceState(null,'','#p='+pos.map(v=>v.toFixed(4)).join(',')+'&y='+yaw.toFixed(3)+'&pi='+pitch.toFixed(3)+'&m='+mode+(showStars?'':'&g=0')+(ep!==EP0?'&z='+EPOCHS[ep].s:''));}
+function writeHash(){history.replaceState(null,'','#p='+pos.map(v=>v.toFixed(4)).join(',')+'&y='+yaw.toFixed(3)+'&pi='+pitch.toFixed(3)+'&m='+mode+(showStars?'':'&g=0')+(showCold?'':'&c=0')+(ep!==EP0?'&z='+EPOCHS[ep].s:''));}
 (function readHash(){const h=new URLSearchParams(location.hash.slice(1));if(!h.has('p'))return;
  const p=h.get('p').split(',').map(Number);if(p.length!==3||p.some(isNaN))return;
  pos=p;yaw=+h.get('y')||0;pitch=+h.get('pi')||0;vel=[0,0,0];auto=false;
  const m=+h.get('m');if(m>=0&&m<=5&&m!==3&&m!==5)setMode(m);else if(m===3||m===5)wantMode=m;
- if(h.get('g')==='0')showStars=false;
+ if(h.get('g')==='0')showStars=false;if(h.get('c')==='0')showCold=false;
  const zs=+h.get('z');const ei=EPOCHS.findIndex(q=>q.s===zs);if(ei>=0)wantEp=ei;})();
 document.getElementById('go').addEventListener('click',()=>document.getElementById('intro').remove());
 let qual=1.0,postOn=true,bloomOn=true;
@@ -508,7 +509,7 @@ function resize(){const k=BENCH?1:Math.min(devicePixelRatio,1.5)*qual;
 addEventListener('resize',resize);resize();
 const uS={};
 const uV={};
-for(const n of['uPk','uAux','uIPk','uDM','uIDM','uShk','uIShk','uPos','uFwd','uRight','uUp','uRes','uExpo','uJit','uStars','uMode','uInner'])uV[n]=gl.getUniformLocation(pV,n);
+for(const n of['uPk','uAux','uIPk','uDM','uIDM','uShk','uIShk','uPos','uFwd','uRight','uUp','uRes','uExpo','uJit','uStars','uCold','uMode','uInner'])uV[n]=gl.getUniformLocation(pV,n);
 for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain'])uS[n]=gl.getUniformLocation(pS,n);
 for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain'])uB[n]=gl.getUniformLocation(pB,n);
 for(const n of['uT0','uRes','uOp','uDir'])uPp[n]=gl.getUniformLocation(pP,n);
@@ -565,7 +566,7 @@ function frameInner(){
  gl.uniform3fv(uB.uPos,pos);gl.uniform3fv(uB.uFwd,f);gl.uniform3fv(uB.uRight,r);gl.uniform3fv(uB.uUp,u);
  gl.uniform2f(uB.uRes,cv.width,cv.height);gl.uniform1f(uB.uGain,Math.min(1.,expo*2.)*fadeK);
  if(ep===EP0&&showStars)gl.drawArrays(gl.POINTS,0,NB);
- if(gvao&&mode<3&&ep===EP0){gl.useProgram(pG);gl.bindVertexArray(gvao);
+ if(gvao&&mode<3&&ep===EP0&&showCold){gl.useProgram(pG);gl.bindVertexArray(gvao);
   gl.uniform3fv(uG.uPos,pos);gl.uniform3fv(uG.uFwd,f);gl.uniform3fv(uG.uRight,r);gl.uniform3fv(uG.uUp,u);
   gl.uniform2f(uG.uRes,cv.width,cv.height);gl.uniform1f(uG.uGain,Math.min(1.,expo*2.)*fadeK);
   gl.drawArrays(gl.POINTS,0,NG);}
@@ -579,7 +580,7 @@ function frameInner(){
  if(E.shk){gl.activeTexture(gl.TEXTURE8);gl.bindTexture(gl.TEXTURE_3D,E.shk);gl.uniform1i(uV.uShk,8);gl.activeTexture(gl.TEXTURE9);gl.bindTexture(gl.TEXTURE_3D,tIShk||E.shk);gl.uniform1i(uV.uIShk,9);}
  gl.uniform1f(uV.uInner,ep===EP0?1.:0.);
  gl.uniform3fv(uV.uPos,pos);gl.uniform3fv(uV.uFwd,f);gl.uniform3fv(uV.uRight,r);gl.uniform3fv(uV.uUp,u);
- gl.uniform1f(uV.uJit,still?(accN%64)*3.7:0.);gl.uniform1f(uV.uStars,showStars?1.:0.);
+ gl.uniform1f(uV.uJit,still?(accN%64)*3.7:0.);gl.uniform1f(uV.uStars,showStars?1.:0.);gl.uniform1f(uV.uCold,showCold?1.:0.);
  gl.disable(gl.BLEND);
  if(fboV&&!still){gl.uniform2f(uV.uRes,vw,vh);gl.uniform1f(uV.uExpo,expo);gl.uniform1i(uV.uMode,mode);
   gl.bindFramebuffer(gl.FRAMEBUFFER,fboV);gl.viewport(0,0,vw,vh);gl.drawArrays(gl.TRIANGLES,0,3);
@@ -634,7 +635,7 @@ function frameInner(){
  const kpc=rr*META.half;
  document.getElementById('hr').textContent=(kpc/1000).toFixed(2);
  document.getElementById('hr2').textContent=(kpc/EPOCHS[ep].r).toFixed(2);
- document.getElementById('hf').textContent=names[mode]+(showStars||mode>=4?'':' · galaxies off');
+ document.getElementById('hf').textContent=names[mode]+(showStars||mode>=4?'':' · galaxies off')+(showCold||mode>=3?'':' · dense gas off');
  const v=Math.hypot(vel[0],vel[1],vel[2])*META.half;
  document.getElementById('hv').textContent=v.toFixed(0);
  document.getElementById('hq').textContent=(1/fA).toFixed(0)+' @ '+Math.round(qual*100)+'%'+(still?' · still '+Math.min(accN,96):hiQ?' · vol 1:1':' · vol ½');
