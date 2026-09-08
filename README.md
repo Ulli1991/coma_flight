@@ -31,7 +31,7 @@ Live copy: https://claude.ai/code/artifact/04ee4360-12d9-4361-bb20-76108562c6c6
 ## Controls
 drag / arrows look · WASD fly · SPACE/C rise/sink · SHIFT boost ·
 Q/E roll · 1/2/3 density / X-ray / temperature · 5–9 sights · T autopilot ·
-H hide HUD · P photo (PNG) · L copy link to this view · I intracluster light ·
+H hide HUD · , . step epoch · Z time-lapse z = 2 → 0 · P photo (PNG) · L copy link to this view · I intracluster light ·
 0 dark matter · 4 shocks · , . step through the epochs (these three only in the
 GitHub Pages build, and only when their cubes are present) · B bloom on/off · R reset
 
