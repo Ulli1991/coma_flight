@@ -121,7 +121,7 @@ const gl=cv.getContext('webgl2',{antialias:false});
 const HDR=!!(gl.getExtension('EXT_color_buffer_float')||gl.getExtension('EXT_color_buffer_half_float'));
 if(!gl){document.getElementById('warn').hidden=false;}
 // a shader or program failure is shown on the intro card as well as in the console (no devtools needed)
-function glfail(what,log){console.error(what,log);const w=document.getElementById('warn');if(w){w.hidden=false;w.textContent+=' '+what+': '+String(log).slice(0,400);}}
+function glfail(what,log){console.error(what,log);const w=document.getElementById('warn');if(w){w.hidden=false;w.textContent+=' '+what+': '+String(log).slice(0,400)+' ['+GLINFO+']';}}
 function sh(t,src){const s=gl.createShader(t);gl.shaderSource(s,src);gl.compileShader(s);
  if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))glfail(t===gl.VERTEX_SHADER?'vertex shader':'fragment shader',gl.getShaderInfoLog(s));return s}
 function prog(v,f){const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,v));
@@ -380,7 +380,9 @@ precision highp float;in vec3 vc;in float vfade;in float vq;out vec4 oc;
 void main(){vec2 q=(gl_PointCoord*2.-1.)*vq;float r=dot(q,q);
  float g=r<=1.?exp(-5.0*r):0.;oc=vec4(vc*g*vfade,0.);}`;
 // textures
-function vol3d(data,n,ch){n=n||192;ch=ch||1;const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_3D,t);
+let GLINFO='';{try{const d=gl.getExtension('WEBGL_debug_renderer_info');GLINFO=(d?gl.getParameter(d.UNMASKED_RENDERER_WEBGL):'')+' · units '+gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS)+' · 3D max '+gl.getParameter(gl.MAX_3D_TEXTURE_SIZE);}catch(e){}}
+let texFail=0,texMB=0;
+function vol3d(data,n,ch){n=n||192;ch=ch||1;const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_3D,t);texMB+=data.length/1e6;
  gl.texStorage3D(gl.TEXTURE_3D,1,ch===4?gl.RGBA8:ch===3?gl.RGB8:ch===2?gl.RG8:gl.R8,n,n,n);
  gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);
  gl.texSubImage3D(gl.TEXTURE_3D,0,0,0,0,n,n,n,ch===4?gl.RGBA:ch===3?gl.RGB:ch===2?gl.RG:gl.RED,gl.UNSIGNED_BYTE,data);
@@ -388,13 +390,16 @@ function vol3d(data,n,ch){n=n||192;ch=ch||1;const t=gl.createTexture();gl.bindTe
  gl.texParameteri(gl.TEXTURE_3D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
  gl.texParameteri(gl.TEXTURE_3D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
  gl.texParameteri(gl.TEXTURE_3D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
- gl.texParameteri(gl.TEXTURE_3D,gl.TEXTURE_WRAP_R,gl.CLAMP_TO_EDGE);return t}
+ gl.texParameteri(gl.TEXTURE_3D,gl.TEXTURE_WRAP_R,gl.CLAMP_TO_EDGE);
+ const ge=gl.getError();if(ge){texFail++;glfail('3D texture '+n+'^3 x'+ch+' failed (GL error '+ge+', '+texMB.toFixed(0)+' MB uploaded so far)','');}return t}
 // note: cube arrays are [ix][iy][iz] (x slowest) -> sample with uv.zyx? we stored
 // numpy C-order (x,y,z): texture z-fastest = our z ✓ sample (z,y,x) reversed.
 // simplest: swap in shader via uv -> uv.zyx handled here by uploading as-is and
 // sampling p.zyx:
 let tPk,tX,tT,tIPk,tIDM=null,tIShk=null,ready=false;
-const T0={};   // the optional z=0 cubes by key (dm shk mag vel met bvec out); an epoch's q.tex uses the same keys
+const T0={},RAW0={};   // the optional z=0 cubes by key (dm shk mag vel met bvec out); an epoch's q.tex uses the same keys.
+// vel / met / bvec / out are kept in RAW0 and uploaded by needTex() on first use: ~120 MB less GPU memory at z = 0
+function needTex(k){if(!T0[k]&&RAW0[k]){const [a,n,c]=RAW0[k];T0[k]=vol3d(a,n,c);}return T0[k];}
 function pack3(a,b,c){const n=a.length,o=new Uint8Array(n*3);for(let i=0,j=0;i<n;i++,j+=3){o[j]=a[i];o[j+1]=b[i];o[j+2]=c[i];}return o}
 const T_LOAD0=performance.now();let T_LOAD=0;
 (async()=>{try{
@@ -412,11 +417,12 @@ const T_LOAD0=performance.now();let T_LOAD=0;
  try{const mg=await ugz(D_MAG);T0.mag=vol3d(mg,192);PROBE0.mag=mg;showBtn(8);if(wantMode===8)setMode(8);}catch(e){}
  // optional kinematics / metals / B-vector / outer cubes (pack_cubes.py kin met bvec outer): their modes appear as they load
  await Promise.all([
-  ugz(D_VEL).then(a=>{T0.vel=vol3d(a,192,4);PROBE0.vel=a;PROBE0.nvel=192;showBtn(10);showBtn(11);}).catch(()=>{}),
-  ugz(D_MET).then(a=>{T0.met=vol3d(a,192);PROBE0.met=a;showBtn(12);}).catch(()=>{}),
-  ugz(D_BVEC).then(a=>{T0.bvec=vol3d(a,192,3);}).catch(()=>{}),
-  ugz(D_OUT).then(a=>{T0.out=vol3d(a,192,2);}).catch(()=>{})]);
- if(T0.bvec&&T0.vel){showBtn(13);showBtn(14);} if(wantMode>=10&&modeOK(wantMode))setMode(wantMode);
+  ugz(D_VEL).then(a=>{RAW0.vel=[a,192,4];PROBE0.vel=a;PROBE0.nvel=192;showBtn(10);showBtn(11);}).catch(()=>{}),
+  ugz(D_MET).then(a=>{RAW0.met=[a,192,1];PROBE0.met=a;showBtn(12);}).catch(()=>{}),
+  ugz(D_BVEC).then(a=>{RAW0.bvec=[a,192,3];}).catch(()=>{}),
+  ugz(D_OUT).then(a=>{RAW0.out=[a,192,2];}).catch(()=>{})]);
+ if(RAW0.bvec&&RAW0.vel){showBtn(13);showBtn(14);} if(wantMode>=10&&modeOK(wantMode))setMode(wantMode);
+ const g2=document.getElementById('got');if(g2&&GLINFO)g2.title=GLINFO;
  if(wantEp>=0&&wantEp!==EP0)setEpoch(wantEp);
 }catch(e){const w=document.getElementById('warn');w.hidden=false;w.textContent='load error: '+e;}})();
 let sraw=null,PROBE0=null; const NS=META.nstars;
@@ -542,7 +548,7 @@ const names=['gas density + cold gas','X-ray emission','temperature','dark matte
 const ORDER=[3,0,2,1,9,6,8,5,7,4];
 // a mode needs its cubes: the optional ones at z = 0 (T0) or of that epoch (q.tex), same keys
 const NEED={3:['dm'],5:['shk'],7:['shk'],8:['mag'],10:['vel'],11:['vel'],12:['met'],13:['bvec','vel'],14:['bvec','vel']};
-const modeOK=(m,i)=>{i=i===undefined?ep:i;const T=i===EP0?T0:(EPOCHS[i].tex||{});return (NEED[m]||[]).every(k=>!!T[k]);};
+const modeOK=(m,i)=>{i=i===undefined?ep:i;const T=i===EP0?T0:(EPOCHS[i].tex||{});return (NEED[m]||[]).every(k=>!!(T[k]||(i===EP0&&RAW0[k])));};
 const SPRITES=m=>m<3||m===6||(m>=8&&m<=12);        // modes that draw the galaxy light and the cold gas
 const NOGAL=new Set([4,5,7,13,14]);                // modes without the galaxy sprites and black holes
 // ---- video capture of the canvas (V): WebM via MediaRecorder, saved when stopped ----
@@ -893,7 +899,8 @@ function frameInner(){
  const rr=Math.hypot(pos[0],pos[1],pos[2]);
  const expo=Math.min(Math.max(Math.pow(rr/1.15,1.6),0.06),1.0);
  const expoV=(mode===5||mode===7||mode===14)?Math.max(expo,0.4):expo;   // shocks are thin sheets: keep them readable inside the core
- const wide=rr>1.02&&!!T0.out&&!mvOn&&!earth;   // outside the cluster sphere the outer cube is drawn (the wide branch of the shader)
+ const wide=rr>1.02&&!!(T0.out||RAW0.out)&&!mvOn&&!earth;   // outside the cluster sphere the outer cube is drawn (the wide branch of the shader)
+ if(ep===EP0){for(const k of (NEED[mode]||[]))needTex(k);if(wide)needTex('out');}
  fbos();const tgt=postOn?fboA:null;
  // an epoch or mode switch keeps the last frame of the old scene and crossfades to the new one
  if(pendingEp>=0){if(pendingEp!==ep){holdFrame(now,900);applyEpoch(pendingEp);}pendingEp=-1;}
