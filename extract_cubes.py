@@ -254,5 +254,5 @@ if __name__ == '__main__':
         for k, v in acc.items():
             if k in o: del o[k]
             o.create_dataset(k, data=v, compression='gzip', compression_opts=1)
-        if lab_names: o.attrs['lab_names'] = np.array(lab_names, dtype='S')
+        if lab_names: o.attrs['lab_names'] = np.array([s.encode('utf-8') for s in lab_names])   # names hold a non-ASCII middle dot
     print('wrote', RAWF, 'keys', sorted(acc), '%.0f s' % (time.time() - t0), flush=True)
