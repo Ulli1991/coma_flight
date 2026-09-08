@@ -140,9 +140,9 @@ void main(){
  vec3 rd=normalize(uFwd+sc.x*.62*uRight+sc.y*.62*uUp);
  // clip to the sphere r<0.99 (everything outside is faded to zero anyway)
  const float R=0.99; float b=dot(uPos,rd); float c=dot(uPos,uPos)-R*R; float h=b*b-c;
- if(h<=0.){oc=vec4(sky(rd),0.);return;} h=sqrt(h);
+ if(h<=0.){oc=vec4(sky(rd)*uStars,0.);return;} h=sqrt(h);
  float t0=max(-b-h,0.015), tE=-b+h;
- if(tE<=t0){oc=vec4(sky(rd),0.);return;}
+ if(tE<=t0){oc=vec4(sky(rd)*uStars,0.);return;}
  const int N=NSTEPS; const float dt=2.*R/float(N);
  float dj=fract(sin(dot(gl_FragCoord.xy+uJit,vec2(12.9898,78.233)))*43758.55);
  vec3 C=vec3(0.); float A=0.; float Ae=0.;
@@ -204,7 +204,7 @@ void main(){
   Ae+=(1.-Ae)*min(a*cw*2.,.9);
   if(A>0.985)break;
  }
- C+=(1.-A)*sky(rd);
+ C+=(1.-A)*sky(rd)*uStars;
  C=1.-exp(-1.45*C);
  float lum=dot(C,vec3(.299,.587,.114));
  C=clamp(mix(vec3(lum),C,1.45),0.,1.);
@@ -564,7 +564,7 @@ function frameInner(){
  gl.useProgram(pB);gl.bindVertexArray(bvao);
  gl.uniform3fv(uB.uPos,pos);gl.uniform3fv(uB.uFwd,f);gl.uniform3fv(uB.uRight,r);gl.uniform3fv(uB.uUp,u);
  gl.uniform2f(uB.uRes,cv.width,cv.height);gl.uniform1f(uB.uGain,Math.min(1.,expo*2.)*fadeK);
- if(ep===EP0)gl.drawArrays(gl.POINTS,0,NB);
+ if(ep===EP0&&showStars)gl.drawArrays(gl.POINTS,0,NB);
  if(gvao&&mode<3&&ep===EP0){gl.useProgram(pG);gl.bindVertexArray(gvao);
   gl.uniform3fv(uG.uPos,pos);gl.uniform3fv(uG.uFwd,f);gl.uniform3fv(uG.uRight,r);gl.uniform3fv(uG.uUp,u);
   gl.uniform2f(uG.uRes,cv.width,cv.height);gl.uniform1f(uG.uGain,Math.min(1.,expo*2.)*fadeK);
