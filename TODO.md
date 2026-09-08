@@ -12,7 +12,7 @@ python pack_cubes.py calib          # once: the check, then fits the z=0 scaling
 python pack_cubes.py calib_sp       # once: the galaxy-sprite encoding of stars.bin.gz -> cube_scales.json
 python pack_cubes.py calib_cg       # once: the cold-gas sprite encoding of gas.bin.gz -> cube_scales.json
                                     # (label tracking needs /ptmp/uli/coma_cubes/label_tracers.npz, made by
-                                    #  .claude/tmp/labels.py from the z=0 group catalogue; parts run: gas dm stars sp cold bh lab)
+                                    #  tools/label_tracers.py from the z=0 group catalogue; parts run: gas dm stars sp cold bh lab)
 python pack_cubes.py 139            # dm384 / idm192 / shock384 / ishock192
 for s in 27 41 56 65 77 91 109 121; do python pack_cubes.py $s; done   # ep{S}_*192.u8.gz, ep{S}_stars.bin.gz, ep{109,121}_pk384
 ```
@@ -82,9 +82,9 @@ key `e` for the epoch, this page uses `,` `.` and `z`.
   0.35, 0.2, 0.1 from snapshots 27, 41, 56, 65, 77, 91, 109, 121; 192^3 cubes of gas
   density, star light + colour, X-ray, temperature, DM and shocks around the main
   progenitor (384^3 density + star light at z = 0.2, 0.1), on the z=0 intensity scales,
-  plus that snapshot's galaxy sprites. Loaded on first use (~30 MB per epoch, ~50 MB for
-  the two 384 ones). Cold-gas sprites, black holes and labels are z=0 objects and hide
-  at other epochs; the camera stays put.
+  plus that snapshot's galaxy sprites, cold-gas sprites, black holes and the tracked
+  named galaxies (ep{S}_meta.json). Loaded on first use (~30 MB per epoch, ~50 MB for
+  the two 384 ones); the sights (5-9 labels) are z=0 only; the camera stays put.
 
 Sept 8, second round (page: entropy, radio, probe, legend, video, texture freeing; raven: cold gas,
 black holes and tracked labels per epoch):
