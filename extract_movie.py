@@ -12,6 +12,7 @@ import extract_cubes as X
 
 SNAP = X.SNAP; NM = 128; NV = 48; HALF = X.HALF        # NV: the coarse velocity grid for the advected time interpolation
 MORE = len(_argv) > 2 and _argv[2] == 'more'   # `extract_movie.py SNAP more`: add gas_mv* (48^3) and the galaxy table to an existing mv file
+GALONLY = len(_argv) > 2 and _argv[2] == 'gal'  # `extract_movie.py SNAP gal`: only the galaxy table (catalogue read, seconds)
 OUT = X.OUT + '/movie'; RAWF = OUT + '/mv_%03d.h5' % SNAP
 
 def do_movie(args):
@@ -47,19 +48,19 @@ def do_vel(args):
 
 def galaxies(cen):
     """the subhaloes inside the cube with M* >= 1e9 Msun: most-bound particle id (to match neighbouring snapshots),
-    position [cube units], log10 M* [Msun], g-r, SFR flag, log10 M_BH [Msun] (h = 0.681)"""
-    H = 0.681; P = []; MT = []; SF = []; PH = []; BH = []; ID = []
+    position [cube units], log10 M* [Msun], g-r, SFR flag, log10 M_BH [Msun] (h = 0.681), velocity [km/s peculiar, 3]"""
+    H = 0.681; P = []; MT = []; SF = []; PH = []; BH = []; ID = []; V = []
     for gf in sorted(glob.glob(X.BASE + '/groups_%03d/fof_subhalo_tab_%03d.*.hdf5' % (SNAP, SNAP))):
         with h5py.File(gf, 'r') as g:
             if 'Subhalo' not in g or 'SubhaloPos' not in g['Subhalo']: continue
             S = g['Subhalo']; P.append(S['SubhaloPos'][:]); MT.append(S['SubhaloMassType'][:]); SF.append(S['SubhaloSFR'][:])
-            PH.append(S['SubhaloStellarPhotometrics'][:]); BH.append(S['SubhaloBHMass'][:]); ID.append(S['SubhaloIDMostbound'][:])
-    if not P: return np.zeros((0, 8))
-    P = np.concatenate(P).astype(np.float64); MT = np.concatenate(MT); SF = np.concatenate(SF); PH = np.concatenate(PH); BH = np.concatenate(BH); ID = np.concatenate(ID)
+            PH.append(S['SubhaloStellarPhotometrics'][:]); BH.append(S['SubhaloBHMass'][:]); ID.append(S['SubhaloIDMostbound'][:]); V.append(S['SubhaloVel'][:])
+    if not P: return np.zeros((0, 11))
+    P = np.concatenate(P).astype(np.float64); MT = np.concatenate(MT); SF = np.concatenate(SF); PH = np.concatenate(PH); BH = np.concatenate(BH); ID = np.concatenate(ID); V = np.concatenate(V).astype(np.float64)
     d = X.wrap(P, cen); ms = MT[:, 4] * 1e10 / H
     keep = (np.max(np.abs(d), axis=1) < HALF) & (ms >= 1e9)
     out = np.column_stack([ID[keep].astype(np.float64), d[keep] / HALF, np.log10(ms[keep]), PH[keep, 4] - PH[keep, 5], (SF[keep] > 0).astype(float),
-                           np.log10(np.maximum(BH[keep] * 1e10 / H, 1.))])
+                           np.log10(np.maximum(BH[keep] * 1e10 / H, 1.)), V[keep]])
     return out
 
 def centre(cen0):
@@ -88,6 +89,13 @@ def centre(cen0):
 
 if __name__ == '__main__':
     t0 = time.time(); os.makedirs(OUT, exist_ok=True)
+    if GALONLY:
+        with h5py.File(RAWF, 'r') as f: cen = f.attrs['cen'][:]
+        gal = galaxies(cen)
+        with h5py.File(RAWF, 'a') as o:
+            if 'gal' in o: del o['gal']
+            o.create_dataset('gal', data=gal)
+        print('galaxy table of', RAWF, len(gal), '%.0f s' % (time.time() - t0), flush=True); sys.exit(0)
     if MORE:   # add the coarse velocity grid and the galaxy table to an existing file (its centre is reused)
         with h5py.File(RAWF, 'r') as f: cen = f.attrs['cen'][:]
         acc = {}

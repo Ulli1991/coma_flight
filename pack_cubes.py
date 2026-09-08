@@ -12,6 +12,7 @@
 #   python pack_cubes.py movie   -> data/mv/mv_SNAP.u8.gz (128^3 RGB) + data/movie.json from extract_movie.py
 #   python pack_cubes.py galaxies -> data/galaxies.json (z=0 subhaloes for the galaxy inspector)
 #   python pack_cubes.py temp    -> temp192.u8.gz + ep*_temp192.u8.gz on the 3e5 .. 1.1e8 K scale (then re-run movie)
+#   python pack_cubes.py tracks  -> data/galaxy_tracks.json (z = 0 galaxies followed back through movie_gal.json)
 #   python pack_cubes.py lite    -> lite_pk192 / lite_dm192 / lite_shock192: the z = 0 cubes of the page's lite build (192^3)
 #   python pack_cubes.py mag     -> data/mag192.u8.gz + data/ep*_mag192.u8.gz for every raw file with the magnetic
 #                                   field (extract_cubes.py SNAP mag); the log scale is fitted once at z=0 (`mag`)
@@ -406,24 +407,41 @@ def movie_flow(meta):
     (v - v_core) dt / a on the 48^3 grid (extract_movie.py SNAP more: gas_mV, gas_mv*), as data/mv/dv_SNAP.u8.gz
     (RGB8, DMAX); and data/movie_gal.json: per snapshot the subhaloes [id, x, y, z, log M*, g-r, SF, log M_BH] so
     the page can match neighbours by the most-bound particle id and slide the galaxies along the slider"""
-    gal = []; nflow = 0
+    gal = []; raw = []; vcs = []; nflow = 0
     for i, e in enumerate(meta):
         path = RAW + '/movie/mv_%03d.h5' % e['s']
         with h5py.File(path, 'r') as f:
-            if 'gal' in f:
-                g = f['gal'][:]; gal.append([[int(r[0]), round(float(r[1]), 4), round(float(r[2]), 4), round(float(r[3]), 4), round(float(r[4]), 2), round(float(r[5]), 2), int(r[6]), round(float(r[7]), 2)] for r in g])
-            else: gal.append([])
+            g = f['gal'][:] if 'gal' in f else np.zeros((0, 11)); raw.append(g)
+            gal.append([[int(r[0]), round(float(r[1]), 4), round(float(r[2]), 4), round(float(r[3]), 4), round(float(r[4]), 2), round(float(r[5]), 2), int(r[6]), round(float(r[7]), 2), -1] for r in g])
             if 'gas_mV' not in f or i == len(meta) - 1: continue
             mV = f['gas_mV'][:]; ok = mV > 0; v = np.stack([np.where(ok, f['gas_mv' + c][:] / np.maximum(mV, 1e-30), 0.) for c in 'xyz'], -1)
         n = mV.shape[0]; c = (np.arange(n) + 0.5) / n * 2 - 1; X_, Y_, Z_ = np.meshgrid(c, c, c, indexing='ij'); core = ok & (np.sqrt(X_ ** 2 + Y_ ** 2 + Z_ ** 2) < 300. / HALF)
-        vc = (v[core] * mV[core, None]).sum(0) / mV[core].sum()          # the frame (progenitor) velocity: mass-weighted core mean
+        vc = (v[core] * mV[core, None]).sum(0) / mV[core].sum(); vcs.append(vc)   # the frame (progenitor) velocity: mass-weighted core mean
         zm = 0.5 * (e['z'] + meta[i + 1]['z']); dt = e['t'] - meta[i + 1]['t']   # Gyr to the next snapshot
         # km/s * Gyr = 1.0227 kpc physical; comoving kpc/h = physical * (1 + z) * h; cube width = 2 HALF ckpc/h
         d = (v - vc) * dt * 1.0227 * (1 + zm) * 0.681 / (2 * HALF); d[~ok] = 0.
         u = np.clip(np.round(128 + d / DMAX * 127), 1, 255).astype(np.uint8); u[~ok] = 128
         wr('mv/dv_%03d.u8.gz' % e['s'], u); e['flow'] = 1; nflow += 1
         if i % 20 == 0: print('   flow %d: |d| pct 50/99 = %s cube widths (max %.3f), dt %.3f Gyr' % (e['s'], np.round(np.percentile(np.linalg.norm(d[ok], axis=1), [50, 99]), 4), np.abs(d).max(), dt))
+    # link every galaxy to its successor: predicted position (v - v_frame) dt / a, mass within 0.3 dex, the same most-bound
+    # id as a bonus; greedy one-to-one by score. Column 8 of the JSON row = the row index in the next snapshot (-1: none)
+    nl = 0; nt = 0
+    for i in range(len(meta) - 1):
+        A, B = raw[i], raw[i + 1]
+        if len(A) == 0 or len(B) == 0 or A.shape[1] < 11: continue
+        vc = vcs[i] if i < len(vcs) else np.zeros(3); zm = 0.5 * (meta[i]['z'] + meta[i + 1]['z']); dt = meta[i]['t'] - meta[i + 1]['t']
+        pred = A[:, 1:4] + (A[:, 8:11] - vc) * dt * 1.0227 * (1 + zm) * 0.681 / HALF
+        pb = B[:, 1:4]; mb = B[:, 4]; cand = []
+        for a in range(len(A)):
+            d = np.linalg.norm(pb - pred[a], axis=1); dm = np.abs(mb - A[a, 4])
+            for b in np.where((d < 0.03) & (dm < 0.3))[0]: cand.append((d[b] + 0.05 * dm[b] - (0.02 if B[b, 0] == A[a, 0] else 0.), a, b))
+        cand.sort(); usedA = set(); usedB = set()
+        for sc, a, b in cand:
+            if a in usedA or b in usedB: continue
+            usedA.add(a); usedB.add(b); gal[i][a][8] = int(b)
+        nl += len(usedA); nt += len(A)
     json.dump(gal, open(os.path.join(DATA, 'movie_gal.json'), 'w'), separators=(',', ':'))
+    print('galaxy links: %.1f%% of the galaxies matched to the next snapshot' % (100. * nl / max(nt, 1)))
     print('wrote movie_gal.json (%d snapshots, %d galaxies in all, %.0f kB) and %d flow fields' % (len(gal), sum(len(g) for g in gal), os.path.getsize(os.path.join(DATA, 'movie_gal.json')) / 1e3, nflow))
 
 def pack_lite():
@@ -436,6 +454,33 @@ def pack_lite():
     wr('lite_pk192.u8.gz', np.stack([rho, sl, sc], axis=-1))
     wr('lite_dm192.u8.gz', u8(logq(gaussian_filter(f['dm_m'][:], 1.0)), S['dm'][0] + LOG8, S['dm'][1] + LOG8, DMF, 4))
     wr('lite_shock192.u8.gz', shock_pack(f['max_mach'][:], f['gas_ed'][:], S, LOG8))
+
+def tracks():
+    """data/galaxy_tracks.json: for every z = 0 galaxy of galaxies.json its history through the movie tables, matched
+    backwards along the links of movie_gal.json (predicted position + mass + most-bound id): per galaxy
+    {i: subhalo index, t: [[movie index, r / R200(t), log M*, SF flag], ...]} from the earliest snapshot found to today"""
+    meta = json.load(open(os.path.join(DATA, 'movie.json'))); G = json.load(open(os.path.join(DATA, 'movie_gal.json')))
+    gal0 = json.load(open(os.path.join(DATA, 'galaxies.json'))); n = len(meta)
+    prev = [{} for _ in G]          # row index in snapshot k+1 -> row index in snapshot k (the inverse of the links)
+    for k in range(n - 1):
+        for a, q in enumerate(G[k]):
+            if len(q) > 8 and q[8] >= 0: prev[k + 1][q[8]] = a
+    # the z = 0 catalogue rows carry no link: match them to the last movie table by position
+    last = G[-1]; pos = np.array([[q[1], q[2], q[3]] for q in last]); out = []; nfull = 0
+    for g in gal0:
+        d = np.linalg.norm(pos - np.array(g['p']), axis=1); j = int(np.argmin(d))
+        if d[j] > 0.003: continue
+        track = []; k = n - 1
+        while k >= 0:
+            q = G[k][j]; r = float(np.linalg.norm(q[1:4]) * HALF / max(meta[k]['r'], 1.))
+            track.append([k, round(r, 3), q[4], q[6]])
+            if j not in prev[k]: break
+            j = prev[k][j]; k -= 1
+        track.reverse(); out.append({'i': g['i'], 't': track}); nfull += track[0][0] == 0
+    json.dump(out, open(os.path.join(DATA, 'galaxy_tracks.json'), 'w'), separators=(',', ':'))
+    L = [len(o['t']) for o in out]
+    print('wrote galaxy_tracks.json: %d galaxies, track length median %d / min %d of %d snapshots, %d reach z = 2, %.0f kB' % (
+        len(out), int(np.median(L)), min(L), n, nfull, os.path.getsize(os.path.join(DATA, 'galaxy_tracks.json')) / 1e3))
 
 def pack_mag():
     """magnetic field: mass-weighted |B| [uG] of the non-star-forming gas per 192^3 voxel (extract_cubes.py mag),
@@ -467,6 +512,7 @@ if __name__ == '__main__':
     elif a == 'sky': sky()
     elif a == 'temp': pack_temp()
     elif a == 'lite': pack_lite()
+    elif a == 'tracks': tracks()
     elif a == 'flow':   # the flow fields + galaxy tracks only (movie.json exists; its `flow` flags are updated)
         meta = json.load(open(os.path.join(DATA, 'movie.json'))); movie_flow(meta); json.dump(meta, open(os.path.join(DATA, 'movie.json'), 'w'), separators=(',', ':'))
     elif a == 'kin': pack_kin()

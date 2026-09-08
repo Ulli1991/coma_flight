@@ -204,6 +204,17 @@ Sept 8, fourth round ("beyond state of the art"): new physics, the cosmic web, t
   names move with their galaxies, the orbit lines are gone (the user preferred labels); (4) the timeline: a wide
   bar at the bottom centre with a play button, amber progress, a glowing handle, a large z / lookback readout,
   ticks for the nine full-resolution epochs (click = switch to it), [ ] step, + - speed, Y loop.
+- Kinetic SZ (mode 15, press 5 again on Compton y, or the button): dT = -(sigma_T / c) sum n_e v_los dl as a screen
+  integral like the rotation measure (n_e from the density byte where hot gas exists, v from the velocity cube,
+  KSZK = 0.01864 uK per cm^-3 km/s kpc), blue = receding (decrement), red = approaching, +-10 uK (KSZLIM).
+- Galaxy links and infall histories: the most-bound particle id changes between half of all neighbouring snapshots,
+  so `extract_movie.py SNAP gal` adds the subhalo velocity to the tables and `pack_cubes.py flow` links each galaxy
+  to its successor by the predicted position ((v - v_frame) dt / a, within 0.03 cube widths), the mass (0.3 dex)
+  and the id as a bonus, greedily one-to-one; column 8 of movie_gal.json is the successor row. The page slides
+  linked galaxies and fades the rest. `pack_cubes.py tracks` follows the links backwards from the z = 0 galaxies
+  -> `data/galaxy_tracks.json` [movie index, r / R200, log M*, SF]; the inspector shows the history: since when
+  inside R200 and the stellar mass then, when star formation ended, and a sparkline of r / R200 (blue while
+  star-forming, orange when quenched) with the M* curve.
 - Lite build (the GPU load: ~400 MB of 3D textures at z = 0 in the full build, up to ~850 MB with two 384^3
   epochs resident): `pack_cubes.py lite` -> `lite_pk192 / lite_dm192 / lite_shock192` (the epoch recipe on
   raw_139, 9 MB); with `?lite=1` (or automatically for Intel / Mali / Adreno / PowerVR / software GPUs and

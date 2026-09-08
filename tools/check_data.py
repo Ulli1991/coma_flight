@@ -30,6 +30,8 @@ if os.path.exists(D + '/data/movie.json'):
         mg = json.load(open(D + '/data/movie_gal.json')); print('movie_gal.json: %d snapshots, galaxies per snapshot %d .. %d' % (len(mg), min(len(g) for g in mg), max(len(g) for g in mg)))
 if os.path.exists(D + '/data/galaxies.json'):
     gal = json.load(open(D + '/data/galaxies.json')); print('galaxies.json: %d subhaloes, brightest %s' % (len(gal), gal[0]))
+if os.path.exists(D + '/data/galaxy_tracks.json'):
+    tk = json.load(open(D + '/data/galaxy_tracks.json')); print('galaxy_tracks.json: %d galaxies, median track %d snapshots' % (len(tk), sorted(len(q['t']) for q in tk)[len(tk) // 2]))
 if os.path.exists(D + '/data/sky.json'):
     sk = json.load(open(D + '/data/sky.json')); print('sky.json: observer frame of step %d, D = %.0f ckpc/h, %d 2M++ galaxies' % (sk['step'], sk['D'], len(sk['gal'])))
 bad = 0; tot = 0

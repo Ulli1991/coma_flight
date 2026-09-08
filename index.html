@@ -78,7 +78,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
 <div class="hud" id="cb"><div class="t" id="cbn"></div><canvas id="cbc" width="256" height="1"></canvas><div id="cbt"></div>
  <div id="cbl"><span class="sw" style="background:linear-gradient(90deg,#598cff,#fff2d0,#ff8038)"></span> galaxies young &rarr; old &nbsp; <span class="sw" style="background:#73d9ff"></span> cold gas &nbsp; <span class="sw" style="background:#c08cff"></span> black holes</div></div>
 <div class="hud" id="tr">
- <button class="fbtn" id="eb" hidden>E EARTH VIEW</button><button class="fbtn" data-m="3" hidden>1 DM</button><button class="fbtn on" data-m="0">2 DENSITY</button><button class="fbtn" data-m="2">3 TEMP</button><button class="fbtn" data-m="1">4 X-RAY</button><button class="fbtn" data-m="9">5 COMPTON y</button><button class="fbtn" data-m="6">6 ENTROPY</button><button class="fbtn" data-m="8" hidden>7 MAGNETIC</button><button class="fbtn" data-m="5" hidden>8 SHOCKS</button><button class="fbtn" data-m="7" hidden>9 RADIO</button><button class="fbtn" data-m="4">0 ICL</button><button class="fbtn" data-m="10" hidden>K VELOCITY</button><button class="fbtn" data-m="11" hidden>U TURBULENCE</button><button class="fbtn" data-m="12" hidden>M METALS</button><button class="fbtn" data-m="13" hidden>F FARADAY</button><button class="fbtn" data-m="14" hidden>O RADIO HALO</button>
+ <button class="fbtn" id="eb" hidden>E EARTH VIEW</button><button class="fbtn" data-m="3" hidden>1 DM</button><button class="fbtn on" data-m="0">2 DENSITY</button><button class="fbtn" data-m="2">3 TEMP</button><button class="fbtn" data-m="1">4 X-RAY</button><button class="fbtn" data-m="9">5 COMPTON y</button><button class="fbtn" data-m="15" hidden>5&#8239;5 KINETIC SZ</button><button class="fbtn" data-m="6">6 ENTROPY</button><button class="fbtn" data-m="8" hidden>7 MAGNETIC</button><button class="fbtn" data-m="5" hidden>8 SHOCKS</button><button class="fbtn" data-m="7" hidden>9 RADIO</button><button class="fbtn" data-m="4">0 ICL</button><button class="fbtn" data-m="10" hidden>K VELOCITY</button><button class="fbtn" data-m="11" hidden>U TURBULENCE</button><button class="fbtn" data-m="12" hidden>M METALS</button><button class="fbtn" data-m="13" hidden>F FARADAY</button><button class="fbtn" data-m="14" hidden>O RADIO HALO</button>
  <div id="ep"></div>
 
 </div>
@@ -87,7 +87,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
 <div class="hud" id="labels" style="padding:0"></div>
 <div id="tsw" hidden><div class="row"><span id="tsp" title="play / pause (Z)">&#9654;</span><input type="range" id="ts" min="0" max="1" step="0.002" value="1"><span id="tsz"></span></div><div id="tst"></div>
  <div id="tsi">drag the handle or press Z to play &middot; [ ] one snapshot &middot; + &minus; speed &middot; Y loop &middot; the ticks are the nine full-resolution epochs, click one to switch to it &middot; , . leave the movie</div></div>
-<div class="hud" id="gi" hidden><div class="t"><span id="gin"></span> <span id="gix" style="cursor:pointer;color:var(--hud-dim)">&nbsp;&times;</span></div><div id="gib"></div><div id="gif" style="color:var(--amber);cursor:pointer;margin-top:4px;letter-spacing:.08em">FLY THERE</div></div>
+<div class="hud" id="gi" hidden><div class="t"><span id="gin"></span> <span id="gix" style="cursor:pointer;color:var(--hud-dim)">&nbsp;&times;</span></div><div id="gib"></div><div id="gih" style="margin-top:5px;color:var(--hud-dim);font-size:10.5px"></div><canvas id="gic" width="300" height="86" style="display:block;margin-top:4px"></canvas><div id="gif" style="color:var(--amber);cursor:pointer;margin-top:4px;letter-spacing:.08em">FLY THERE</div></div>
 <div id="gm" hidden></div>
 <div class="hud" id="pr" hidden><div class="t">RADIAL PROFILES</div><canvas id="prc" width="250" height="318"></canvas></div>
 <div id="intro"><div class="card">
@@ -96,7 +96,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
  re-simulation at TNG100 resolution &mdash; the closing frame of the formation film.
  A 9 cMpc/h volume: hot ICM, cold stripped gas, and the 40&thinsp;000 brightest galaxies.</p>
  <p><span class="k">Drag / arrow keys</span> to look &middot; <span class="k">W A S D</span> to fly &middot;
- <span class="k">SHIFT</span> boost &middot; <span class="k">1&ndash;9, 0</span> fields: dark matter, density, temperature, X-ray, Compton y, entropy, magnetic field, shocks, radio relics, intracluster light &middot; <span class="k">K U M F O</span> velocity, turbulence, metals, Faraday rotation, radio halo &middot; fly out past the edge for the cosmic web &middot; <span class="k">E</span> the view from Earth (the real 2M++ galaxies in amber, North up, East left) &middot; <span class="k">I</span> radial profiles &middot; click a galaxy for its catalogue entry &middot; <span class="k">J</span> next sight (or click a label) &middot; <span class="k">, .</span> step through the nine full-resolution epochs (z = 2 &rarr; 0) &middot; the <span class="k">time slider</span> top right scrubs all 113 snapshots, <span class="k">Z</span> plays them</p>
+ <span class="k">SHIFT</span> boost &middot; <span class="k">1&ndash;9, 0</span> fields: dark matter, density, temperature, X-ray, Compton y, entropy, magnetic field, shocks, radio relics, intracluster light &middot; <span class="k">K U M F O</span> velocity, turbulence, metals, Faraday rotation, radio halo &middot; <span class="k">5 5</span> kinetic SZ &middot; fly out past the edge for the cosmic web &middot; <span class="k">E</span> the view from Earth (the real 2M++ galaxies in amber, North up, East left) &middot; <span class="k">I</span> radial profiles &middot; click a galaxy for its catalogue entry &middot; <span class="k">J</span> next sight (or click a label) &middot; <span class="k">, .</span> step through the nine full-resolution epochs (z = 2 &rarr; 0) &middot; the <span class="k">time slider</span> top right scrubs all 113 snapshots, <span class="k">Z</span> plays them</p>
  <p style="color:var(--hud-dim)">magma = hot ICM &middot; cyan = cold / star-forming gas &middot; stellar light of ALL 30M stars (volume) + particle sparkle; blue young &rarr; red old &middot; violet beacons = black holes (size by mass)</p>
  <p id="warn" hidden>WebGL2 unavailable in this browser.</p>
  <div class="go" id="go"><span id="got">LOADING&hellip;</span><div id="lbar"><i></i></div></div>
@@ -329,6 +329,11 @@ void main(){
    // volume itself only adds a faint grey of the gas, the sum is coloured after the loop
    vec3 bb=uBv0.x*sinh((texture(uBv,uv).rgb-0.5)*2.*uBv0.y); float ne=uRm.x*pow(10.,d*uPy.y)*step(0.002,texture(uVel,uv).a);
    rm+=812.*ne*dot(bb,rd)*dt*uRm.y*edge; col=vec3(.30,.34,.44); em=0.05*v;
+  }else if(uMode==15){
+   // kinetic SZ: dT/T = -(sigma_T / c) sum n_e v_los dl, a screen integral (uKin.w = the constant in uK per cm^-3 km/s kpc);
+   // gas receding along the ray gives a decrement (blue), approaching an increment (red); the volume adds a faint grey
+   vec4 kv=texture(uVel,uv); vec3 vv=(kv.xyz-0.5)*2.*uKin.x; float ne=uRm.x*pow(10.,d*uPy.y)*step(0.002,kv.a);
+   rm+=-uKin.w*ne*dot(vv,rd)*dt*uRm.y*edge; col=vec3(.30,.34,.44); em=0.05*v;
   }else if(uMode==14){
    // radio halo: turbulent re-acceleration proxy ~ gas density x (sigma / 300 km/s)^2 x B^2 / (B^2 + B_CMB^2)
    vec4 kv=texture(uVel,uv); float sg=pow(10.,1.+2.*kv.a)/300.; vec3 bb=uBv0.x*sinh((texture(uBv,uv).rgb-0.5)*2.*uBv0.y);
@@ -352,7 +357,7 @@ void main(){
   if(A>0.985)break;
  }
  C+=(1.-A)*sky(rd)*uSky;
- if(uMode==13){float q=rm/uRm.z; C+=(q>0.?vec3(1.,.3,.2):vec3(.25,.45,1.))*min(abs(q),1.)*1.2+vec3(1.)*max(abs(q)-1.,0.)*0.5;}
+ if(uMode==13||uMode==15){float q=rm/(uMode==13?uRm.z:uRm.w); C+=(q>0.?vec3(1.,.3,.2):vec3(.25,.45,1.))*min(abs(q),1.)*1.2+vec3(1.)*max(abs(q)-1.,0.)*0.5;}
  C=1.-exp(-1.45*C);
  float lum=dot(C,vec3(.299,.587,.114));
  C=clamp(mix(vec3(lum),C,1.45),0.,1.);
@@ -439,7 +444,7 @@ const T_LOAD0=performance.now();let T_LOAD=0;
  try{const mg=await ugz(D_MAG);T0.mag=vol3d(mg,192);PROBE0.mag=mg;showBtn(8);if(wantMode===8)setMode(8);}catch(e){}
  // optional kinematics / metals / B-vector / outer cubes (pack_cubes.py kin met bvec outer): their modes appear as they load
  await Promise.all([
-  ugz(D_VEL).then(a=>{RAW0.vel=[a,192,4];PROBE0.vel=a;PROBE0.nvel=192;showBtn(10);showBtn(11);}).catch(()=>{}),
+  ugz(D_VEL).then(a=>{RAW0.vel=[a,192,4];PROBE0.vel=a;PROBE0.nvel=192;showBtn(10);showBtn(11);showBtn(15);}).catch(()=>{}),
   ugz(D_MET).then(a=>{RAW0.met=[a,192,1];PROBE0.met=a;showBtn(12);}).catch(()=>{}),
   ugz(D_BVEC).then(a=>{RAW0.bvec=[a,192,3];}).catch(()=>{}),
   ugz(D_OUT).then(a=>{RAW0.out=[a,192,2];}).catch(()=>{})]);
@@ -566,14 +571,14 @@ function gbuf(){gvao=gl.createVertexArray();gl.bindVertexArray(gvao);rawbuf(graw
 let pos=[0,0.10,-0.88],yaw=0,pitch=-0.02,vel=[0,0,0],mode=0,keys={},auto=true,atau=0,pendingMode=-1,fadeMs=900;
 let stillT=0,accN=0;
 const names=['gas density + cold gas','X-ray emission','temperature','dark matter','intracluster light','shocks · Mach number','gas entropy','radio relics','magnetic field','Compton y · electron pressure',
- 'gas velocity · line of sight','velocity dispersion · turbulence','metallicity','Faraday rotation measure','radio halo'];
+ 'gas velocity · line of sight','velocity dispersion · turbulence','metallicity','Faraday rotation measure','radio halo','kinetic SZ · ΔT'];
 // the fields on the digit keys 1 .. 9, 0, in this order (mode ids stay as in the share links)
 const ORDER=[3,0,2,1,9,6,8,5,7,4];
 // a mode needs its cubes: the optional ones at z = 0 (T0) or of that epoch (q.tex), same keys
-const NEED={3:['dm'],5:['shk'],7:['shk'],8:['mag'],10:['vel'],11:['vel'],12:['met'],13:['bvec','vel'],14:['bvec','vel']};
+const NEED={3:['dm'],5:['shk'],7:['shk'],8:['mag'],10:['vel'],11:['vel'],12:['met'],13:['bvec','vel'],14:['bvec','vel'],15:['vel']};
 const modeOK=(m,i)=>{i=i===undefined?ep:i;const T=i===EP0?T0:(EPOCHS[i].tex||{});return (NEED[m]||[]).every(k=>!!(T[k]||(i===EP0&&RAW0[k])));};
 const SPRITES=m=>m<3||m===6||(m>=8&&m<=12);        // modes that draw the galaxy light and the cold gas
-const NOGAL=new Set([4,5,7,13,14]);                // modes without the galaxy sprites and black holes
+const NOGAL=new Set([4,5,7,13,14,15]);                // modes without the galaxy sprites and black holes
 // ---- video capture of the canvas (V): WebM via MediaRecorder, saved when stopped ----
 let rec=null,recChunks=[];
 function toggleRec(){if(rec){rec.stop();return;}
@@ -591,7 +596,7 @@ function basis(){const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp2=
  const u=[f[1]*r[2]-f[2]*r[1],f[2]*r[0]-f[0]*r[2],f[0]*r[1]-f[1]*r[0]];
  return[f,r,u]}
 addEventListener('keydown',e=>{keys[e.code]=1;accN=0;
- if(e.code.startsWith('Digit')){const m=ORDER[(+e.code.slice(5)+9)%10];if(modeOK(m))setMode(m);}
+ if(e.code.startsWith('Digit')){let m=ORDER[(+e.code.slice(5)+9)%10];if(m===9&&mode===9&&modeOK(15))m=15;if(modeOK(m))setMode(m);}   // 5 again: Compton y -> kinetic SZ
  if(e.code==='Comma'){stopTimelapse();stopMovie();setEpoch(ep-1);}if(e.code==='Period'){stopTimelapse();stopMovie();setEpoch(ep+1);}
  if(e.code==='KeyZ'){if(MV){if(mvOn&&mvPlay)mvPlay=false;else{if(!mvOn){mvT=0;mvReq=1;}else if(mvT>=MV.length-1)mvT=0;mvPlay=true;}}else if(tlActive)stopTimelapse();else timelapse();}
  if(mvOn&&MV){if(e.code==='BracketLeft'){mvPlay=false;mvT=Math.max(0,Math.round(mvT)-1);}if(e.code==='BracketRight'){mvPlay=false;mvT=Math.min(MV.length-1,Math.round(mvT)+1);}
@@ -630,7 +635,7 @@ function showBtn(m){bs[m].hidden=false;}
 // smoothstep stretches as the shader, so a tick sits where that value is drawn. ----
 const SCL={rho:[-4.213250411493134,-1.4482135396231652],temp:[5.5,8.0318],xray:[-8.395869887118087,-2.1756899200389395],
  dm:[-4.5162882804870605,-0.398705455660775],scol:[0.1009701246701794,1.1038364340893168],mach:[1,5],mag:[-3.0,1.0],vel:1500,sig:[1,3],met:[-2,0.5],bvec:[0.05,10]};
-const VLIM=800,RMLIM=300;   // colour range of the line-of-sight velocity [km/s] and of the rotation measure [rad/m^2]
+const VLIM=800,RMLIM=300,KSZLIM=10,KSZK=0.01864;   // colour ranges: line-of-sight velocity [km/s], rotation measure [rad/m^2], kinetic SZ [uK]; KSZK = sigma_T/c * kpc * T_cmb in uK per (cm^-3 km/s kpc)
 const ss=(a,b,x)=>{x=Math.min(Math.max((x-a)/(b-a),0),1);return x*x*(3-2*x)};
 const mx=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
 const CMAP={
@@ -672,7 +677,8 @@ const BARS=[
  {n:'velocity dispersion inside a 47 kpc/h voxel &sigma; [km/s]',c:'sig',u:x=>ss(.35,.85,(lg(x)-SCL.sig[0])/(SCL.sig[1]-SCL.sig[0])),ticks:[[50,'50'],[100,'100'],[200,'200'],[400,'400']]},
  {n:'gas metallicity Z / Z&#9737;',c:'met',u:z=>ss(.4,.85,(lg(z)-SCL.met[0])/(SCL.met[1]-SCL.met[0])),ticks:[[0.1,'0.1'],[0.2,'0.2'],[0.5,'0.5'],[1,'1']]},
  {n:'Faraday rotation measure 812 &int; n<sub>e</sub> B<sub>&#8741;</sub> dl [rad m&#8315;&sup2;]',c:'rm',u:q=>0.5+0.5*q/RMLIM,ticks:[[-300,'&minus;300'],[-150,'&minus;150'],[0,'0'],[150,'150'],[300,'300']]},
- {n:'radio halo emissivity &prop; n &sigma;&sup2; B&sup2;/(B&sup2;+B<sub>CMB</sub>&sup2;) (relative)',c:'radio',u:j=>Math.min(1,j*1.2),ticks:[[0.1,'0.1'],[0.3,'0.3'],[0.83,'1']]}];
+ {n:'radio halo emissivity &prop; n &sigma;&sup2; B&sup2;/(B&sup2;+B<sub>CMB</sub>&sup2;) (relative)',c:'radio',u:j=>Math.min(1,j*1.2),ticks:[[0.1,'0.1'],[0.3,'0.3'],[0.83,'1']]},
+ {n:'kinetic SZ &Delta;T [&mu;K] &middot; blue: gas receding',c:'rm',u:q=>0.5+0.5*q/KSZLIM,ticks:[[-10,'&minus;10'],[-5,'&minus;5'],[0,'0'],[5,'5'],[10,'10']]}];
 // ---- HUD probe: the cube values at the camera position (nearest voxel of the outer cubes, same scales) ----
 const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
 function sci(x){const e=Math.floor(lg(x)),m=x/Math.pow(10,e);return (m>=9.95?'10':m.toFixed(1)+'×10')+String(e).split('').map(c=>SUP[c]).join('');}
@@ -713,16 +719,18 @@ function earthBasis(){const n=SKY.n,u=SKY.up;return [n.slice(),[n[1]*u[2]-n[2]*u
 // ---- the time slider: every snapshot 27 .. 139 as a 128^3 cube (extract_movie.py, pack_cubes.py movie), streamed
 // around the slider position, two neighbours blended in the shader; the tracked galaxies leave their orbits ----
 let MV=null,mvOn=false,mvT=0,mvPlay=false,mvReq=0,mvShow=null,mvPrev=0,mvSpeed=1,mvLoop=false,MVG=null;const MVC={},MVOK=new Set([0,2,6,9]),MVRATE=3.1,MVDMAX=0.06;   // snapshots per second when playing
-// the galaxy tracks: data/movie_gal.json = per snapshot [id, x, y, z, log M*, g-r, SF, log M_BH]; neighbours are matched by id
-fetch('data/movie_gal.json').then(r=>r.ok?r.json():null).then(g=>{if(g)MVG=g.map(arr=>{const m=new Map();for(const q of arr)m.set(q[0],q);return m;});}).catch(()=>{});
+// the galaxy tracks: data/movie_gal.json = per snapshot [id, x, y, z, log M*, g-r, SF, log M_BH, link]; the link is the row of the
+// same galaxy in the next snapshot (-1: none), made by pack_cubes.py from the predicted position, the mass and the most-bound id
+fetch('data/movie_gal.json').then(r=>r.ok?r.json():null).then(g=>{if(g)MVG=g;}).catch(()=>{});
 let mvGalBuf=null,mvGalVao=null,mvBhBuf=null,mvBhVao=null,mvGalN=0,mvBhN=0,mvGalT=-1;
 function mvGalaxies(){   // rebuild the sprite buffers for the current slider time: matched galaxies slide, unmatched fade at the ends
- if(!MVG||mvGalT===mvT)return;mvGalT=mvT;const i0=Math.floor(mvT),i1=Math.min(i0+1,MV.length-1),f=mvT-i0,A=MVG[i0]||new Map(),B=MVG[i1]||new Map();
+ if(!MVG||mvGalT===mvT)return;mvGalT=mvT;const i0=Math.floor(mvT),i1=Math.min(i0+1,MV.length-1),f=mvT-i0,A=MVG[i0]||[],B=MVG[i1]||[];
  const rec=[],bh=[];const push=(p,ms,gr,sf,mb,w)=>{const l=Math.min(1,Math.max(0,(ms-9)/3.5))*w;
   rec.push([p,Math.round(20+235*Math.pow(l,0.7)),Math.round(255*Math.min(1,Math.max(0,(gr-SCL.scol[0])/(SCL.scol[1]-SCL.scol[0])))),sf?60:90]);
   if(mb>6)bh.push([p,Math.min(1,Math.max(0.01583,(mb-5.833)/4.419))*w]);};
- for(const [id,a] of A){const b=B.get(id);if(b){const p=[a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f,a[3]+(b[3]-a[3])*f];push(p,a[4]+(b[4]-a[4])*f,a[5],a[6],a[7],1);}else push([a[1],a[2],a[3]],a[4],a[5],a[6],a[7],1-f);}
- for(const [id,b] of B)if(!A.has(id))push([b[1],b[2],b[3]],b[4],b[5],b[6],b[7],f);
+ const hasPrev=new Uint8Array(B.length);
+ for(const a of A){const b=(i1>i0&&a[8]>=0)?B[a[8]]:null;if(b){hasPrev[a[8]]=1;const p=[a[1]+(b[1]-a[1])*f,a[2]+(b[2]-a[2])*f,a[3]+(b[3]-a[3])*f];push(p,a[4]+(b[4]-a[4])*f,a[5],a[6],a[7],1);}else push([a[1],a[2],a[3]],a[4],a[5],a[6],a[7],1-f);}
+ if(i1>i0)B.forEach((b,k)=>{if(!hasPrev[k])push([b[1],b[2],b[3]],b[4],b[5],b[6],b[7],f);});
  const buf=new Uint8Array(rec.length*10),dv=new DataView(buf.buffer);
  rec.forEach((r,k)=>{for(let j=0;j<3;j++)dv.setInt16(k*10+2*j,Math.max(-32768,Math.min(32767,Math.round(r[0][j]*32767))),true);buf[k*10+6]=r[1];buf[k*10+7]=r[2];buf[k*10+8]=r[3];});
  if(!mvGalVao){mvGalVao=gl.createVertexArray();gl.bindVertexArray(mvGalVao);mvGalBuf=rawbuf(buf,10,SREC);}else{gl.bindBuffer(gl.ARRAY_BUFFER,mvGalBuf);gl.bufferData(gl.ARRAY_BUFFER,buf,gl.DYNAMIC_DRAW);}
@@ -818,6 +826,7 @@ const TOUR=[
  {n:'COLD FILAMENT',t:poiK('8'),off:0.2,d:14},
  {n:'HOT INTRACLUSTER MEDIUM · X-RAY',t:[0,0,0],r:0.9,orbit:true,d:20,m:1},
  {n:'SUNYAEV-ZELDOVICH · COMPTON y',t:[0,0,0],r:0.9,orbit:true,d:16,m:9},
+ {n:'KINETIC SZ · THE GAS FLOWS SEEN IN THE CMB',t:[0,0,0],r:0.9,orbit:true,d:14,m:15},
  {n:'GAS TEMPERATURE',t:[0,0,0],r:0.9,orbit:true,d:20,m:2},
  {n:'GAS MOTIONS · THE XRISM VIEW',t:[0,0,0],r:0.7,orbit:true,d:16,m:10},
  {n:'TURBULENCE',t:[0,0,0],r:0.7,orbit:true,d:14,m:11},
@@ -847,7 +856,23 @@ const LABELS=[{n:'NGC 4889 · BCG',p:[0,0,0]},{n:'NGC 4874',p:[0.0293,-0.0716,-0
  e.addEventListener('click',()=>{if(l.cur)goSight(l.cur,l.d||0.075,l.n);});w.appendChild(e);l.el=e;l.tx=e.firstChild;l.ld=e.lastChild;}}
 const HUDS=['tl','tr','bl','br','cb','sb','gi','pr','tsw'];   // HUD panels the labels keep clear of
 // ---- galaxy inspector: click a galaxy at z = 0 for its subhalo catalogue entry (data/galaxies.json, pack_cubes.py galaxies) ----
-let GAL=null,gsel=null;fetch('data/galaxies.json').then(r=>r.ok?r.json():null).then(g=>{GAL=g;}).catch(()=>{});
+let GAL=null,gsel=null,TRK=null;fetch('data/galaxies.json').then(r=>r.ok?r.json():null).then(g=>{GAL=g;}).catch(()=>{});
+fetch('data/galaxy_tracks.json').then(r=>r.ok?r.json():null).then(t=>{if(t){TRK={};for(const q of t)TRK[q.i]=q.t;if(gsel)history(gsel);}}).catch(()=>{});
+// the infall history: r / R200 and log M* against lookback time, star-forming stretches in blue, quenched in orange
+function history(g){const h=document.getElementById('gih'),cvs=document.getElementById('gic'),c=cvs.getContext('2d');c.clearRect(0,0,cvs.width,cvs.height);
+ const t=TRK&&TRK[g.i];if(!t||!MV||t.length<2){h.textContent=TRK?'no history (not tracked through the snapshots)':'';cvs.hidden=true;return;}cvs.hidden=false;
+ const inf=t.find(q=>q[1]<1),lastSF=[...t].reverse().find(q=>q[3]>0),tl=k=>MV[k].t;
+ const parts=[];if(g.i===0)parts.push('the cluster itself');else if(inf)parts.push('inside R200 since '+tl(inf[0]).toFixed(1)+' Gyr ago (z = '+MV[inf[0]].z.toFixed(2)+'), M★ then '+sci(Math.pow(10,inf[2]))+' M☉');else parts.push('still outside R200');
+ if(lastSF&&lastSF!==t[t.length-1]&&t[t.length-1][3]===0)parts.push('star formation ended '+tl(lastSF[0]).toFixed(1)+' Gyr ago');else if(t[t.length-1][3]>0)parts.push('still forming stars');
+ parts.push('tracked from z = '+MV[t[0][0]].z.toFixed(2));h.textContent=parts.join(' · ');
+ const W=cvs.width,H=cvs.height,L=34,R=W-6,T=6,B=H-14,tmax=MV[0].t,x=k=>L+(1-tl(k)/tmax)*(R-L);
+ const rmax=Math.max(1.5,...t.map(q=>q[1]))*1.05,yr=r=>B-(r/rmax)*(B-T),ms=t.map(q=>q[2]),m0=Math.min(...ms)-0.1,m1=Math.max(...ms)+0.1,ym=m=>B-(m-m0)/(m1-m0)*(B-T);
+ c.font='9.5px IBM Plex Mono,monospace';c.strokeStyle='rgba(159,216,232,.15)';c.strokeRect(L,T,R-L,B-T);
+ c.strokeStyle='rgba(159,216,232,.5)';c.setLineDash([3,3]);c.beginPath();c.moveTo(L,yr(1));c.lineTo(R,yr(1));c.stroke();c.setLineDash([]);
+ c.fillStyle='#4d6a74';c.textAlign='right';c.fillText('R200',L-2,yr(1)+3);c.fillText(rmax.toFixed(0)+' R200',L-2,T+8);c.textAlign='center';for(const g2 of[10,7.5,5,2.5,0])if(g2<=tmax)c.fillText(g2?g2+' Gyr':'now',x(MV.findIndex(e=>e.t<=g2)),H-3);
+ c.lineWidth=1.5;for(let i=1;i<t.length;i++){c.strokeStyle=t[i][3]>0?'#598cff':'#e8a24a';c.beginPath();c.moveTo(x(t[i-1][0]),yr(t[i-1][1]));c.lineTo(x(t[i][0]),yr(t[i][1]));c.stroke();}
+ c.lineWidth=1;c.strokeStyle='rgba(200,210,218,.55)';c.beginPath();t.forEach((q,i)=>{const px=x(q[0]),py=ym(q[2]);if(i)c.lineTo(px,py);else c.moveTo(px,py);});c.stroke();
+ c.fillStyle='rgba(200,210,218,.7)';c.textAlign='left';c.fillText('M★ '+sci(Math.pow(10,m0+0.1)).replace(/×10/,'e')+' → '+sci(Math.pow(10,m1-0.1)).replace(/×10/,'e'),L+3,T+8);}
 function galName(g){const l=LABELS.find(l=>!l.dim&&Math.hypot(l.p[0]-g.p[0],l.p[1]-g.p[1],l.p[2]-g.p[2])<0.02);return l?l.n:'GALAXY · SUBHALO '+g.i;}
 function fmtM(l){return l>0?sci(Math.pow(10,l))+' M☉':'–';}
 function pick(px,py){if(!GAL||ep!==EP0){select(null);return;}const[f,r,u]=earth?earthBasis():basis(),asp=innerWidth/innerHeight;let best=null,bd=22;
@@ -859,7 +884,7 @@ function select(g){gsel=g;const e=document.getElementById('gi');if(!g){e.hidden=
  document.getElementById('gin').textContent=galName(g);
  document.getElementById('gib').innerHTML=[['M<sub>★</sub>',fmtM(g.ms)+(g.i===0?' incl. the intracluster light':'')],['SFR',g.sfr>0?g.sfr.toFixed(2)+' M☉ / yr':'quenched'],
   ['M<sub>gas</sub>',fmtM(g.mg)],['M<sub>subhalo</sub>',fmtM(g.mh)],['r<sub>½,★</sub>',g.rh+' kpc'],['V<sub>max</sub>',g.v+' km/s'],['g − r',g.gr.toFixed(2)],
-  ['M<sub>BH</sub>',fmtM(g.bh)],['d<sub>BCG</sub>',g.d.toFixed(2)+' Mpc']].map(([k,v])=>'<div>'+k+'&nbsp; <b>'+v+'</b></div>').join('');}
+  ['M<sub>BH</sub>',fmtM(g.bh)],['d<sub>BCG</sub>',g.d.toFixed(2)+' Mpc']].map(([k,v])=>'<div>'+k+'&nbsp; <b>'+v+'</b></div>').join('');history(g);}
 document.getElementById('gix').addEventListener('click',()=>select(null));
 document.getElementById('gif').addEventListener('click',()=>{if(gsel)goSight(gsel.p,0.06,galName(gsel));});
 // ---- radial profiles (I): spherical means of the resident cubes about the centre, the camera's radius marked ----
@@ -897,7 +922,7 @@ function writeHash(){history.replaceState(null,'','#p='+pos.map(v=>v.toFixed(4))
 (function readHash(){const h=new URLSearchParams(location.hash.slice(1));if(!h.has('p'))return;
  const p=h.get('p').split(',').map(Number);if(p.length!==3||p.some(isNaN))return;
  pos=p;yaw=+h.get('y')||0;pitch=+h.get('pi')||0;vel=[0,0,0];auto=false;
- const m=+h.get('m');if(NEED[m])wantMode=m;else if(m>=0&&m<=14)setMode(m);
+ const m=+h.get('m');if(NEED[m])wantMode=m;else if(m>=0&&m<=15)setMode(m);
  if(h.get('g')==='0')showStars=false;if(h.get('c')==='0')showCold=false;
  const zs=+h.get('z');const ei=EPOCHS.findIndex(q=>q.s===zs);if(ei>=0)wantEp=ei;})();
 document.getElementById('go').addEventListener('click',()=>document.getElementById('intro').remove());
@@ -998,7 +1023,7 @@ function frameInner(){
  if(E.met){gl.activeTexture(gl.TEXTURE12);gl.bindTexture(gl.TEXTURE_3D,E.met);gl.uniform1i(uV.uMet,12);}
  if(E.bvec){gl.activeTexture(gl.TEXTURE13);gl.bindTexture(gl.TEXTURE_3D,E.bvec);gl.uniform1i(uV.uBv,13);}
  if(T0.out){gl.activeTexture(gl.TEXTURE14);gl.bindTexture(gl.TEXTURE_3D,T0.out);gl.uniform1i(uV.uOut,14);}
- {const zz=EPOCHS[ep].z;gl.uniform4f(uV.uKin,SCL.vel,VLIM,3.24*(1+zz)*(1+zz),0.);gl.uniform4f(uV.uRm,NE0,4500/0.681/(1+zz),RMLIM,0.);
+ {const zz=EPOCHS[ep].z;gl.uniform4f(uV.uKin,SCL.vel,VLIM,3.24*(1+zz)*(1+zz),KSZK);gl.uniform4f(uV.uRm,NE0,4500/0.681/(1+zz),RMLIM,KSZLIM);
   gl.uniform2f(uV.uBv0,SCL.bvec[0],Math.asinh(SCL.bvec[1]/SCL.bvec[0]));gl.uniform1f(uV.uWide,wide?1.:0.);}
  const mvUse=mvOn&&mvShow;gl.uniform1f(uV.uMovie,mvUse?1.:0.);
  if(mvUse){gl.activeTexture(gl.TEXTURE15);gl.bindTexture(gl.TEXTURE_3D,mvShow[0]);gl.uniform1i(uV.uMv0,15);gl.activeTexture(gl.TEXTURE6);gl.bindTexture(gl.TEXTURE_3D,mvShow[1]);gl.uniform1i(uV.uMv1,6);gl.uniform1f(uV.uMvT,mvShow[2]);
