@@ -20,3 +20,8 @@ scalings in `cube_scales.json`, all cubes C-ordered x,y,z uint8 over +-4500 ckpc
   g-r as at z=0; `ep{109,121}_pk384.u8.gz` the same at 384^3 for the two late epochs
 - `ep{S}_stars.bin.gz`: the galaxy sprites of each epoch in the `stars.bin.gz` record
   format, encoded to match the shipped z=0 file (`pack_cubes.py calib_sp`, see TODO.md)
+- `ep{S}_gas.bin.gz`: the cold-gas sprites of each epoch (`gas.bin.gz` record, `calib_cg`)
+- `ep{S}_meta.json`: the epoch's black holes (as `D_BH`) and the tracked positions of the
+  named galaxies (most bound particles of their z=0 subhaloes)
+- Shader-only fields from the cubes above: entropy (K, from temperature + density) and
+  radio relics (F, dissipation x Mach efficiency from the shock cubes)

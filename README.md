@@ -4,9 +4,10 @@
 
 The full-resolution build (`index.html`, streams ~30 MB of data from `data/`)
 runs on GitHub Pages at the link above: guided tour, gas / X-ray / temperature /
-dark-matter / shock / intracluster-light modes with colour bars, nine epochs from
-z = 1.95 to today (keys , and .) with the galaxies of each epoch, named galaxies,
-shareable views (L), PNG export (P).
+dark-matter / shock / entropy / radio-relic / intracluster-light modes with colour
+bars and a probe readout, nine epochs from z = 1.95 to today (keys , and .) with the
+galaxies, cold gas, black holes and tracked named galaxies of each epoch, shareable
+views (L), PNG export (P), video capture (V).
 See `DEEP.md` for what is in it and `TODO.md` for how the cubes are made
 (`extract_cubes.py`, `run_cubes.sbatch`, `pack_cubes.py` on raven). The rest of
 this file describes the light self-contained artifact version.
@@ -32,8 +33,8 @@ Live copy: https://claude.ai/code/artifact/04ee4360-12d9-4361-bb20-76108562c6c6
 ## Controls
 drag / arrows look · WASD fly · SPACE/C rise/sink · SHIFT boost ·
 Q/E roll · 1/2/3 density / X-ray / temperature · 5–9 sights · T autopilot ·
-H hide HUD · , . step epoch · Z time-lapse z = 2 → 0 · X hide/show galaxies · N hide/show dense gas · P photo (PNG) · L copy link to this view · I intracluster light ·
-0 dark matter · 4 shocks · , . step through the epochs (these three only in the
+H hide HUD · , . step epoch · Z time-lapse z = 2 → 0 · X hide/show galaxies · N hide/show dense gas · P photo (PNG) · V record video · L copy link to this view · I intracluster light ·
+0 dark matter · 4 shocks · K entropy · F radio relics · , . step through the epochs (these only in the
 GitHub Pages build, and only when their cubes are present) · B bloom on/off · R reset
 
 ## Data provenance

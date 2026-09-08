@@ -5,10 +5,12 @@
 #                                   (data/*.u8.gz) against raw_139.h5 and writes cube_scales.json
 #   python pack_cubes.py calib_sp -> fits the galaxy-sprite encoding (sp_lum, sp_col, sp_min) of the shipped
 #                                   data/stars.bin.gz against the star particles of raw_139.h5 (sp_* datasets)
+#   python pack_cubes.py calib_cg -> the cold-gas sprite encoding of data/gas.bin.gz against raw_139.h5 (cg_* datasets)
 #   python pack_cubes.py 139     -> data/dm384.u8.gz idm192.u8.gz shock384.u8.gz ishock192.u8.gz
 #   python pack_cubes.py 27      -> data/ep027_{pk,xray,temp,dm,shock}192.u8.gz (same scales as z=0)
-#                                   + ep027_stars.bin.gz (galaxy sprites) + ep027_pk384.u8.gz where the raw
-#                                   file has the 384^3 grids (snapshots 109, 121)
+#                                   + ep027_stars.bin.gz (galaxy sprites), ep027_gas.bin.gz (cold-gas sprites),
+#                                   ep027_meta.json (black holes + tracked label positions) + ep027_pk384.u8.gz
+#                                   where the raw file has the 384^3 grids (snapshots 109, 121)
 # All cubes are C-ordered (x,y,z) uint8; the page samples them as uv.zyx.
 import sys, os, json, gzip, numpy as np, h5py
 from scipy.ndimage import gaussian_filter, maximum_filter
@@ -167,6 +169,40 @@ def calib_sp():
     print('  96^3 sprite-light maps: corr(log) = %.4f over %d cells, total light ratio new/shipped = %.3f' % (np.corrcoef(np.log10(a[m] + .1), np.log10(b[m] + .1))[0, 1], m.sum(), b.sum() / a.sum()))
     print('  wrote', RAW + '/stars139_regen.bin.gz', '(not shipped; copy over data/stars.bin.gz to use the regenerated z=0 sprites)')
 
+BH_LO, BH_HI, BH_MIN = 5.833, 10.252, 0.01583   # D_BH mass byte: m = (log10 M_BH[Msun/h] - lo)/(hi - lo), floor at the seed mass (fit r = 1.000)
+
+def calib_cg():
+    """cold-gas sprite encoding of the shipped gas.bin.gz (8-byte records: int16 xyz, byte log rho, byte SF flag)
+    against the cold cells of raw_139.h5: the byte is linear in log10 rho (r = 0.98, lo -3.21 hi -0.88 with a floor
+    of 9); a quantile table reproduces its histogram exactly.  Shipped set = the 200k densest cold / SF cells."""
+    S = json.load(open(SC)); f = h5py.File(RAW + '/raw_139.h5', 'r')
+    raw = gzip.decompress(open(os.path.join(DATA, 'gas.bin.gz'), 'rb').read()); n = len(raw) // 8
+    ship = np.frombuffer(raw, np.uint8).reshape(n, 8)
+    lr = f['cg_lrho'][:]; order = np.argsort(lr)[::-1][:n]
+    print('shipped cold-gas sprites %d, raw cold cells %d, threshold log rho = %.3f' % (n, len(lr), lr[order[-1]]))
+    S['cg_lrho'] = qq_table(lr[order], ship[:, 6], 'lrho'); S['cg_n'] = n
+    json.dump(S, open(SC, 'w'), indent=1); print('wrote', SC)
+
+def gas_pack(f, S):
+    lr = f['cg_lrho'][:]; keep = np.argsort(lr)[::-1][:S['cg_n']]
+    pos = f['cg_pos'][:][keep]; n = len(keep); rec = np.zeros((n, 8), np.uint8)
+    rec[:, :6] = np.clip(np.round(pos / HALF * 32767.), -32768, 32767).astype('<i2').view(np.uint8).reshape(n, 6)
+    rec[:, 6] = qmap(lr[keep], S['cg_lrho']); rec[:, 7] = f['cg_sf'][:][keep].astype(np.uint8) * 255
+    print('  cold gas: %d cells (log rho >= %.2f, SF %d)' % (n, lr[keep].min(), int(rec[:, 7].sum() // 255)), flush=True)
+    return rec
+
+def meta_json(f, name):
+    """black holes (x, y, z, m as in the page's D_BH) and the tracked label positions of one snapshot"""
+    out = {}
+    if 'bh_mass' in f:
+        m = np.clip((np.log10(f['bh_mass'][:].astype(np.float64) * 1e10) - BH_LO) / (BH_HI - BH_LO), BH_MIN, 1.)
+        p = f['bh_pos'][:] / HALF; out['bh'] = [round(float(v), 5) for row in np.column_stack([p, m]) for v in row]
+    if 'lab_pos' in f:
+        names = [s.decode() for s in f.attrs['lab_names']]; lp = f['lab_pos'][:] / HALF; ln = f['lab_n'][:]
+        out['labels'] = [{'n': nm, 'p': [round(float(v), 4) for v in lp[i]], 'n_tracers': int(ln[i])} for i, nm in enumerate(names) if np.isfinite(lp[i]).all()]
+    json.dump(out, open(os.path.join(DATA, name), 'w'), separators=(',', ':'))
+    print('  wrote %s: %d black holes, labels %s' % (name, len(out.get('bh', [])) // 4, [(l['n'], l['p'], l['n_tracers']) for l in out.get('labels', [])]), flush=True)
+
 def pack139():
     S = json.load(open(SC)); f = h5py.File(RAW + '/raw_139.h5', 'r')
     lo, hi = S['dm'][:2]
@@ -197,11 +233,15 @@ def pack_epoch(snap):
         gr = np.where(L > 0, f['st_Lc384'][:] / np.maximum(L, 1e-30), S['scol'][0]); sc = u8(gr, S['scol'][0], S['scol'][1]); del L, gr
         wr(p + 'pk384.u8.gz', np.stack([rho, sl, sc], axis=-1))
     if 'sp_lr' in f and 'sp_min' in S: wr(p + 'stars.bin.gz', stars_pack(f, S))
+    if 'cg_lrho' in f and 'cg_n' in S: wr(p + 'gas.bin.gz', gas_pack(f, S))
+    if 'bh_mass' in f or 'lab_pos' in f: meta_json(f, p + 'meta.json')
 
 if __name__ == '__main__':
     a = sys.argv[1]
     if a == 'check': sys.exit(0 if check() else 1)
     elif a == 'calib': calib()
     elif a == 'calib_sp': calib_sp()
+    elif a == 'calib_cg': calib_cg()
+    elif a == 'meta139': meta_json(h5py.File(RAW + '/raw_139.h5', 'r'), 'ep139_meta.json')   # check against D_BH / LABELS, not shipped
     elif a == '139': pack139()
     else: pack_epoch(int(a))

@@ -15,7 +15,8 @@ import sys, os, glob, time, numpy as np, h5py
 from multiprocessing import Pool
 
 SNAP = int(sys.argv[1])
-PARTS = sys.argv[2].replace(',', '+').split('+') if len(sys.argv) > 2 else ['gas', 'dm', 'stars', 'sp']
+PARTS = sys.argv[2].replace(',', '+').split('+') if len(sys.argv) > 2 else ['gas', 'dm', 'stars', 'sp', 'cold', 'bh', 'lab']
+LISTS = ('sp_', 'cg_', 'bh_', 'lab_')                # per-particle dumps: concatenated, not summed
 BASE = '/raven/ptmp/uli/sims/borg_coma_zoom_TNG100_first_try/step_011/output'
 OUT = '/ptmp/uli/coma_cubes'
 HALF = 4500.0; N = 192; N2 = 384; IH = 1200.0; NI = 192
@@ -53,7 +54,7 @@ def add(acc, part):
     for k, v in part.items():
         if k not in acc: acc[k] = v
         elif k.startswith('max_'): np.maximum(acc[k], v, out=acc[k])
-        elif k.startswith('sp_'): acc[k] = np.concatenate([acc[k], v])
+        elif k.startswith(LISTS): acc[k] = np.concatenate([acc[k], v])
         else: acc[k] += v
 
 # ---------------------------------------------------------------- tracers -> centre
@@ -148,6 +149,54 @@ def do_sp(args):
     return {'sp_pos': d[m][keep].astype(np.float32), 'sp_lr': lr[keep].astype(np.float32),
             'sp_gr': (ph[:, 4] - ph[:, 5])[keep].astype(np.float32), 'sp_age': age[m][keep].astype(np.float32)}
 
+CG_MAX = 400000                                      # cold cells kept per snapshot (pack ships the 200k densest)
+def do_cold(args):
+    """cold / star-forming gas cells for the cyan sprites: position, log10 density, SF flag"""
+    fn, cen = args
+    with h5py.File(fn, 'r') as f:
+        g = f['PartType0']
+        d = wrap(g['Coordinates'][:].astype(np.float64), cen)
+        m = np.max(np.abs(d), axis=1) < HALF
+        if not m.any(): return {}
+        d = d[m]; rho = g['Density'][:][m]; u = g['InternalEnergy'][:][m]; xe = g['ElectronAbundance'][:][m]
+        XH = g['GFM_Metals'][:, 0][m]; sfr = g['StarFormationRate'][:][m]
+    mu = 4. / (1. + 3. * XH + 4. * XH * xe); T = (GAMMA - 1.) * u * 1e10 * mu * MP / KB
+    sel = (sfr > 0) | (T < 10 ** 4.9)
+    if not sel.any(): return {}
+    lr = np.log10(rho[sel]); keep = np.argsort(lr)[::-1][:CG_MAX]
+    return {'cg_pos': d[sel][keep].astype(np.float32), 'cg_lrho': lr[keep].astype(np.float32), 'cg_sf': (sfr[sel][keep] > 0).astype(np.uint8)}
+
+def do_bh(args):
+    fn, cen = args
+    with h5py.File(fn, 'r') as f:
+        if 'PartType5' not in f or 'Coordinates' not in f['PartType5']: return {}
+        d = wrap(f['PartType5/Coordinates'][:].astype(np.float64), cen); m = np.max(np.abs(d), axis=1) < HALF
+        if not m.any(): return {}
+        return {'bh_pos': d[m].astype(np.float32), 'bh_mass': f['PartType5/BH_Mass'][:][m].astype(np.float32)}
+
+def find_ids(args):
+    """ids + coordinates of the DM particles in `ids` present in one file"""
+    fn, ids = args
+    with h5py.File(fn, 'r') as f:
+        pid = f['PartType1/ParticleIDs'][:]; m = np.isin(pid, ids)
+        return pid[m], (f['PartType1/Coordinates'][:][m] if m.any() else np.zeros((0, 3)))
+
+def track_labels(cen):
+    """named galaxies (label_tracers.npz: the most bound DM particles of their z=0 subhaloes): median
+    position of the tracers found, tightened to those within 300 kpc/h of the first estimate"""
+    L = np.load(OUT + '/label_tracers.npz'); names = list(L['names']); allids = np.concatenate([L['ids%d' % i] for i in range(len(names))])
+    with Pool(NPROC) as p: res = p.map(find_ids, [(fn, allids) for fn in files])
+    pid = np.concatenate([r[0] for r in res]); pos = wrap(np.concatenate([r[1] for r in res]).astype(np.float64), cen)
+    out = np.full((len(names), 3), np.nan); nfound = np.zeros(len(names), int)
+    for i, nm in enumerate(names):
+        m = np.isin(pid, L['ids%d' % i]); nfound[i] = m.sum()
+        if nfound[i] < 20: continue
+        med = np.median(pos[m], axis=0); near = np.linalg.norm(pos[m] - med, axis=1) < 300.
+        if near.sum() >= 20: med = np.median(pos[m][near], axis=0)
+        out[i] = med
+    print('labels:', ', '.join('%s: %d tracers at %s' % (nm, nfound[i], np.round(out[i])) for i, nm in enumerate(names)), flush=True)
+    return {'lab_pos': out.astype(np.float32), 'lab_n': nfound}, names
+
 if __name__ == '__main__':
     t0 = time.time(); os.makedirs(OUT, exist_ok=True)
     cen0 = np.load(OUT + '/cen139.npy')
@@ -182,13 +231,21 @@ if __name__ == '__main__':
             cen = cen_tr; info['group_M200'] = 0.0; info['group_R200'] = 0.0; info['group_dist'] = -1.0
         print('snap', SNAP, 'z=%.3f' % Z, 'tracers', len(tr), 'centre', cen, 'offset from z=0 centre', wrap(cen[None], cen0)[0], info, flush=True)
     acc = {}
-    todo = [(n, f) for n, f in (('gas', do_gas), ('dm', do_dm), ('stars', do_stars), ('sp', do_sp))
+    todo = [(n, f) for n, f in (('gas', do_gas), ('dm', do_dm), ('stars', do_stars), ('sp', do_sp), ('cold', do_cold), ('bh', do_bh))
             if n in PARTS or ('hires' in PARTS and n in ('gas', 'stars'))]
     for name, fun in todo:
         with Pool(NPROC) as p:
             for part in p.imap_unordered(fun, [(fn, cen) for fn in files]): add(acc, part)
         print(name, 'done', '%.0f s' % (time.time() - t0), flush=True)
     if 'sp_lr' in acc: print('sp: %d star particles with log L_r >= %.1f' % (len(acc['sp_lr']), SP_MINLOGL), flush=True)
+    if 'cg_lrho' in acc:
+        keep = np.argsort(acc['cg_lrho'])[::-1][:CG_MAX]
+        for k in ('cg_pos', 'cg_lrho', 'cg_sf'): acc[k] = acc[k][keep]
+        print('cold: %d cells kept (SF %d), log rho >= %.2f' % (len(keep), int(acc['cg_sf'].sum()), acc['cg_lrho'].min()), flush=True)
+    if 'bh_mass' in acc: print('bh: %d black holes' % len(acc['bh_mass']), flush=True)
+    lab_names = None
+    if 'lab' in PARTS and os.path.exists(OUT + '/label_tracers.npz'):
+        part, lab_names = track_labels(cen); acc.update(part)
     with h5py.File(RAWF, 'a' if APPEND else 'w') as o:
         if not APPEND:
             o.attrs['snap'] = SNAP; o.attrs['z'] = Z; o.attrs['cen'] = cen; o.attrs['cen139'] = cen0; o.attrs['half'] = HALF
@@ -197,4 +254,5 @@ if __name__ == '__main__':
         for k, v in acc.items():
             if k in o: del o[k]
             o.create_dataset(k, data=v, compression='gzip', compression_opts=1)
+        if lab_names: o.attrs['lab_names'] = np.array(lab_names, dtype='S')
     print('wrote', RAWF, 'keys', sorted(acc), '%.0f s' % (time.time() - t0), flush=True)

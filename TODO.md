@@ -10,6 +10,9 @@ for s in 139 27 41 56 65 77 91 109 121; do sbatch --export=ALL,SNAP=$s -J cubes_
 python pack_cubes.py check          # centre + axis order of raw_139.h5 vs the shipped rho384
 python pack_cubes.py calib          # once: the check, then fits the z=0 scalings -> cube_scales.json
 python pack_cubes.py calib_sp       # once: the galaxy-sprite encoding of stars.bin.gz -> cube_scales.json
+python pack_cubes.py calib_cg       # once: the cold-gas sprite encoding of gas.bin.gz -> cube_scales.json
+                                    # (label tracking needs /ptmp/uli/coma_cubes/label_tracers.npz, made by
+                                    #  .claude/tmp/labels.py from the z=0 group catalogue; parts run: gas dm stars sp cold bh lab)
 python pack_cubes.py 139            # dm384 / idm192 / shock384 / ishock192
 for s in 27 41 56 65 77 91 109 121; do python pack_cubes.py $s; done   # ep{S}_*192.u8.gz, ep{S}_stars.bin.gz, ep{109,121}_pk384
 ```
@@ -83,13 +86,40 @@ key `e` for the epoch, this page uses `,` `.` and `z`.
   the two 384 ones). Cold-gas sprites, black holes and labels are z=0 objects and hide
   at other epochs; the camera stays put.
 
+Sept 8, second round (page: entropy, radio, probe, legend, video, texture freeing; raven: cold gas,
+black holes and tracked labels per epoch):
+- Entropy mode (key K, mode 6): K = kT / n_e^(2/3) [keV cm^2] computed in the shader from the
+  temperature and density bytes (`uKt` constants from `cube_scales.json`), shown over
+  200..6300 keV cm^2, dark where the gas is below the temperature scale. No data needed.
+- Radio relic mode (key F, mode 7, needs the shock cubes): emissivity = dissipation (linear
+  again, the byte is log over ~3 dex) x efficiency(Mach) with the efficiency a smoothstep
+  Mach 1.8..3.6 (Hoeft & Bruggen 2007 in spirit). Merger shocks in dense gas light up, the
+  accretion shock does not. Both modes have colour bars and tour legs; `#m=6/7` in links.
+- HUD probe ("here"): n_H, T and rho_DM at the camera position from the outer cubes kept
+  in memory (`PROBE0`, `q.arr`; ~130 MB for z=0, ~35 MB per resident epoch).
+- Legend under the colour bar for the galaxy colours, cold gas and black holes.
+- V records the canvas to WebM (MediaRecorder, 30 fps, 24 Mbit/s); V again saves the file.
+- Only the current epoch and its neighbours stay on the GPU (`freeEpoch`); a freed epoch is
+  re-fetched from the browser cache when stepped to again.
+- `ep{S}_gas.bin.gz`: the 200k densest cold / star-forming cells of the snapshot in the
+  `gas.bin.gz` record (int16 xyz, byte log rho via a quantile table `cg_lrho` fitted to the
+  shipped file, byte SF flag 0/255). The shipped byte is linear in log rho (r = 0.98).
+- `ep{S}_meta.json`: `bh` = [x, y, z, m, ...] of every black hole in the cube, m as in `D_BH`
+  (m = (log10 M_BH[Msun/h] - 5.833) / 4.419, floor 0.01583 = seed mass; fit r = 1.000), and
+  `labels` = the tracked positions of NGC 4889, NGC 4874 and the NGC 4839 group: the
+  median of the 1000 most bound DM particles of their z=0 subhaloes (`label_tracers.npz`,
+  subhaloes 0, 75, 1 of group 0) found in that snapshot (`extract_cubes.py SNAP lab`).
+  The page moves the labels with them; the z=0 label positions are now these subhalo
+  centres (NGC 4839 moved 136 kpc/h from the black-hole position used before).
+- Untested by eye: entropy and radio stretches, the probe line's length in the HUD, the
+  legend row, whether the tracked labels sit on the right galaxies at early epochs
+  (NGC 4874 is a 7e10 Msun stripped satellite today; its tracers may scatter early on,
+  `n_tracers` in meta.json tells how many were found), video capture on Safari (mp4).
+
 ## RAVEN — needs the snapshots (run there, then copy into data/ and push)
 - Shock cubes: if Mach 1.2-1.5 turbulence still litters the ICM, raise the lower edge of
   the shader's Mach ramp; the cube scale (`mach`, 1..5) only needs repacking if the
   colour ramp should reach beyond Mach 5.
-- Cold-gas sprites (`gas.bin.gz`, 200k densest cold cells) per epoch, if wanted: the
-  same `sp`-style dump for PartType0 with sfr > 0 or T < 10^4.9 K, record int16 xyz +
-  bytes log rho, sf flag (8-byte stride, see `gbuf`).
 - If the epoch sprites should keep every particle above the z=0 threshold instead of
   the 1.2M brightest, raise `SP_CAP` in pack_cubes.py (z = 1.95 would need ~3M, 18 MB).
 
@@ -113,9 +143,9 @@ key `e` for the epoch, this page uses `,` `.` and `z`.
 ## Controls (current)
 drag / arrows look · WASD fly · SPACE/C rise/sink · SHIFT boost · Q/E roll
 , . step epoch · Z time-lapse · X galaxies on/off · N dense gas on/off
-1 density · 2 X-ray · 3 temperature · 0 dark matter · 4 shocks · I intracluster light
+1 density · 2 X-ray · 3 temperature · 0 dark matter · 4 shocks · K entropy · F radio relics · I intracluster light
 , . step through epochs · 5–9 sights · T tour · H hide HUD · G volume 1:1 · B bloom on/off
-P save PNG · L copy link (includes the epoch) · R reset
+P save PNG · V record video · L copy link (includes the epoch) · R reset
 
 Photo recipe: frame the view, release all keys, wait for "still N" in the HUD to
 pass ~30, press P. Press L to copy a link that reopens the same view.
