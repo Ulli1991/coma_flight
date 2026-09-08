@@ -12,6 +12,7 @@
 #   python pack_cubes.py movie   -> data/mv/mv_SNAP.u8.gz (128^3 RGB) + data/movie.json from extract_movie.py
 #   python pack_cubes.py galaxies -> data/galaxies.json (z=0 subhaloes for the galaxy inspector)
 #   python pack_cubes.py temp    -> temp192.u8.gz + ep*_temp192.u8.gz on the 3e5 .. 1.1e8 K scale (then re-run movie)
+#   python pack_cubes.py lite    -> lite_pk192 / lite_dm192 / lite_shock192: the z = 0 cubes of the page's lite build (192^3)
 #   python pack_cubes.py mag     -> data/mag192.u8.gz + data/ep*_mag192.u8.gz for every raw file with the magnetic
 #                                   field (extract_cubes.py SNAP mag); the log scale is fitted once at z=0 (`mag`)
 #   python pack_cubes.py 27      -> data/ep027_{pk,xray,temp,dm,shock}192.u8.gz (same scales as z=0)
@@ -425,6 +426,17 @@ def movie_flow(meta):
     json.dump(gal, open(os.path.join(DATA, 'movie_gal.json'), 'w'), separators=(',', ':'))
     print('wrote movie_gal.json (%d snapshots, %d galaxies in all, %.0f kB) and %d flow fields' % (len(gal), sum(len(g) for g in gal), os.path.getsize(os.path.join(DATA, 'movie_gal.json')) / 1e3, nflow))
 
+def pack_lite():
+    """the lite build's z = 0 cubes at 192^3 (60 MB on the GPU instead of 400): lite_pk192 (density, star light, g-r),
+    lite_dm192, lite_shock192 -- exactly the epoch recipe applied to raw_139 (the inner 192^3 cubes are shared)"""
+    S = json.load(open(SC)); f = h5py.File(RAW + '/raw_139.h5', 'r')
+    rho = u8(logq(f['gas_m'][:]), S['rho'][0] + LOG8, S['rho'][1] + LOG8)
+    L = f['st_L'][:]; sl = u8(logq(L), S['slum'][0] + LOG8, S['slum'][1] + LOG8)
+    gr = np.where(L > 0, f['st_Lc'][:] / np.maximum(L, 1e-30), S['scol'][0]); sc = u8(gr, S['scol'][0], S['scol'][1])
+    wr('lite_pk192.u8.gz', np.stack([rho, sl, sc], axis=-1))
+    wr('lite_dm192.u8.gz', u8(logq(gaussian_filter(f['dm_m'][:], 1.0)), S['dm'][0] + LOG8, S['dm'][1] + LOG8, DMF, 4))
+    wr('lite_shock192.u8.gz', shock_pack(f['max_mach'][:], f['gas_ed'][:], S, LOG8))
+
 def pack_mag():
     """magnetic field: mass-weighted |B| [uG] of the non-star-forming gas per 192^3 voxel (extract_cubes.py mag),
     physical uG at every epoch on one log10 scale, 0.001 .. 10 uG (z=0 profile: 3.3 uG within 100 kpc/h, 1.2 at
@@ -454,6 +466,7 @@ if __name__ == '__main__':
     elif a == 'galaxies': galaxies()
     elif a == 'sky': sky()
     elif a == 'temp': pack_temp()
+    elif a == 'lite': pack_lite()
     elif a == 'flow':   # the flow fields + galaxy tracks only (movie.json exists; its `flow` flags are updated)
         meta = json.load(open(os.path.join(DATA, 'movie.json'))); movie_flow(meta); json.dump(meta, open(os.path.join(DATA, 'movie.json'), 'w'), separators=(',', ':'))
     elif a == 'kin': pack_kin()

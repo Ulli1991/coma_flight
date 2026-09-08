@@ -10,6 +10,7 @@ snaps = [(int(s), 'hi:true' in body) for s, body in re.findall(r'\{s:(\d+),([^}]
 files = {'rho384.u8.gz': 384 ** 3, 'slum384.u8.gz': 384 ** 3, 'scol384.u8.gz': 384 ** 3, 'dm384.u8.gz': 384 ** 3, 'shock384.u8.gz': 2 * 384 ** 3,
          'xray192.u8.gz': 192 ** 3, 'temp192.u8.gz': 192 ** 3, 'irho192.u8.gz': 192 ** 3, 'islum192.u8.gz': 192 ** 3, 'iscol192.u8.gz': 192 ** 3,
          'idm192.u8.gz': 192 ** 3, 'ishock192.u8.gz': 2 * 192 ** 3, 'mag192.u8.gz': 192 ** 3, 'stars.bin.gz': None, 'gas.bin.gz': None,
+         'lite_pk192.u8.gz': 3 * 192 ** 3, 'lite_dm192.u8.gz': 192 ** 3, 'lite_shock192.u8.gz': 2 * 192 ** 3,
          'vel192.u8.gz': 4 * 192 ** 3, 'met192.u8.gz': 192 ** 3, 'bvec192.u8.gz': 3 * 192 ** 3, 'outer192.u8.gz': 2 * 192 ** 3}
 for s, hi in snaps:
     if s == 139: continue

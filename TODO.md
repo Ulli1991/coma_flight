@@ -204,6 +204,12 @@ Sept 8, fourth round ("beyond state of the art"): new physics, the cosmic web, t
   names move with their galaxies, the orbit lines are gone (the user preferred labels); (4) the timeline: a wide
   bar at the bottom centre with a play button, amber progress, a glowing handle, a large z / lookback readout,
   ticks for the nine full-resolution epochs (click = switch to it), [ ] step, + - speed, Y loop.
+- Lite build (the GPU load: ~400 MB of 3D textures at z = 0 in the full build, up to ~850 MB with two 384^3
+  epochs resident): `pack_cubes.py lite` -> `lite_pk192 / lite_dm192 / lite_shock192` (the epoch recipe on
+  raw_139, 9 MB); with `?lite=1` (or automatically for Intel / Mali / Adreno / PowerVR / software GPUs and
+  deviceMemory <= 4 GB) the page loads those instead of the 384^3 cubes (~60 MB), the late epochs at 192^3,
+  keeps only the current epoch resident and a 12-snapshot movie window. Q reloads with the other build; the
+  fps line says "lite". The inner 192^3 cubes are shared, so the core keeps its detail in both builds.
 - Floors at high redshift (audit of the z = 1.95 cubes against z = 0): X-ray 8% nonzero (core byte 184), DM 38%, metals
   11%, star light 0.5%, sigma 18% -- the cores sit mid-scale, only the outskirts fall below, physical. Shocks: 56% of
   the z = 2 voxels carry a Mach number vs 10% today (accretion everywhere); if the shock mode is a wall there, raise
