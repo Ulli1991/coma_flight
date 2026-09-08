@@ -487,7 +487,7 @@ void main(){vec2 uv=gl_FragCoord.xy/uRes;
 
  float gr2=fract(sin(dot(gl_FragCoord.xy+uTm,vec2(12.98,78.23)))*43758.5)-.5;
  oc=vec4(clamp(c+gr2*0.010,0.,1.),1.);}`;
-const pV=prog(VS,FS_T.replace('NSTEPS','120'));let hiQ=false;let volScale=0.5;
+const pV=prog(VS,FS_T.replace(/NSTEPS/g,'120'));   // two occurrences (the wide branch and the cluster loop)let hiQ=false;let volScale=0.5;
 const pS=prog(SVS,SFS2), pG=prog(GVS,SFS), pB=prog(BVS,SFS), pP=prog(VS,PFS), pC=prog(VS,CFS), pU=prog(VS,UFS);
 let fboHold=null,texHold=null,fboAcc=null,texAcc=null,fboA=null,texA=null,fboB=null,texB=null,fboC=null,texC=null,fboD=null,texD=null,fboE=null,texE=null,fboV=null,texV=null,bw=0,bh=0,vw=0,vh=0,bvs=0;
 function mkTex(w,h){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
