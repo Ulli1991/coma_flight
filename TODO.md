@@ -217,7 +217,11 @@ Sept 8, fourth round ("beyond state of the art"): new physics, the cosmic web, t
   star-forming, orange when quenched) with the M* curve.
 - 504 of the 803 z = 0 galaxies above 1e9 Msun have no black hole, 59% even above 1e11: TNG repositions black
   holes to the local potential minimum, so satellites hand theirs to a more massive neighbour; the inspector says
-  so instead of a dash. The beacons in the movie therefore mark the galaxies that still hold one.
+  so instead of a dash. The beacons in the movie therefore mark the galaxies that still hold one. Confirmed with
+  the tracks: of the galaxies whose closest approach was inside 0.25 R200 only 9% keep a black hole, 23% for
+  0.25-0.5, 54% for 0.5-1, 77% of those never inside R200 (above 3e10 Msun: 72% vs 25%) -- a pericentre event,
+  the central swallows them. Consequences: no satellite AGN feedback inside the cluster in this model, the BCG's
+  black hole (7e9 Msun) includes the swallowed ones. A model caveat, no fix without a re-run.
 - Lite build (the GPU load: ~400 MB of 3D textures at z = 0 in the full build, up to ~850 MB with two 384^3
   epochs resident): `pack_cubes.py lite` -> `lite_pk192 / lite_dm192 / lite_shock192` (the epoch recipe on
   raw_139, 9 MB); with `?lite=1` (or automatically for Intel / Mali / Adreno / PowerVR / software GPUs and
