@@ -37,27 +37,33 @@ key `e` for the epoch, this page uses `,` `.` and `z`.
   scales. Loaded on first use (~20 MB per epoch). Star sprites, cold-gas sprites, black
   holes and labels are z=0 objects and hide at other epochs; the camera stays put.
 
-## Page-side ideas not done yet
-- Galaxy labels: NGC 4874 and the NGC 4839 group are placed at the 2nd and 4th
-  most massive black holes (400 kpc/h and 2.4 Mpc/h from the core). Replace with
-  the real counterparts if known.
-- Tour pacing, label placement, ICL stretch, scale-bar width, shock colours and
-  brightness, epoch intensity at z = 1.95, the z = 0.1 -> 0 jump: all untested by
-  eye (WebGL2 does not work in headless Firefox on raven, so the page can only be
-  checked in a real browser).
-- The outskirts carry Mach 10-300 accretion shocks that saturate the Mach channel;
-  if the outer shell is too loud, raise the upper Mach scale in `cube_scales.json`
-  (`mach`, 1..5 now) and repack, or add a radial fade in the shader's mode-5 branch.
-- Epochs use the 192^3 grids only (no inner high-res core, no per-epoch sprites);
-  a 384^3 density for z = 0.2 / 0.1 would cost ~20 MB each.
-- Shock mode shows every shock-finder cell, including Mach 100+ shocks inside galaxy
-  ISM (saturated white-yellow dots); a temperature mask would keep only ICM shocks.
-- More epochs (z = 3, 1.5, 0.7, 0.35) are one sbatch + pack run each.
-- `_bench_baseline.html` / `_bench_expC.html`: untracked benchmark copies of an
-  earlier session, safe to delete.
+## RAVEN — needs the snapshots (run there, then copy into data/ and push)
+- Galaxy sprites per epoch. The diffuse star light is already in `ep*_pk192` (channels
+  rho, star light, g-r), so only the point sprites are z = 0 only. One `do_stars`-style
+  pass per snapshot writing `ep{S}_stars.bin.gz` in the `stars.bin.gz` format
+  (int16 xyz, then lum / g-r / h bytes, ~6 MB each); the page then draws them when
+  `ep!==EP0` (today it skips `pS` off z = 0).
+- More epochs (z = 3, 1.5, 0.7, 0.35): one sbatch + pack run each, then add the
+  entries to `EPOCHS` in index.html (s, z, lookback, M200c, R200c).
+- 384^3 density for z = 0.2 and 0.1 (~20 MB each) so the late epochs look as sharp
+  as z = 0.
+- If the accretion shell is still too loud after the shader fade: raise the upper
+  Mach scale in `cube_scales.json` (`mach`, 1..5 now) and repack.
+
+## PAGE — laptop only, needs a browser check (no data involved)
+- Galaxy labels: NGC 4874 and the NGC 4839 group sit at the 2nd and 4th most massive
+  black holes (400 kpc/h and 2.4 Mpc/h from the core). Move them if the real
+  counterparts are known.
+- Untested by eye: tour pacing incl. the new assembly leg, label placement, ICL
+  stretch, scale-bar width, shock colours after the temperature mask and radial fade,
+  epoch intensity at z = 1.95, the crossfade length (0.9 s), time-lapse cadence (3.8 s).
+- The tour's assembly leg downloads all five epochs (~100 MB) on first play; on a slow
+  connection consider skipping that leg until the epochs are cached.
+- `_bench_baseline.html` / `_bench_expC.html`: untracked benchmark copies, safe to delete.
 
 ## Controls (current)
 drag / arrows look · WASD fly · SPACE/C rise/sink · SHIFT boost · Q/E roll
+, . step epoch · Z time-lapse · X galaxies on/off
 1 density · 2 X-ray · 3 temperature · 0 dark matter · 4 shocks · I intracluster light
 , . step through epochs · 5–9 sights · T tour · H hide HUD · G volume 1:1 · B bloom on/off
 P save PNG · L copy link (includes the epoch) · R reset
