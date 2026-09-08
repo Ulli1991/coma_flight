@@ -9,14 +9,24 @@ ep = re.search(r'const EPOCHS=\[(.*?)\];', html).group(1)
 snaps = [(int(s), 'hi:true' in body) for s, body in re.findall(r'\{s:(\d+),([^}]*)\}', ep)]
 files = {'rho384.u8.gz': 384 ** 3, 'slum384.u8.gz': 384 ** 3, 'scol384.u8.gz': 384 ** 3, 'dm384.u8.gz': 384 ** 3, 'shock384.u8.gz': 2 * 384 ** 3,
          'xray192.u8.gz': 192 ** 3, 'temp192.u8.gz': 192 ** 3, 'irho192.u8.gz': 192 ** 3, 'islum192.u8.gz': 192 ** 3, 'iscol192.u8.gz': 192 ** 3,
-         'idm192.u8.gz': 192 ** 3, 'ishock192.u8.gz': 2 * 192 ** 3, 'mag192.u8.gz': 192 ** 3, 'stars.bin.gz': None, 'gas.bin.gz': None}
+         'idm192.u8.gz': 192 ** 3, 'ishock192.u8.gz': 2 * 192 ** 3, 'mag192.u8.gz': 192 ** 3, 'stars.bin.gz': None, 'gas.bin.gz': None,
+         'vel192.u8.gz': 4 * 192 ** 3, 'met192.u8.gz': 192 ** 3, 'bvec192.u8.gz': 3 * 192 ** 3, 'outer192.u8.gz': 2 * 192 ** 3}
 for s, hi in snaps:
     if s == 139: continue
     p = 'ep%03d_' % s
     files[p + ('pk384.u8.gz' if hi else 'pk192.u8.gz')] = 3 * (384 if hi else 192) ** 3
-    for k in ('xray', 'temp', 'dm', 'mag'): files[p + k + '192.u8.gz'] = 192 ** 3
+    for k in ('xray', 'temp', 'dm', 'mag', 'met'): files[p + k + '192.u8.gz'] = 192 ** 3
+    files[p + 'vel96.u8.gz'] = 4 * 96 ** 3; files[p + 'bvec192.u8.gz'] = 3 * 192 ** 3
     files[p + 'shock192.u8.gz'] = 2 * 192 ** 3; files[p + 'stars.bin.gz'] = None; files[p + 'gas.bin.gz'] = None
     m = json.load(open(D + '/data/' + p + 'meta.json')); print('%-22s black holes %d, labels %s' % (p + 'meta.json', len(m.get('bh', [])) // 4, [(l['n'], l['p'], l['n_tracers']) for l in m.get('labels', [])]))
+# the time slider: every snapshot listed in movie.json as a 128^3 RGB cube; the galaxy table
+if os.path.exists(D + '/data/movie.json'):
+    mv = json.load(open(D + '/data/movie.json')); print('movie.json: %d snapshots, z %.2f .. %.2f, labels in %d' % (len(mv), mv[0]['z'], mv[-1]['z'], sum('lab' in e for e in mv)))
+    for e in mv: files['mv/mv_%03d.u8.gz' % e['s']] = 3 * 128 ** 3
+if os.path.exists(D + '/data/galaxies.json'):
+    gal = json.load(open(D + '/data/galaxies.json')); print('galaxies.json: %d subhaloes, brightest %s' % (len(gal), gal[0]))
+if os.path.exists(D + '/data/sky.json'):
+    sk = json.load(open(D + '/data/sky.json')); print('sky.json: observer frame of step %d, D = %.0f ckpc/h, %d 2M++ galaxies' % (sk['step'], sk['D'], len(sk['gal'])))
 bad = 0; tot = 0
 for fn, n in sorted(files.items()):
     path = D + '/data/' + fn
@@ -35,4 +45,5 @@ for fn, n in sorted(files.items()):
         print('%-22s %6.1f MB gz  %s  n=%d  median|pos|=%.3f  light r<0.25: %.2f  lum pct 10/50/90: %s  g-r pct 10/50/90: %s' % (
             fn, os.path.getsize(path) / 1e6, 'ok' if ok else 'BAD record', len(a), np.median(r), (w * (r < .25)).sum() / w.sum(),
             np.percentile(a[:, 6], [10, 50, 90]), np.percentile(a[:, 7], [10, 50, 90]) if st else '-'))
-print('epochs in page:', snaps); print('total data/: %.0f MB, referenced %.0f MB, problems: %d' % (sum(os.path.getsize(D + '/data/' + f) for f in os.listdir(D + '/data')) / 1e6, tot / 1e6, bad))
+allsz = sum(os.path.getsize(os.path.join(r, f)) for r, _, fs in os.walk(D + '/data') for f in fs)
+print('epochs in page:', snaps); print('total data/: %.0f MB, referenced %.0f MB, problems: %d' % (allsz / 1e6, tot / 1e6, bad))

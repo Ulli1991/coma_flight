@@ -35,7 +35,9 @@ drag / arrows look · WASD fly · SPACE/C rise/sink · SHIFT boost ·
 fields on the digit keys, in this order: 1 dark matter · 2 density · 3 temperature · 4 X-ray ·
 5 Compton y · 6 entropy · 7 magnetic field · 8 shocks · 9 radio relics · 0 intracluster light
 (dark matter, magnetic field, shocks and radio only when their cubes are present) ·
-J next sight (or click a label) · T autopilot · H hide HUD · , . step epoch · Z time-lapse z = 2 → 0 ·
+K velocity · U turbulence · M metals · F Faraday rotation · O radio halo · I radial profiles · click a galaxy for its catalogue entry ·
+fly out past the edge for the cosmic web · MOVIE chip / Z: the 113-snapshot time slider ·
+J next sight (or click a label) · T autopilot · H hide HUD · , . step epoch ·
 X hide/show galaxies · N hide/show dense gas · P photo (PNG) · V record video · L copy link to this view ·
 B bloom on/off · R reset
 

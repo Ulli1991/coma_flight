@@ -140,6 +140,54 @@ Sept 8, third round (magnetic field, Compton y, one key scheme, labels, mode cro
 - Untested by eye: the magnetic stretch (if the core is a flat magenta blob lower the 1.7 boost or the
   `hi`), the Compton-y range (`PY[3]`, 3 dex), the label climbing, the ten buttons on a narrow window.
 
+Sept 8, fourth round ("beyond state of the art"): new physics, the cosmic web, the time slider, the inspector.
+- Kinematics (`extract_cubes.py SNAP kin`, `pack_cubes.py kin` -> `vel192.u8.gz` at z = 0, `ep*_vel96.u8.gz` at the epochs (the field varies over the whole box, 19 MB at 192^3), RGBA):
+  mass-weighted velocity of the hot (T > 1e6 K, non-SF) gas relative to the systemic velocity (the hot
+  gas within 500 kpc/h), byte 128 + v/1500 km/s x 127, and the in-voxel dispersion sigma = sqrt(<v^2> - <v>^2)
+  as log10 over 10 .. 1000 km/s. Modes: K velocity along the line of sight (blue approaching, +-800 km/s,
+  colour bar), U turbulence (sigma). The XRISM Coma result (~200 km/s bulk, ~ 200 km/s dispersion) is the
+  comparison. The probe shows sigma.
+- Metals (`met`): mass-weighted Z/Zsun (Zsun = 0.0127) of the non-SF gas, log10 over -2 .. 0.5, mode M.
+- B vector (`bvec`, RGB, signed asinh encoding 128 + 127 asinh(B/0.05 uG)/asinh(200)): F = Faraday rotation
+  measure, a screen integral in the shader, RM = 812 sum n_e B_par dl [rad/m^2] with n_e from the density
+  byte where hot gas exists and dl = 4500/0.681/(1+z) kpc per unit; coloured after the ray loop, blue
+  negative / red positive over +-300 (RMLIM), white beyond. O = radio halo, emissivity ~ n sigma^2
+  B^2/(B^2 + B_CMB^2) with B_CMB = 3.24 (1+z)^2 uG (turbulent re-acceleration in spirit).
+- The cosmic web (`extract_cubes.py 139 outer`, `pack_cubes.py outer` -> `outer192.u8.gz`, RG = log total
+  matter, log gas over +-30 Mpc/h, 312 kpc/h voxels, all particle types incl. the low-res ones): the
+  shader's wide branch takes over when the camera is outside r = 1.02 (the flight speed scales with r);
+  inside r < 0.97 the fine density cube is drawn. Tour leg 2. HUD says "cosmic web".
+- Time slider (MOVIE chip in the epoch strip, or Z): `extract_movie.py` (job array `run_movie.sbatch`,
+  or the interactive partition when the group CPU limit blocks the array) makes 128^3 cubes of density,
+  log T and star light for every snapshot 27 .. 139 with the same centring and label tracking;
+  `pack_cubes.py movie` -> `data/mv/mv_SNAP.u8.gz` (RGB, T and light at 64 levels) + `data/movie.json`
+  (z, lookback time, M200, R200, centre offset, label positions). The page streams them around the slider
+  (8 ahead, 2 behind, at most 26 resident on the GPU) and blends the two neighbours in the shader;
+  only density / temperature / entropy / Compton y exist there (`MVOK`), other modes are refused with a
+  caption; the tracked galaxies leave their orbits on an overlay canvas (past solid, future faint).
+  Z plays at 3.1 snapshots/s; the tour's assembly leg uses it. The nine full-resolution epochs are untouched.
+  Size: 173 MB for the 113 cubes (0.6 MB at z = 2 to 2.3 MB at z = 0); data/ is now 570 MB in all. To halve
+  it, pack every other snapshot (`glob` in `pack_movie`, the page needs no change: it reads movie.json).
+- Galaxy inspector: click a galaxy at z = 0 (`data/galaxies.json`, `pack_cubes.py galaxies`: the 803
+  subhaloes with M* >= 1e9 Msun inside the cube) for its catalogue entry; FLY THERE; Escape closes.
+- Radial profiles (I): n_H, T, K, B, sigma, Z, rho_DM spherical means from the resident cubes (computed on
+  first use, ~1 s at 384^3), camera radius and R200 marked; works at the epochs too.
+- The view from Earth (E, or the EARTH VIEW button): the observer's frame of this realisation comes from
+  `~/coma_300/data/zoom_rotations.npz` (step 11: the observer at the parent box centre, MUSIC only
+  translates the zoom, North = +x of the sim axes) and `parent_radec.npz` (D = 72154 ckpc/h, the halo
+  at RA 193.48 Dec 29.44 vs Coma's 194.95 / 27.98), packed by `pack_cubes.py sky` into `data/sky.json`
+  together with the real 2M++ galaxies (Lavaux & Hudson 2011, 6 deg cone, 4000 < v_cmb < 10000 km/s) as
+  tangent-plane offsets from NGC 4889. The camera sits at -D n, looks along n with North up and East
+  left (screen right = n x up), field of view 0.075 (W / S zoom), the fake sky off, sprites boosted by
+  D^2; every field works there (the line-of-sight velocity is then the real Earth line of sight); the
+  amber circles are the 2M++ galaxies (size by Ks), with a compass and a 1-degree bar. Known: this
+  realisation's massive companion is 1.9 deg east of the core (PA 100), not at NGC 4839's PA 228 /
+  0.61 R200; NGC 4874's analogue sits 0.21 deg west. The eROSITA and Planck images of coma_300 are not on
+  raven (only the Planck y profile), so no image overlay yet.
+- Untested by eye: all of it; the velocity colour range (VLIM), RMLIM, the wide-view
+  stretches (smoothstep 0.15 / 0.2 on the outer bytes), the movie brightness (the 128^3 voxel is 3x the
+  384 one: +3 log10 3 on the mass fields), the movie streaming on a slow connection.
+
 ## RAVEN — needs the snapshots (run there, then copy into data/ and push)
 - Shock cubes: if Mach 1.2-1.5 turbulence still litters the ICM, raise the lower edge of
   the shader's Mach ramp; the cube scale (`mach`, 1..5) only needs repacking if the
@@ -169,6 +217,8 @@ drag / arrows look · WASD fly · SPACE/C rise/sink · SHIFT boost
 , . step epoch · Z time-lapse · X galaxies on/off · N dense gas on/off
 fields on the digit keys: 1 dark matter · 2 density · 3 temperature · 4 X-ray · 5 Compton y · 6 entropy ·
 7 magnetic field · 8 shocks · 9 radio relics · 0 intracluster light (the top-right buttons in the same order)
+K velocity · U turbulence · M metals · F Faraday rotation · O radio halo · I radial profiles · click a galaxy
+MOVIE chip / Z: the 113-snapshot time slider (Z plays / pauses, , . return to the epochs)
 J next sight, or click a label · T tour · H hide HUD · G volume 1:1 · B bloom on/off
 P save PNG · V record video · L copy link (includes the epoch) · R reset
 

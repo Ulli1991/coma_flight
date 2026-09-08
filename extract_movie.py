@@ -1,0 +1,74 @@
+#!/usr/bin/env python
+# Fine time sampling for the Coma Virtual Observatory's time slider: every snapshot 27 .. 139 (z = 1.95 .. 0,
+# ~90 Myr apart) as a 128^3 cube of gas mass, mass-weighted log T and r-band star light around the main
+# progenitor, plus the tracked positions of the named galaxies.  Run as a job array (run_movie.sbatch):
+#   python extract_movie.py SNAP   -> /ptmp/uli/coma_cubes/movie/mv_SNAP.h5
+# Centre as in extract_cubes.py: median of the z=0 BCG's most bound DM particles, snapped to the most massive
+# FOF group within 500 kpc/h (139: cen139.npy).  pack_cubes.py movie turns these into data/mv/*.u8.gz.
+import sys, os, glob, time, numpy as np, h5py
+from multiprocessing import Pool
+sys.argv = [sys.argv[0], sys.argv[1]]                     # extract_cubes reads SNAP from argv at import
+import extract_cubes as X
+
+SNAP = X.SNAP; NM = 128; HALF = X.HALF
+OUT = X.OUT + '/movie'; RAWF = OUT + '/mv_%03d.h5' % SNAP
+
+def do_movie(args):
+    fn, cen = args
+    out = {}
+    with h5py.File(fn, 'r') as f:
+        g = f['PartType0']
+        d = X.wrap(g['Coordinates'][:].astype(np.float64), cen)
+        m = np.max(np.abs(d), axis=1) < HALF
+        if m.any():
+            d = d[m]; mass = g['Masses'][:][m].astype(np.float64); T, sfr = X.gas_T(g, m)
+            lT = np.log10(np.clip(T, 1e2, None))
+            out.update(X.grids(d, {'gas_m': mass, 'gas_mlt': mass * lT}, HALF, NM))
+        if 'PartType4' in f and 'Coordinates' in f['PartType4']:
+            s = f['PartType4']
+            d = X.wrap(s['Coordinates'][:].astype(np.float64), cen); age = s['GFM_StellarFormationTime'][:]
+            m = (np.max(np.abs(d), axis=1) < HALF) & (age > 0)
+            if m.any():
+                L = 10 ** (-0.4 * s['GFM_StellarPhotometrics'][:, 5][m].astype(np.float64))
+                out.update(X.grids(d[m], {'st_L': L}, HALF, NM))
+    return out
+
+def centre(cen0):
+    """as extract_cubes.py: tracer median, tightened, snapped to the most massive group within 500 kpc/h"""
+    info = {}
+    if SNAP == 139: return cen0.copy(), info
+    ids = np.load(X.OUT + '/tracers139.npy')
+    with Pool(X.NPROC) as p: tr = np.concatenate(p.map(X.find_tracers, [(fn, ids) for fn in X.files]))
+    dtr = X.wrap(tr, cen0); med = np.median(dtr, axis=0)
+    near = np.linalg.norm(dtr - med, axis=1) < 300.
+    if near.sum() > 50: med = np.median(dtr[near], axis=0)
+    cen_tr = cen0 + med; info['n_tracers'] = int(len(tr)); info['n_tracers_near'] = int(near.sum())
+    GP = []; GM = []; GR = []
+    for gf in sorted(glob.glob(X.BASE + '/groups_%03d/fof_subhalo_tab_%03d.*.hdf5' % (SNAP, SNAP))):
+        with h5py.File(gf, 'r') as g:
+            if 'Group' in g and 'GroupPos' in g['Group']:
+                GP.append(g['Group/GroupPos'][:]); GM.append(g['Group/Group_M_Crit200'][:]); GR.append(g['Group/Group_R_Crit200'][:])
+    GP = np.concatenate(GP).astype(np.float64); GM = np.concatenate(GM); GR = np.concatenate(GR)
+    dg = np.linalg.norm(X.wrap(GP, cen_tr), axis=1); cand = np.where(dg < 500.)[0]
+    if len(cand):
+        j = cand[np.argmax(GM[cand])]; cen = GP[j]
+        info['group_M200'] = float(GM[j]); info['group_R200'] = float(GR[j]); info['group_dist'] = float(dg[j])
+    else:
+        cen = cen_tr; info['group_M200'] = 0.0; info['group_R200'] = 0.0; info['group_dist'] = -1.0
+    return cen, info
+
+if __name__ == '__main__':
+    t0 = time.time(); os.makedirs(OUT, exist_ok=True)
+    cen0 = np.load(X.OUT + '/cen139.npy'); cen, info = centre(cen0)
+    print('snap', SNAP, 'z=%.3f' % X.Z, 'centre', cen, 'offset', X.wrap(cen[None], cen0)[0], info, flush=True)
+    acc = {}
+    with Pool(X.NPROC) as p:
+        for part in p.imap_unordered(do_movie, [(fn, cen) for fn in X.files]): X.add(acc, part)
+    lab, names = X.track_labels(cen) if os.path.exists(X.OUT + '/label_tracers.npz') else ({}, None)
+    with h5py.File(RAWF, 'w') as o:
+        o.attrs['snap'] = SNAP; o.attrs['z'] = X.Z; o.attrs['cen'] = cen; o.attrs['cen139'] = cen0; o.attrs['half'] = HALF; o.attrs['n'] = NM
+        for k, v in info.items(): o.attrs[k] = v
+        for k, v in acc.items(): o.create_dataset(k, data=v, compression='gzip', compression_opts=1)
+        for k, v in lab.items(): o.create_dataset(k, data=v)
+        if names: o.attrs['lab_names'] = np.array([s.encode('utf-8') for s in names])
+    print('wrote', RAWF, sorted(acc), '%.0f s' % (time.time() - t0), flush=True)

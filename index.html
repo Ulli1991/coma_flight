@@ -48,9 +48,15 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
 #cbt{position:relative;height:16px}
 #cbt span{position:absolute;top:3px;transform:translateX(-50%);white-space:nowrap}
 #cbt span:before{content:'';position:absolute;left:50%;top:-4px;height:4px;border-left:1px solid var(--hud-dim)}
+#gi{left:10px;bottom:150px;border-left:1px solid var(--line);padding-left:12px;font-size:11.5px;pointer-events:auto;max-width:320px}
+#gi b{color:var(--hud);font-weight:500}#gi .t{color:var(--amber);letter-spacing:.08em;margin-bottom:3px}
+#gm{position:fixed;left:0;top:0;width:26px;height:26px;border:1px solid var(--amber);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%)}
+#pr{left:10px;top:78px;font-size:10.5px;color:var(--hud-dim)}#pr .t{color:var(--hud);font-size:11px;margin-bottom:4px;letter-spacing:.08em}
+#tsw{margin-top:6px;pointer-events:auto}#ts{width:250px;vertical-align:middle;accent-color:#e8a24a;margin:0}#tsz{margin-left:6px;color:var(--amber);font-size:11px}
+#ov{position:fixed;inset:0;width:100%;height:100%;pointer-events:none}
 #cbl{margin-top:4px;text-align:right}#cbl .sw{display:inline-block;width:22px;height:7px;vertical-align:middle;border:1px solid var(--line)}
 </style>
-<canvas id="cv"></canvas>
+<canvas id="cv"></canvas><canvas id="ov"></canvas>
 <div class="hud" id="tl"><h1>COMA <span style="color:var(--amber)">VIRTUAL OBSERVATORY</span></h1><div class="sub">Coma_011 &middot; TNG100 &middot; z = <span id="hz">0</span> &middot; M&#8322;&#8320;&#8320; = <span id="hm">1.1&times;10&sup1;&#8309;</span> M&#9737; &middot; build fa881fe</div></div>
 <div class="hud" id="bl">
  <div>r<sub>BCG</sub>&nbsp; <b id="hr">--</b> cMpc/h &nbsp;&middot;&nbsp; r/R&#8322;&#8320;&#8320; <b id="hr2">--</b></div>
@@ -59,23 +65,27 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
  <div>here&nbsp;&nbsp; <b id="hp">--</b></div>
  <div style="color:var(--hud-dim)">fps <b id="hq" style="color:var(--hud-dim)">--</b></div>
 </div>
-<div class="hud" id="br">J sights &middot; , . epoch &middot; Z time-lapse &middot; X galaxies &middot; N dense gas &middot; G quality &middot; B bloom &middot; H hide HUD &middot; P photo &middot; V video &middot; L link &middot; T tour &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1&ndash;9 0 fields &middot; R reset</div>
+<div class="hud" id="br">J sights &middot; , . epoch &middot; Z time-lapse &middot; X galaxies &middot; N dense gas &middot; G quality &middot; B bloom &middot; H hide HUD &middot; P photo &middot; V video &middot; L link &middot; T tour &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1&ndash;9 0 fields &middot; K U M F O more fields &middot; I profiles &middot; click a galaxy &middot; E view from Earth &middot; R reset</div>
 <div class="hud" id="cb"><div class="t" id="cbn"></div><canvas id="cbc" width="256" height="1"></canvas><div id="cbt"></div>
  <div id="cbl"><span class="sw" style="background:linear-gradient(90deg,#598cff,#fff2d0,#ff8038)"></span> galaxies young &rarr; old &nbsp; <span class="sw" style="background:#73d9ff"></span> cold gas &nbsp; <span class="sw" style="background:#c08cff"></span> black holes</div></div>
 <div class="hud" id="tr">
- <button class="fbtn" data-m="3" hidden>1 DM</button><button class="fbtn on" data-m="0">2 DENSITY</button><button class="fbtn" data-m="2">3 TEMP</button><button class="fbtn" data-m="1">4 X-RAY</button><button class="fbtn" data-m="9">5 COMPTON y</button><button class="fbtn" data-m="6">6 ENTROPY</button><button class="fbtn" data-m="8" hidden>7 MAGNETIC</button><button class="fbtn" data-m="5" hidden>8 SHOCKS</button><button class="fbtn" data-m="7" hidden>9 RADIO</button><button class="fbtn" data-m="4">0 ICL</button>
+ <button class="fbtn" id="eb" hidden>E EARTH VIEW</button><button class="fbtn" data-m="3" hidden>1 DM</button><button class="fbtn on" data-m="0">2 DENSITY</button><button class="fbtn" data-m="2">3 TEMP</button><button class="fbtn" data-m="1">4 X-RAY</button><button class="fbtn" data-m="9">5 COMPTON y</button><button class="fbtn" data-m="6">6 ENTROPY</button><button class="fbtn" data-m="8" hidden>7 MAGNETIC</button><button class="fbtn" data-m="5" hidden>8 SHOCKS</button><button class="fbtn" data-m="7" hidden>9 RADIO</button><button class="fbtn" data-m="4">0 ICL</button><button class="fbtn" data-m="10" hidden>K VELOCITY</button><button class="fbtn" data-m="11" hidden>U TURBULENCE</button><button class="fbtn" data-m="12" hidden>M METALS</button><button class="fbtn" data-m="13" hidden>F FARADAY</button><button class="fbtn" data-m="14" hidden>O RADIO HALO</button>
  <div id="ep"></div>
+ <div id="tsw" hidden><input type="range" id="ts" min="0" max="1" step="0.002" value="1"><span id="tsz"></span></div>
 </div>
 <div class="hud" id="cap" style="left:50%;bottom:64px;transform:translateX(-50%);font-family:Unica One,monospace;font-size:22px;letter-spacing:.2em;color:var(--hud);opacity:0;transition:opacity .6s"></div>
 <div class="hud" id="sb"><div id="sbl" style="width:120px"></div><div id="sbt">--</div></div>
 <div class="hud" id="labels" style="padding:0"></div>
+<div class="hud" id="gi" hidden><div class="t"><span id="gin"></span> <span id="gix" style="cursor:pointer;color:var(--hud-dim)">&nbsp;&times;</span></div><div id="gib"></div><div id="gif" style="color:var(--amber);cursor:pointer;margin-top:4px;letter-spacing:.08em">FLY THERE</div></div>
+<div id="gm" hidden></div>
+<div class="hud" id="pr" hidden><div class="t">RADIAL PROFILES</div><canvas id="prc" width="250" height="318"></canvas></div>
 <div id="intro"><div class="card">
  <h1>COMA VIRTUAL OBSERVATORY</h1>
  <p>Free flight through the z&nbsp;=&nbsp;0 snapshot of the Coma_011 constrained
  re-simulation at TNG100 resolution &mdash; the closing frame of the formation film.
  A 9 cMpc/h volume: hot ICM, cold stripped gas, and the 40&thinsp;000 brightest galaxies.</p>
  <p><span class="k">Drag / arrow keys</span> to look &middot; <span class="k">W A S D</span> to fly &middot;
- <span class="k">SHIFT</span> boost &middot; <span class="k">1&ndash;9, 0</span> fields: dark matter, density, temperature, X-ray, Compton y, entropy, magnetic field, shocks, radio relics, intracluster light &middot; <span class="k">J</span> next sight (or click a label) &middot; <span class="k">, .</span> step through time (z = 2 &rarr; 0)</p>
+ <span class="k">SHIFT</span> boost &middot; <span class="k">1&ndash;9, 0</span> fields: dark matter, density, temperature, X-ray, Compton y, entropy, magnetic field, shocks, radio relics, intracluster light &middot; <span class="k">K U M F O</span> velocity, turbulence, metals, Faraday rotation, radio halo &middot; fly out past the edge for the cosmic web &middot; <span class="k">E</span> the view from Earth (the real 2M++ galaxies in amber, North up, East left) &middot; <span class="k">I</span> radial profiles &middot; click a galaxy for its catalogue entry &middot; <span class="k">J</span> next sight (or click a label) &middot; <span class="k">, .</span> step through the nine full-resolution epochs (z = 2 &rarr; 0) &middot; the <span class="k">time slider</span> top right scrubs all 113 snapshots, <span class="k">Z</span> plays them</p>
  <p style="color:var(--hud-dim)">magma = hot ICM &middot; cyan = cold / star-forming gas &middot; stellar light of ALL 30M stars (volume) + particle sparkle; blue young &rarr; red old &middot; violet beacons = black holes (size by mass)</p>
  <p id="warn" hidden>WebGL2 unavailable in this browser.</p>
  <div class="go" id="go"><span id="got">LOADING&hellip;</span><div id="lbar"><i></i></div></div>
@@ -86,6 +96,7 @@ const META = {"half": 4500.0, "r200": 1476.3539982975688, "n": 192, "nstars": 93
 const D_ISLUM="data/islum192.u8.gz", D_ISCOL="data/iscol192.u8.gz",
  D_SLUM="data/slum384.u8.gz", D_SCOL="data/scol384.u8.gz", D_DM="data/dm384.u8.gz", D_IDM="data/idm192.u8.gz",
  D_SHK="data/shock384.u8.gz", D_ISHK="data/ishock192.u8.gz", D_MAG="data/mag192.u8.gz",
+ D_VEL="data/vel192.u8.gz", D_MET="data/met192.u8.gz", D_BVEC="data/bvec192.u8.gz", D_OUT="data/outer192.u8.gz",
  D_GAS="data/gas.bin.gz", D_RHO="data/rho384.u8.gz", D_XRAY="data/xray192.u8.gz",
  D_TEMP="data/temp192.u8.gz", D_STARS="data/stars.bin.gz", D_IRHO="data/irho192.u8.gz";
 // earlier snapshots of the same run (extract_cubes.py + pack_cubes.py): 192^3 cubes around the main
@@ -118,8 +129,8 @@ const VS=`#version 300 es
 void main(){vec2 p=vec2(gl_VertexID==1?3.:-1.,gl_VertexID==2?3.:-1.);gl_Position=vec4(p,0.,1.);}`;
 const FS_T=`#version 300 es
 precision highp float;precision highp sampler3D;
-uniform sampler3D uPk,uAux,uIPk,uDM,uIDM,uShk,uIShk;uniform vec3 uPos,uFwd,uRight,uUp;
-uniform vec2 uRes;uniform float uExpo,uJit,uInner,uStars,uCold;uniform int uMode;uniform vec4 uKt,uPy;out vec4 oc;
+uniform sampler3D uPk,uAux,uIPk,uDM,uIDM,uShk,uIShk,uVel,uMet,uBv,uOut,uMv0,uMv1;uniform vec3 uPos,uFwd,uRight,uUp;
+uniform vec2 uRes;uniform float uExpo,uJit,uInner,uStars,uCold,uFov,uSky;uniform int uMode;uniform vec4 uKt,uPy,uKin,uRm;uniform vec2 uBv0;uniform float uWide,uMovie,uMvT;out vec4 oc;
 // entropy: low (cool core, cold fronts) deep blue -> teal -> green -> high (shocked, outskirts) yellow
 vec3 entmap(float v){
  return v<0.33?mix(vec3(.05,.03,.25),vec3(.13,.30,.55),v/.33)
@@ -138,6 +149,19 @@ vec3 ymap(float v){
  return v<0.4?mix(vec3(.02,.03,.10),vec3(.10,.25,.75),v/.4)
   :v<0.75?mix(vec3(.10,.25,.75),vec3(.45,.78,1.),(v-.4)/.35)
   :mix(vec3(.45,.78,1.),vec3(1.,1.,1.),(v-.75)/.25);}
+// line-of-sight velocity: approaching blue -> white -> receding red
+vec3 velmap(float v){
+ return v<0.5?mix(vec3(.15,.35,1.),vec3(.95,.95,.95),v/.5):mix(vec3(.95,.95,.95),vec3(1.,.25,.15),(v-.5)/.5);}
+// velocity dispersion: dark green -> green -> yellow-green -> white
+vec3 sigmap(float v){
+ return v<0.4?mix(vec3(.02,.06,.03),vec3(.10,.45,.20),v/.4)
+  :v<0.75?mix(vec3(.10,.45,.20),vec3(.55,.85,.25),(v-.4)/.35)
+  :mix(vec3(.55,.85,.25),vec3(1.,1.,.85),(v-.75)/.25);}
+// metallicity: dark -> brown -> orange -> gold -> white
+vec3 metmap(float v){
+ return v<0.4?mix(vec3(.05,.03,.02),vec3(.45,.22,.08),v/.4)
+  :v<0.75?mix(vec3(.45,.22,.08),vec3(.85,.55,.20),(v-.4)/.35)
+  :mix(vec3(.85,.55,.20),vec3(1.,.92,.70),(v-.75)/.25);}
 vec3 dmmap(float v){
  return v<0.5?mix(vec3(.01,.02,.10),vec3(.22,.12,.62),v/.5):mix(vec3(.22,.12,.62),vec3(.92,.88,1.),(v-.5)/.5);}
 // shock Mach number: weak (M~1.5) deep teal -> M~3 cyan -> strong (M>4) white-yellow
@@ -167,15 +191,30 @@ vec3 sky(vec3 rd){
  return b*mix(vec3(1.,.85,.7),vec3(.7,.8,1.),h.x);}
 void main(){
  vec2 sc=(gl_FragCoord.xy/uRes*2.-1.);sc.x*=uRes.x/uRes.y;
- vec3 rd=normalize(uFwd+sc.x*.62*uRight+sc.y*.62*uUp);
+ vec3 rd=normalize(uFwd+sc.x*uFov*uRight+sc.y*uFov*uUp);
+ if(uWide>0.5){
+  // the surroundings: the +-30 Mpc/h outer cube (uOut: r = total matter, g = gas, 312 kpc/h voxels) for a camera
+  // outside the cluster sphere; inside r < 0.97 the fine density cube and its star light take over
+  const float RW=6.6; float bw=dot(uPos,rd); float cw=dot(uPos,uPos)-RW*RW; float hw=bw*bw-cw;
+  if(hw<=0.){oc=vec4(sky(rd)*uSky,0.);return;} hw=sqrt(hw);
+  float ta=max(-bw-hw,0.05), tb=-bw+hw; const int NW=NSTEPS; float dw=(tb-ta)/float(NW);
+  float djw=fract(sin(dot(gl_FragCoord.xy+uJit,vec2(12.9898,78.233)))*43758.55);
+  vec3 Cw=vec3(0.); float Aw=0.;
+  for(int i=0;i<NW;i++){float tc=ta+(float(i)+djw)*dw; vec3 p=uPos+rd*tc; float rp=length(p); vec3 col; float em;
+   if(rp<0.97){vec3 pk=texture(uPk,(p*.5+.5).zyx).rgb; float v=smoothstep(0.20,1.0,pk.r); v*=v; col=magma(v); em=v*0.5+pow(pk.g,3.)*0.6;}
+   else{vec2 o=texture(uOut,(p/6.6667*.5+.5).zyx).rg; float xm=smoothstep(0.15,1.0,o.r); xm*=xm; float xg=smoothstep(0.2,1.0,o.g); xg*=xg;
+    col=(dmmap(xm)*xm*0.7+magma(0.3+0.7*xg)*xg)/(xm*0.7+xg+1e-4); em=(xm*0.7+xg)*0.35*clamp((RW-rp)/1.5,0.,1.);}
+   float a=clamp(em*dw*uExpo*3.6,0.,.9); Cw+=(1.-Aw)*a*col; Aw+=(1.-Aw)*a*.9; if(Aw>0.985)break;}
+  Cw+=(1.-Aw)*sky(rd)*uSky; Cw=1.-exp(-1.45*Cw); float lw=dot(Cw,vec3(.299,.587,.114)); Cw=clamp(mix(vec3(lw),Cw,1.45),0.,1.);
+  oc=vec4(Cw,0.); return;}
  // clip to the sphere r<0.99 (everything outside is faded to zero anyway)
  const float R=0.99; float b=dot(uPos,rd); float c=dot(uPos,uPos)-R*R; float h=b*b-c;
- if(h<=0.){oc=vec4(sky(rd)*uStars,0.);return;} h=sqrt(h);
+ if(h<=0.){oc=vec4(sky(rd)*uSky,0.);return;} h=sqrt(h);
  float t0=max(-b-h,0.015), tE=-b+h;
- if(tE<=t0){oc=vec4(sky(rd)*uStars,0.);return;}
+ if(tE<=t0){oc=vec4(sky(rd)*uSky,0.);return;}
  const int N=NSTEPS; const float dt=2.*R/float(N);
  float dj=fract(sin(dot(gl_FragCoord.xy+uJit,vec2(12.9898,78.233)))*43758.55);
- vec3 C=vec3(0.); float A=0.; float Ae=0.;
+ vec3 C=vec3(0.); float A=0.; float Ae=0.; float rm=0.;
  for(int i=0;i<N;i++){
   float tcur=t0+(float(i)+dj)*dt;
   if(tcur>tE)break;
@@ -184,14 +223,16 @@ void main(){
   vec3 uv=(p*.5+.5).zyx;
   float redge=length(p);
   float edge=clamp((0.99-redge)/0.15,0.,1.); edge*=edge;
-  vec3 pk=texture(uPk,uv).rgb;
+  vec3 pk; float aux;
+  // the time slider: two neighbouring 128^3 snapshots (r = density, g = temperature, b = star light) blended in time
+  if(uMovie>0.5){vec3 mv=mix(texture(uMv0,uv).rgb,texture(uMv1,uv).rgb,uMvT); pk=vec3(mv.r,mv.b,0.55); aux=mv.g;}
+  else{pk=texture(uPk,uv).rgb; aux=texture(uAux,uv).r;}
   float rr2=redge;
   float wig=clamp((0.235-rr2)/0.07,0.,1.)*uInner;
   if(wig>0.){vec3 uvg=(p/0.2667*.5+.5).zyx;
    pk=mix(pk,texture(uIPk,uvg).rgb,wig);}
   float d=pk.r;
   float v=smoothstep(0.20,1.0,d); v*=v;
-  float aux=texture(uAux,uv).r;
   vec3 col; float em; float cw=0.;
   if(uMode==0){
    col=magma(v);
@@ -247,6 +288,29 @@ void main(){
    // gas below the temperature scale is dark (the cold ISM would otherwise show its density)
    float lP=uPy.x+d*uPy.y+aux*uPy.z;
    float x=clamp((lP-uPy.w)/3.,0.,1.)*smoothstep(0.02,0.10,aux); col=ymap(x); em=x*x*1.6;
+  }else if(uMode==10){
+   // line-of-sight velocity of the hot gas (uVel.xyz = v/VMAX about 0.5, relative to the cluster's systemic
+   // velocity): blue approaching, red receding over +-uKin.y km/s, drawn with the gas density; dark without hot gas
+   vec4 kv=texture(uVel,uv); vec3 vv=(kv.xyz-0.5)*2.*uKin.x; float vl=dot(vv,rd)/uKin.y;
+   col=velmap(clamp(0.5+0.5*vl,0.,1.)); em=v*step(0.002,kv.a);
+  }else if(uMode==11){
+   // in-voxel velocity dispersion of the hot gas (uVel.a = log10 sigma over 10 .. 1000 km/s): the turbulent
+   // broadening XRISM measures; colour and a brightness boost by sigma over the gas density
+   float sg=texture(uVel,uv).a; float x=smoothstep(0.35,0.85,sg); col=sigmap(x); em=v*(0.25+1.75*x)*step(0.002,sg);
+  }else if(uMode==12){
+   // ICM metallicity (uMet = log10 Z/Zsun over -2 .. 0.5): colour by Z, brightness by the gas density
+   float zm=texture(uMet,uv).r; float x=smoothstep(0.4,0.85,zm); col=metmap(x); em=v*(0.3+1.4*x)*step(0.002,zm);
+  }else if(uMode==13){
+   // Faraday rotation measure RM = 812 sum n_e B_par dl [rad/m^2] along the ray, a screen integral without
+   // absorption (n_e from the density byte where hot gas exists, B from the asinh-encoded vector cube); the
+   // volume itself only adds a faint grey of the gas, the sum is coloured after the loop
+   vec3 bb=uBv0.x*sinh((texture(uBv,uv).rgb-0.5)*2.*uBv0.y); float ne=uRm.x*pow(10.,d*uPy.y)*step(0.002,texture(uVel,uv).a);
+   rm+=812.*ne*dot(bb,rd)*dt*uRm.y*edge; col=vec3(.30,.34,.44); em=0.05*v;
+  }else if(uMode==14){
+   // radio halo: turbulent re-acceleration proxy ~ gas density x (sigma / 300 km/s)^2 x B^2 / (B^2 + B_CMB^2)
+   vec4 kv=texture(uVel,uv); float sg=pow(10.,1.+2.*kv.a)/300.; vec3 bb=uBv0.x*sinh((texture(uBv,uv).rgb-0.5)*2.*uBv0.y);
+   float b2=dot(bb,bb); float j=v*sg*sg*b2/(b2+uKin.z*uKin.z)*step(0.002,kv.a)*2.5; float ctx=0.06*v;
+   col=(radiomap(clamp(j*1.2,0.,1.))*j+vec3(.30,.34,.44)*ctx)/(j+ctx+1e-4); em=j+ctx;
   }else if(uMode==1){
    float x=smoothstep(0.20,1.0,aux); x*=x; col=teal(x); em=x; v=x;
   }else{
@@ -255,7 +319,7 @@ void main(){
   // all-star light field (30M stars binned; colour = age)
   float sv=pk.g, sc2=pk.b;
   sv=sv*sv*sv;
-  if(sv>0.001&&(uMode<3||uMode==6||uMode>=8)&&uStars>0.5){
+  if(sv>0.001&&(uMode<3||uMode==6||(uMode>=8&&uMode<=12))&&uStars>0.5){
    vec3 scol=mix(vec3(.45,.62,1.),vec3(1.,.62,.32),sc2);
    C+=(1.-A)*clamp(sv*edge*nf*dt*uExpo*2.2,0.,.9)*scol;}
   float a=clamp(em*edge*nf*dt*uExpo*3.6,0.,.9);
@@ -264,7 +328,8 @@ void main(){
   Ae+=(1.-Ae)*min(a*cw*2.,.9);
   if(A>0.985)break;
  }
- C+=(1.-A)*sky(rd)*uStars;
+ C+=(1.-A)*sky(rd)*uSky;
+ if(uMode==13){float q=rm/uRm.z; C+=(q>0.?vec3(1.,.3,.2):vec3(.25,.45,1.))*min(abs(q),1.)*1.2+vec3(1.)*max(abs(q)-1.,0.)*0.5;}
  C=1.-exp(-1.45*C);
  float lum=dot(C,vec3(.299,.587,.114));
  C=clamp(mix(vec3(lum),C,1.45),0.,1.);
@@ -272,7 +337,7 @@ void main(){
 const SVS=`#version 300 es
 layout(location=0) in vec3 aP;layout(location=1) in float aL;layout(location=2) in float aG;
 layout(location=3) in float aH;
-uniform vec3 uPos,uFwd,uRight,uUp;uniform vec2 uRes;uniform float uGain;
+uniform vec3 uPos,uFwd,uRight,uUp;uniform vec2 uRes;uniform float uGain,uFov;
 out vec3 vc;out float vfade;out float vq;out float vk;out float vw;
 // shrink the splat to the radius where exp(-5r^2)*fade still rounds to >=1/255 (pixel-exact)
 float shrink(float S,float fd){float k=sqrt(max(log(fd*510.),0.)*0.2);float s2=clamp(S*k,1.,S);vq=s2/S;return s2;}
@@ -280,7 +345,7 @@ void main(){
  vec3 rel=aP-uPos;
  float z=dot(rel,uFwd);
  if(z<0.002){gl_Position=vec4(2.,2.,2.,1.);gl_PointSize=0.;vc=vec3(0);vfade=0.;vq=1.;vk=1.;vw=0.;return;}
- vec2 xy=vec2(dot(rel,uRight),dot(rel,uUp))/(z*.62);
+ vec2 xy=vec2(dot(rel,uRight),dot(rel,uUp))/(z*uFov);
  xy.x/=uRes.x/uRes.y;
  gl_Position=vec4(xy,.5,1.);
  float l=pow(aL,2.5);
@@ -314,9 +379,9 @@ void main(){vec2 q=(gl_PointCoord*2.-1.)*vq;float r=dot(q,q);
  float g=r<=1.?exp(-5.0*r):0.;oc=vec4(vc*g*vfade,0.);}`;
 // textures
 function vol3d(data,n,ch){n=n||192;ch=ch||1;const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_3D,t);
- gl.texStorage3D(gl.TEXTURE_3D,1,ch===3?gl.RGB8:ch===2?gl.RG8:gl.R8,n,n,n);
+ gl.texStorage3D(gl.TEXTURE_3D,1,ch===4?gl.RGBA8:ch===3?gl.RGB8:ch===2?gl.RG8:gl.R8,n,n,n);
  gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);
- gl.texSubImage3D(gl.TEXTURE_3D,0,0,0,0,n,n,n,ch===3?gl.RGB:ch===2?gl.RG:gl.RED,gl.UNSIGNED_BYTE,data);
+ gl.texSubImage3D(gl.TEXTURE_3D,0,0,0,0,n,n,n,ch===4?gl.RGBA:ch===3?gl.RGB:ch===2?gl.RG:gl.RED,gl.UNSIGNED_BYTE,data);
  gl.texParameteri(gl.TEXTURE_3D,gl.TEXTURE_MIN_FILTER,gl.LINEAR);
  gl.texParameteri(gl.TEXTURE_3D,gl.TEXTURE_MAG_FILTER,gl.LINEAR);
  gl.texParameteri(gl.TEXTURE_3D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);
@@ -326,7 +391,8 @@ function vol3d(data,n,ch){n=n||192;ch=ch||1;const t=gl.createTexture();gl.bindTe
 // numpy C-order (x,y,z): texture z-fastest = our z ✓ sample (z,y,x) reversed.
 // simplest: swap in shader via uv -> uv.zyx handled here by uploading as-is and
 // sampling p.zyx:
-let tPk,tX,tT,tIPk,tDM=null,tIDM=null,haveDM=false,tShk=null,tIShk=null,haveShk=false,tMag=null,haveMag=false,ready=false;
+let tPk,tX,tT,tIPk,tIDM=null,tIShk=null,ready=false;
+const T0={};   // the optional z=0 cubes by key (dm shk mag vel met bvec out); an epoch's q.tex uses the same keys
 function pack3(a,b,c){const n=a.length,o=new Uint8Array(n*3);for(let i=0,j=0;i<n;i++,j+=3){o[j]=a[i];o[j+1]=b[i];o[j+2]=c[i];}return o}
 const T_LOAD0=performance.now();let T_LOAD=0;
 (async()=>{try{
@@ -337,11 +403,18 @@ const T_LOAD0=performance.now();let T_LOAD=0;
  tPk=vol3d(pack3(rho,sl,scl),384,3);tIPk=vol3d(pack3(ir,isl,isc),192,3);ready=true;T_LOAD=performance.now()-T_LOAD0;
  const g=document.getElementById('got'); if(g) g.textContent='ENGAGE'; const lb=document.getElementById('lbar'); if(lb) lb.hidden=true;
  // optional dark-matter cubes (pack_cubes.py 139); the mode appears only when both load
- try{const [dm,idm]=await Promise.all([D_DM,D_IDM].map(ugz));tDM=vol3d(dm,384);tIDM=vol3d(idm,192);PROBE0.dm=dm;PROBE0.ndm=384;haveDM=true;showBtn(3);if(wantMode===3)setMode(3);}catch(e){}
+ try{const [dm,idm]=await Promise.all([D_DM,D_IDM].map(ugz));T0.dm=vol3d(dm,384);tIDM=vol3d(idm,192);PROBE0.dm=dm;PROBE0.ndm=384;showBtn(3);if(wantMode===3)setMode(3);}catch(e){}
  // optional shock cubes (Mach number + dissipation, see pack_cubes.py): SHOCKS and RADIO appear when both load
- try{const [sk,isk]=await Promise.all([D_SHK,D_ISHK].map(ugz));tShk=vol3d(sk,384,2);tIShk=vol3d(isk,192,2);haveShk=true;showBtn(5);showBtn(7);if(wantMode===5||wantMode===7)setMode(wantMode);}catch(e){}
+ try{const [sk,isk]=await Promise.all([D_SHK,D_ISHK].map(ugz));T0.shk=vol3d(sk,384,2);tIShk=vol3d(isk,192,2);showBtn(5);showBtn(7);if(wantMode===5||wantMode===7)setMode(wantMode);}catch(e){}
  // optional magnetic field cube (pack_cubes.py mag): MAGNETIC appears when it loads
- try{const mg=await ugz(D_MAG);tMag=vol3d(mg,192);PROBE0.mag=mg;haveMag=true;showBtn(8);if(wantMode===8)setMode(8);}catch(e){}
+ try{const mg=await ugz(D_MAG);T0.mag=vol3d(mg,192);PROBE0.mag=mg;showBtn(8);if(wantMode===8)setMode(8);}catch(e){}
+ // optional kinematics / metals / B-vector / outer cubes (pack_cubes.py kin met bvec outer): their modes appear as they load
+ await Promise.all([
+  ugz(D_VEL).then(a=>{T0.vel=vol3d(a,192,4);PROBE0.vel=a;PROBE0.nvel=192;showBtn(10);showBtn(11);}).catch(()=>{}),
+  ugz(D_MET).then(a=>{T0.met=vol3d(a,192);PROBE0.met=a;showBtn(12);}).catch(()=>{}),
+  ugz(D_BVEC).then(a=>{T0.bvec=vol3d(a,192,3);}).catch(()=>{}),
+  ugz(D_OUT).then(a=>{T0.out=vol3d(a,192,2);}).catch(()=>{})]);
+ if(T0.bvec&&T0.vel){showBtn(13);showBtn(14);} if(wantMode>=10&&modeOK(wantMode))setMode(wantMode);
  if(wantEp>=0&&wantEp!==EP0)setEpoch(wantEp);
 }catch(e){const w=document.getElementById('warn');w.hidden=false;w.textContent='load error: '+e;}})();
 let sraw=null,PROBE0=null; const NS=META.nstars;
@@ -349,14 +422,14 @@ let sraw=null,PROBE0=null; const NS=META.nstars;
 // star record: int16 xyz (10-byte stride), then bytes lum, g-r, h -> read by the GPU as normalized attributes
 const GVS=`#version 300 es
 layout(location=0) in vec3 aP;layout(location=1) in float aR;layout(location=2) in float aS;
-uniform vec3 uPos,uFwd,uRight,uUp;uniform vec2 uRes;uniform float uGain,uT;
+uniform vec3 uPos,uFwd,uRight,uUp;uniform vec2 uRes;uniform float uGain,uT,uFov;
 out vec3 vc;out float vfade;out float vq;
 // shrink the splat to the radius where exp(-5r^2)*fade still rounds to >=1/255 (pixel-exact)
 float shrink(float S,float fd){float k=sqrt(max(log(fd*510.),0.)*0.2);float s2=clamp(S*k,1.,S);vq=s2/S;return s2;}
 void main(){
  vec3 rel=aP-uPos;float z=dot(rel,uFwd);
  if(z<0.002){gl_Position=vec4(2.,2.,2.,1.);gl_PointSize=0.;vc=vec3(0);vfade=0.;vq=1.;return;}
- vec2 xy=vec2(dot(rel,uRight),dot(rel,uUp))/(z*.62);xy.x/=uRes.x/uRes.y;
+ vec2 xy=vec2(dot(rel,uRight),dot(rel,uUp))/(z*uFov);xy.x/=uRes.x/uRes.y;
  gl_Position=vec4(xy,.5,1.);
  float S=clamp((1.6+2.4*aR)/max(z,.05),1.5,7.);
  vc=mix(vec3(.12,.45,.55),vec3(.45,.95,1.),max(aS,aR*.6));
@@ -365,14 +438,14 @@ void main(){
  gl_PointSize=shrink(S,vfade);}`;
 const BVS=`#version 300 es
 layout(location=0) in vec3 aP;layout(location=1) in float aM;
-uniform vec3 uPos,uFwd,uRight,uUp;uniform vec2 uRes;uniform float uGain;
+uniform vec3 uPos,uFwd,uRight,uUp;uniform vec2 uRes;uniform float uGain,uFov;
 out vec3 vc;out float vfade;out float vq;
 // shrink the splat to the radius where exp(-5r^2)*fade still rounds to >=1/255 (pixel-exact)
 float shrink(float S,float fd){float k=sqrt(max(log(fd*510.),0.)*0.2);float s2=clamp(S*k,1.,S);vq=s2/S;return s2;}
 void main(){
  vec3 rel=aP-uPos;float z=dot(rel,uFwd);
  if(z<0.002){gl_Position=vec4(2.,2.,2.,1.);gl_PointSize=0.;vc=vec3(0);vfade=0.;vq=1.;return;}
- vec2 xy=vec2(dot(rel,uRight),dot(rel,uUp))/(z*.62);xy.x/=uRes.x/uRes.y;
+ vec2 xy=vec2(dot(rel,uRight),dot(rel,uUp))/(z*uFov);xy.x/=uRes.x/uRes.y;
  gl_Position=vec4(xy,.5,1.);
  float S=clamp((1.5+7.*aM)/max(z,.03),2.,22.);
  vc=mix(vec3(.75,.55,1.),vec3(1.,.95,1.),aM);
@@ -461,13 +534,15 @@ function gbuf(){gvao=gl.createVertexArray();gl.bindVertexArray(gvao);rawbuf(graw
 // flight state
 let pos=[0,0.10,-0.88],yaw=0,pitch=-0.02,vel=[0,0,0],mode=0,keys={},auto=true,atau=0,pendingMode=-1,fadeMs=900;
 let stillT=0,accN=0;
-const names=['gas density + cold gas','X-ray emission','temperature','dark matter','intracluster light','shocks · Mach number','gas entropy','radio relics','magnetic field','Compton y · electron pressure'];
+const names=['gas density + cold gas','X-ray emission','temperature','dark matter','intracluster light','shocks · Mach number','gas entropy','radio relics','magnetic field','Compton y · electron pressure',
+ 'gas velocity · line of sight','velocity dispersion · turbulence','metallicity','Faraday rotation measure','radio halo'];
 // the fields on the digit keys 1 .. 9, 0, in this order (mode ids stay as in the share links)
 const ORDER=[3,0,2,1,9,6,8,5,7,4];
-// a mode needs its cubes: at z = 0 the optional ones (DM, shocks, magnetic), at an epoch the magnetic cube of that epoch
-const modeOK=(m,i)=>{i=i===undefined?ep:i;if(i===EP0)return m===3?haveDM:(m===5||m===7)?haveShk:m===8?haveMag:true;
- return m===8?!!(EPOCHS[i].tex&&EPOCHS[i].tex.mag):true;};
-const SPRITES=m=>m<3||m===6||m>=8;                 // modes that draw the galaxy light and the cold gas
+// a mode needs its cubes: the optional ones at z = 0 (T0) or of that epoch (q.tex), same keys
+const NEED={3:['dm'],5:['shk'],7:['shk'],8:['mag'],10:['vel'],11:['vel'],12:['met'],13:['bvec','vel'],14:['bvec','vel']};
+const modeOK=(m,i)=>{i=i===undefined?ep:i;const T=i===EP0?T0:(EPOCHS[i].tex||{});return (NEED[m]||[]).every(k=>!!T[k]);};
+const SPRITES=m=>m<3||m===6||(m>=8&&m<=12);        // modes that draw the galaxy light and the cold gas
+const NOGAL=new Set([4,5,7,13,14]);                // modes without the galaxy sprites and black holes
 // ---- video capture of the canvas (V): WebM via MediaRecorder, saved when stopped ----
 let rec=null,recChunks=[];
 function toggleRec(){if(rec){rec.stop();return;}
@@ -486,12 +561,16 @@ function basis(){const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp2=
  return[f,r,u]}
 addEventListener('keydown',e=>{keys[e.code]=1;accN=0;
  if(e.code.startsWith('Digit')){const m=ORDER[(+e.code.slice(5)+9)%10];if(modeOK(m))setMode(m);}
- if(e.code==='Comma'){stopTimelapse();setEpoch(ep-1);}if(e.code==='Period'){stopTimelapse();setEpoch(ep+1);}
- if(e.code==='KeyZ'){if(tlActive)stopTimelapse();else timelapse();}
- if(e.code==='KeyR'){pos=[0,0.10,-0.88];yaw=0;pitch=-0.02;vel=[0,0,0];auto=false;}
+ if(e.code==='Comma'){stopTimelapse();stopMovie();setEpoch(ep-1);}if(e.code==='Period'){stopTimelapse();stopMovie();setEpoch(ep+1);}
+ if(e.code==='KeyZ'){if(MV){if(mvOn&&mvPlay)mvPlay=false;else{if(!mvOn){mvT=0;mvReq=1;}else if(mvT>=MV.length-1)mvT=0;mvPlay=true;}}else if(tlActive)stopTimelapse();else timelapse();}
+ if(e.code==='KeyR'){if(earth)toggleEarth();pos=[0,0.10,-0.88];yaw=0;pitch=-0.02;vel=[0,0,0];auto=false;stopMovie();}
  if(e.code==='KeyT'){auto=!auto;atau=0;}
  if(e.code==='KeyB'){bloomOn=!bloomOn;showCap(bloomOn?'BLOOM ON':'BLOOM OFF');}
  if(e.code==='KeyV')toggleRec();
+ if(e.code==='KeyI'){prOn=!prOn;document.getElementById('pr').hidden=!prOn;}
+ if(e.code==='KeyE')toggleEarth();
+ if(e.code==='Escape')select(null);
+ for(const [k,m] of [['KeyK',10],['KeyU',11],['KeyM',12],['KeyF',13],['KeyO',14]])if(e.code===k&&modeOK(m))setMode(m);
  if(e.code==='KeyX'){showStars=!showStars;showCap(showStars?'GALAXIES ON':'GALAXIES OFF');}
  if(e.code==='KeyN'){showCold=!showCold;showCap(showCold?'DENSE GAS ON':'DENSE GAS OFF');}
  if(e.code==='KeyP')shotReq=true;
@@ -503,8 +582,9 @@ let sightI=-1;
 function goSight(t,off,name){auto=false;stopTimelapse();pos=camFor(t,off);vel=[0,0,0];[yaw,pitch]=lookAt(pos,t);showCap(name);}
 addEventListener('keyup',e=>{keys[e.code]=0});
 let drag=false,lx=0,ly=0;
-cv.addEventListener('pointerdown',e=>{drag=true;accN=0;lx=e.clientX;ly=e.clientY;cv.setPointerCapture(e.pointerId)});
-addEventListener('pointerup',()=>drag=false);
+let pdn=null;
+cv.addEventListener('pointerdown',e=>{drag=true;accN=0;lx=e.clientX;ly=e.clientY;pdn=[e.clientX,e.clientY,performance.now()];cv.setPointerCapture(e.pointerId)});
+addEventListener('pointerup',e=>{drag=false;if(pdn&&e.target===cv&&Math.hypot(e.clientX-pdn[0],e.clientY-pdn[1])<5&&performance.now()-pdn[2]<400)pick(e.clientX,e.clientY);pdn=null;});
 addEventListener('pointermove',e=>{if(!drag)return;
  yaw+=(e.clientX-lx)*0.0035;pitch-=(e.clientY-ly)*0.0035;
  lx=e.clientX;ly=e.clientY;});
@@ -514,7 +594,8 @@ function showBtn(m){bs[m].hidden=false;}
 // Cube scales from cube_scales.json: u8 = 255 (q - lo) / (hi - lo); the ticks go through the same
 // smoothstep stretches as the shader, so a tick sits where that value is drawn. ----
 const SCL={rho:[-4.213250411493134,-1.4482135396231652],temp:[7.1183,8.0318],xray:[-8.395869887118087,-2.1756899200389395],
- dm:[-4.5162882804870605,-0.398705455660775],scol:[0.1009701246701794,1.1038364340893168],mach:[1,5],mag:[-2.0,1.0]};
+ dm:[-4.5162882804870605,-0.398705455660775],scol:[0.1009701246701794,1.1038364340893168],mach:[1,5],mag:[-2.0,1.0],vel:1500,sig:[1,3],met:[-2,0.5],bvec:[0.05,10]};
+const VLIM=800,RMLIM=300;   // colour range of the line-of-sight velocity [km/s] and of the rotation measure [rad/m^2]
 const ss=(a,b,x)=>{x=Math.min(Math.max((x-a)/(b-a),0),1);return x*x*(3-2*x)};
 const mx=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
 const CMAP={
@@ -527,7 +608,11 @@ const CMAP={
  ent:v=>v<.33?mx([.05,.03,.25],[.13,.30,.55],v/.33):v<.66?mx([.13,.30,.55],[.15,.68,.55],(v-.33)/.33):mx([.15,.68,.55],[.99,.91,.25],(v-.66)/.34),
  radio:v=>v<.5?mx([.25,.02,.02],[.95,.35,.08],v/.5):mx([.95,.35,.08],[1,.95,.80],(v-.5)/.5),
  bmag:v=>v<.35?mx([.04,.02,.14],[.42,.10,.62],v/.35):v<.7?mx([.42,.10,.62],[.90,.25,.50],(v-.35)/.35):mx([.90,.25,.50],[1,.88,.55],(v-.7)/.3),
- ice:v=>v<.4?mx([.02,.03,.10],[.10,.25,.75],v/.4):v<.75?mx([.10,.25,.75],[.45,.78,1],(v-.4)/.35):mx([.45,.78,1],[1,1,1],(v-.75)/.25)};
+ ice:v=>v<.4?mx([.02,.03,.10],[.10,.25,.75],v/.4):v<.75?mx([.10,.25,.75],[.45,.78,1],(v-.4)/.35):mx([.45,.78,1],[1,1,1],(v-.75)/.25),
+ vel:v=>v<.5?mx([.15,.35,1],[.95,.95,.95],v/.5):mx([.95,.95,.95],[1,.25,.15],(v-.5)/.5),
+ sig:v=>v<.4?mx([.02,.06,.03],[.10,.45,.20],v/.4):v<.75?mx([.10,.45,.20],[.55,.85,.25],(v-.4)/.35):mx([.55,.85,.25],[1,1,.85],(v-.75)/.25),
+ met:v=>v<.4?mx([.05,.03,.02],[.45,.22,.08],v/.4):v<.75?mx([.45,.22,.08],[.85,.55,.20],(v-.4)/.35):mx([.85,.55,.20],[1,.92,.70],(v-.75)/.25),
+ rm:v=>v<.5?mx([.25,.45,1],[0,0,0],v/.5):mx([0,0,0],[1,.3,.2],(v-.5)/.5)};
 // voxel mass (log10 of 1e10 Msun/h per 23.4 ckpc/h voxel, 384 grid) -> Msun/kpc^3, and hydrogen atoms per cm^3 (h = 0.681, X = 0.76)
 const VOX=1e10*0.681*0.681/Math.pow(9000/384,3),NH=VOX*3.076e-8,lg=Math.log10;
 // entropy K = kT / n_e^(2/3) in keV cm^2 from the temperature byte (aux) and density byte (d):
@@ -536,6 +621,7 @@ const KT=[SCL.temp[0]+lg(8.617e-8)-2/3*(lg(1.17)+lg(NH)+SCL.rho[0]),SCL.temp[1]-
 // electron pressure P_e = n_e kT in keV cm^-3 from the same two bytes: log10 P_e = PY[0] + d*PY[1] + aux*PY[2],
 // drawn over PY[3] .. PY[3] + 3 dex (the byte ranges span 3.7 dex in all)
 const PY=[lg(1.17*NH*8.617e-8)+SCL.rho[0]+SCL.temp[0],SCL.rho[1]-SCL.rho[0],SCL.temp[1]-SCL.temp[0],0];PY[3]=PY[0]+PY[1]+PY[2]-3.0;
+const NE0=1.17*NH*Math.pow(10,SCL.rho[0]);   // n_e [cm^-3] at density byte 0 (the rotation measure integral)
 const BARS=[
  {n:'gas density n<sub>H</sub> [cm&#8315;&sup3;]',c:'magma',u:n=>Math.pow(ss(.2,1,(lg(n/NH)-SCL.rho[0])/(SCL.rho[1]-SCL.rho[0])),2),ticks:[[1e-5,'10&#8315;&#8309;'],[3e-5,'3&times;10&#8315;&#8309;'],[1e-4,'10&#8315;&#8308;'],[3e-4,'3&times;10&#8315;&#8308;']]},
  {n:'X-ray emissivity &prop; n&sup2; T<sup>&frac12;</sup> (relative)',c:'teal',u:e=>Math.pow(ss(.2,1,1+lg(e)/(SCL.xray[1]-SCL.xray[0])),2),ticks:[[1e-4,'10&#8315;&#8308;'],[1e-3,'10&#8315;&sup3;'],[1e-2,'10&#8315;&sup2;'],[1e-1,'10&#8315;&sup1;'],[1,'1']]},
@@ -546,24 +632,31 @@ const BARS=[
  {n:'gas entropy K = kT / n<sub>e</sub><sup>2/3</sup> [keV cm&sup2;]',c:'ent',u:K=>(lg(K)-2.3)/1.5,ticks:[[300,'300'],[1000,'10&sup3;'],[3000,'3&times;10&sup3;']]},
  {n:'radio relic emissivity &prop; dissipation &times; &xi;(Mach) (relative)',c:'radio',u:j=>Math.min(1,j*1.5),ticks:[[0.1,'0.1'],[0.3,'0.3'],[0.66,'1']]},
  {n:'magnetic field |B| [&mu;G] &middot; mass-weighted ICM',c:'bmag',u:B=>ss(.02,1,(lg(B)-SCL.mag[0])/(SCL.mag[1]-SCL.mag[0])),ticks:[[0.03,'0.03'],[0.1,'0.1'],[0.3,'0.3'],[1,'1'],[3,'3']]},
- {n:'Compton y &prop; &int; n<sub>e</sub> T dl &middot; P<sub>e</sub> [keV cm&#8315;&sup3;]',c:'ice',u:P=>(lg(P)-PY[3])/3,ticks:[[1e-5,'10&#8315;&#8309;'],[1e-4,'10&#8315;&#8308;'],[1e-3,'10&#8315;&sup3;']]}];
+ {n:'Compton y &prop; &int; n<sub>e</sub> T dl &middot; P<sub>e</sub> [keV cm&#8315;&sup3;]',c:'ice',u:P=>(lg(P)-PY[3])/3,ticks:[[1e-5,'10&#8315;&#8309;'],[1e-4,'10&#8315;&#8308;'],[1e-3,'10&#8315;&sup3;']]},
+ {n:'hot-gas velocity along the line of sight [km/s] &middot; blue approaching',c:'vel',u:v=>0.5+0.5*v/VLIM,ticks:[[-600,'&minus;600'],[-300,'&minus;300'],[0,'0'],[300,'300'],[600,'600']]},
+ {n:'velocity dispersion inside a 47 kpc/h voxel &sigma; [km/s]',c:'sig',u:x=>ss(.35,.85,(lg(x)-SCL.sig[0])/(SCL.sig[1]-SCL.sig[0])),ticks:[[50,'50'],[100,'100'],[200,'200'],[400,'400']]},
+ {n:'gas metallicity Z / Z&#9737;',c:'met',u:z=>ss(.4,.85,(lg(z)-SCL.met[0])/(SCL.met[1]-SCL.met[0])),ticks:[[0.1,'0.1'],[0.2,'0.2'],[0.5,'0.5'],[1,'1']]},
+ {n:'Faraday rotation measure 812 &int; n<sub>e</sub> B<sub>&#8741;</sub> dl [rad m&#8315;&sup2;]',c:'rm',u:q=>0.5+0.5*q/RMLIM,ticks:[[-300,'&minus;300'],[-150,'&minus;150'],[0,'0'],[150,'150'],[300,'300']]},
+ {n:'radio halo emissivity &prop; n &sigma;&sup2; B&sup2;/(B&sup2;+B<sub>CMB</sub>&sup2;) (relative)',c:'radio',u:j=>Math.min(1,j*1.2),ticks:[[0.1,'0.1'],[0.3,'0.3'],[0.83,'1']]}];
 // ---- HUD probe: the cube values at the camera position (nearest voxel of the outer cubes, same scales) ----
 const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
 function sci(x){const e=Math.floor(lg(x)),m=x/Math.pow(10,e);return (m>=9.95?'10':m.toFixed(1)+'×10')+String(e).split('').map(c=>SUP[c]).join('');}
 function probe(){const P=ep===EP0?PROBE0:EPOCHS[ep].arr;if(!P||Math.hypot(pos[0],pos[1],pos[2])>0.99)return '--';
- const at=(a,n,st)=>{let k=0;for(let i=0;i<3;i++)k=k*n+Math.min(n-1,Math.max(0,Math.floor((pos[i]+1)/2*n)));return a[k*st]/255;};
+ const at=(a,n,st,off)=>{let k=0;for(let i=0;i<3;i++)k=k*n+Math.min(n-1,Math.max(0,Math.floor((pos[i]+1)/2*n)));return a[k*st+(off||0)]/255;};
  const d=at(P.rho,P.n,P.st),t=at(P.t,192,1),out=[];
  out.push(d>0?'n<sub>H</sub> '+sci(NH*Math.pow(10,SCL.rho[0]+d*(SCL.rho[1]-SCL.rho[0])))+' cm⁻³':'n<sub>H</sub> &lt; '+sci(NH*Math.pow(10,SCL.rho[0]))+' cm⁻³');
  out.push(t>0?'T '+sci(Math.pow(10,SCL.temp[0]+t*(SCL.temp[1]-SCL.temp[0])))+' K':'T &lt; '+sci(Math.pow(10,SCL.temp[0]))+' K');
  if(P.dm){const q=at(P.dm,P.ndm,1);if(q>0)out.push('ρ<sub>DM</sub> '+sci(VOX*Math.pow(10,SCL.dm[0]+q*(SCL.dm[1]-SCL.dm[0])))+' M☉ kpc⁻³');}
  if(P.mag){const q=at(P.mag,192,1);if(q>0)out.push('B '+Math.pow(10,SCL.mag[0]+q*(SCL.mag[1]-SCL.mag[0])).toPrecision(2)+' μG');}
+ if(P.vel){const q=at(P.vel,P.nvel,4,3);if(q>0)out.push('σ '+Math.round(Math.pow(10,SCL.sig[0]+q*(SCL.sig[1]-SCL.sig[0])))+' km/s');}
+ if(P.met){const q=at(P.met,192,1);if(q>0)out.push('Z '+Math.pow(10,SCL.met[0]+q*(SCL.met[1]-SCL.met[0])).toFixed(2)+' Z☉');}
  return out.join(' · ');}
 function cbar(m){const b=BARS[m],cvs=document.getElementById('cbc'),ctx=cvs.getContext('2d'),W=cvs.width;
  for(let i=0;i<W;i++){const c=CMAP[b.c](i/(W-1));ctx.fillStyle='rgb('+c.map(x=>Math.round(255*x)).join(',')+')';ctx.fillRect(i,0,1,1);}
  document.getElementById('cbn').innerHTML=b.n;document.getElementById('cbl').hidden=!SPRITES(m);
  document.getElementById('cbt').innerHTML=b.ticks.map(([v,l])=>'<span style="left:'+(100*Math.min(Math.max(b.u(v),0),1)).toFixed(1)+'%">'+l+'</span>').join('');}
 // a mode switch crossfades like an epoch switch: the frame keeps the old scene (holdFrame), then applies
-function setMode(m){if(ready&&lastSrc&&m!==mode){pendingMode=m;return;}applyMode(m);}
+function setMode(m){if(mvOn&&!MVOK.has(m)){showCap('NOT ON THE TIME SLIDER · z = 0 AND THE EPOCHS ONLY');return;}if(ready&&lastSrc&&m!==mode){pendingMode=m;return;}applyMode(m);}
 function applyMode(m){mode=m;accN=0;document.getElementById('hf').textContent=names[m];
  bs.forEach((b,i)=>{if(b)b.classList.toggle('on',i===m);});cbar(m);}
 cbar(0);
@@ -573,14 +666,43 @@ function showCap(t){const c=document.getElementById('cap');c.textContent=t;c.sty
 let ep=EP0;
 {const w=document.getElementById('ep');EPOCHS.forEach((q,i)=>{const e=document.createElement('span');e.className='epb'+(i===EP0?' on':'');e.textContent='z '+q.z;e.title=q.t||'';e.addEventListener('click',()=>setEpoch(i));w.appendChild(e);q.el=e;});}
 let showStars=true,showCold=true,lastSrc=null,pendingEp=-1,fadeT0=-1e9,tlRun=0,tlActive=false;
+// ---- the view from Earth (E): the camera at the observer's place of this constrained realisation (data/sky.json:
+// the Earth -> Coma line of sight n, North and the distance from the BORG parent box; coma_300/compute_zoom_rotations.py),
+// a narrow field of view, North up and East left, with the real 2M++ galaxies drawn over the simulated sky ----
+let SKY=null,earth=false,FOV=0.62,camSave=null;
+fetch('data/sky.json').then(r=>r.ok?r.json():null).then(k=>{if(!k)return;SKY=k;SKY.Du=k.D/META.half;const b=document.getElementById('eb');b.hidden=false;b.addEventListener('click',toggleEarth);}).catch(()=>{});
+function toggleEarth(){if(!SKY)return;earth=!earth;accN=0;document.getElementById('eb').classList.toggle('on',earth);
+ if(earth){camSave=[pos.slice(),yaw,pitch,FOV];auto=false;vel=[0,0,0];pos=SKY.n.map(v=>-v*SKY.Du);FOV=0.075;select(null);showCap('THE VIEW FROM EARTH · NORTH UP · EAST LEFT · AMBER = 2M++ GALAXIES · W S ZOOM');}
+ else{[pos,yaw,pitch,FOV]=camSave;vel=[0,0,0];showCap('FREE FLIGHT');}}
+function earthBasis(){const n=SKY.n,u=SKY.up;return [n.slice(),[n[1]*u[2]-n[2]*u[1],n[2]*u[0]-n[0]*u[2],n[0]*u[1]-n[1]*u[0]],u.slice()];}   // f, r = n x up (west: east on the left), u
+// ---- the time slider: every snapshot 27 .. 139 as a 128^3 cube (extract_movie.py, pack_cubes.py movie), streamed
+// around the slider position, two neighbours blended in the shader; the tracked galaxies leave their orbits ----
+let MV=null,mvOn=false,mvT=0,mvPlay=false,mvReq=0,mvShow=null,mvPrev=0;const MVC={},MVOK=new Set([0,2,6,9]),MVRATE=3.1;   // snapshots per second when playing
+fetch('data/movie.json').then(r=>r.ok?r.json():null).then(m=>{if(!m||m.length<2)return;MV=m;mvT=m.length-1;const t=document.getElementById('ts');t.max=m.length-1;t.value=mvT;
+ document.getElementById('tsz').textContent='z '+m[m.length-1].z;
+ const b=document.createElement('span');b.className='epb';b.id='mvb';b.textContent='MOVIE';b.title='all 113 snapshots on a time slider (Z plays)';b.addEventListener('click',()=>{if(mvOn)stopMovie();else mvReq=1;});document.getElementById('ep').appendChild(b);
+ t.addEventListener('input',()=>{mvT=+t.value;mvPlay=false;if(!mvOn)mvReq=1;});}).catch(()=>{});
+function mvFetch(i){if(!MV||MVC[i]||i<0||i>=MV.length)return;MVC[i]={};
+ ugz('data/mv/mv_'+String(MV[i].s).padStart(3,'0')+'.u8.gz').then(a=>{if(MVC[i])MVC[i].tex=vol3d(a,128,3);}).catch(()=>{delete MVC[i];});}
+const mvHas=i=>!!(MVC[i]&&MVC[i].tex);
+function mvReady(t){const i0=Math.floor(t);return mvHas(i0)&&mvHas(Math.min(i0+1,MV.length-1));}
+function mvUpdate(){const i0=Math.floor(mvT),i1=Math.min(i0+1,MV.length-1);
+ for(let k=0;k<=8;k++){mvFetch(i0+k);if(k<3)mvFetch(i0-k);}   // ahead in time first, a little behind
+ const keys=Object.keys(MVC).map(Number);if(keys.length>26)for(const k of keys)if(Math.abs(k-mvT)>12&&MVC[k].tex){gl.deleteTexture(MVC[k].tex);delete MVC[k];}
+ if(mvHas(i0)&&mvHas(i1))mvShow=[MVC[i0].tex,MVC[i1].tex,mvT-i0];else showCap('LOADING z = '+MV[i0].z);
+ const e=MV[Math.round(mvT)];document.getElementById('ts').value=mvT;document.getElementById('tsz').textContent='z '+e.z.toFixed(2)+' · '+e.t.toFixed(1)+' Gyr ago';}
+function mvPos(name){if(!MV||!mvOn)return null;const i0=Math.floor(mvT),i1=Math.min(i0+1,MV.length-1),f=mvT-i0,a=MV[i0].lab&&MV[i0].lab[name],b=MV[i1].lab&&MV[i1].lab[name];
+ if(!a||!b)return a||b||null;return [0,1,2].map(k=>a[k]+(b[k]-a[k])*f);}
+function stopMovie(){if(mvOn){mvPlay=false;mvReq=-1;}}
 function fetchEpoch(q){if(q.tex)return Promise.resolve();if(q.loading)return q.loading;
  const b='data/ep'+String(q.s).padStart(3,'0')+'_',npk=q.hi?384:192;
  // the sprites are optional: an epoch without ep*_stars.bin.gz simply shows no galaxies off z = 0
  // optional per-epoch objects: galaxy sprites, cold-gas sprites, black holes + tracked labels (meta.json)
- const opt=[ugz(b+'stars.bin.gz'),ugz(b+'gas.bin.gz'),fetch(b+'meta.json').then(r=>r.ok?r.json():null),ugz(b+'mag192.u8.gz')].map(p=>p.catch(()=>null));
+ const opt=[ugz(b+'stars.bin.gz'),ugz(b+'gas.bin.gz'),fetch(b+'meta.json').then(r=>r.ok?r.json():null),ugz(b+'mag192.u8.gz'),ugz(b+'vel96.u8.gz'),ugz(b+'met192.u8.gz'),ugz(b+'bvec192.u8.gz')].map(p=>p.catch(()=>null));
  q.loading=Promise.all(['pk'+npk+'.u8.gz','xray192.u8.gz','temp192.u8.gz','dm192.u8.gz','shock192.u8.gz'].map(f=>ugz(b+f)).concat(opt))
-  .then(([pk,x,t,dm,sk,st,cg,meta,mg])=>{q.tex={pk:vol3d(pk,npk,3),x:vol3d(x,192),t:vol3d(t,192),dm:vol3d(dm,192),shk:vol3d(sk,192,2),mag:mg?vol3d(mg,192):null};
-   q.arr={rho:pk,n:npk,st:3,t:t,x:x,dm:dm,ndm:192,mag:mg};   // for the HUD probe
+  .then(([pk,x,t,dm,sk,st,cg,meta,mg,ve,me,bv])=>{q.tex={pk:vol3d(pk,npk,3),x:vol3d(x,192),t:vol3d(t,192),dm:vol3d(dm,192),shk:vol3d(sk,192,2),
+    mag:mg?vol3d(mg,192):null,vel:ve?vol3d(ve,96,4):null,met:me?vol3d(me,192):null,bvec:bv?vol3d(bv,192,3):null};
+   q.arr={rho:pk,n:npk,st:3,t:t,x:x,dm:dm,ndm:192,mag:mg,vel:ve,nvel:96,met:me};   // for the HUD probe
    if(st&&st.length>=10){q.svao=gl.createVertexArray();gl.bindVertexArray(q.svao);q.sbuf=rawbuf(st,10,SREC);q.ns=Math.floor(st.length/10);}
    if(cg&&cg.length>=8){q.gvao=gl.createVertexArray();gl.bindVertexArray(q.gvao);q.gbuf=rawbuf(cg,8,GREC);q.ng=Math.floor(cg.length/8);}
    if(meta){if(meta.bh&&meta.bh.length>=4)q.bh=bhVao(meta.bh);
@@ -595,7 +717,7 @@ function freeEpoch(q){if(q.tex){for(const k in q.tex)if(q.tex[k])gl.deleteTextur
  if(q.bh){gl.deleteVertexArray(q.bh.vao);q.bh.bufs.forEach(b=>gl.deleteBuffer(b));q.bh=null;}
  q.arr=null;q.lab=null;}
 async function setEpoch(i,tok){
- if(i<0||i>=EPOCHS.length||i===ep||!ready)return;
+ if(i<0||i>=EPOCHS.length||!ready)return;stopMovie();if(i===ep)return;
  const q=EPOCHS[i];
  if(i!==EP0&&!q.tex){
   q.el.classList.add('ld');
@@ -627,6 +749,7 @@ function lookAt(p,t){const f3=[t[0]-p[0],t[1]-p[1],t[2]-p[2]];const N3=Math.hypo
 const poiK=k=>((META.pois||[]).find(q=>q.k===k)||{p:[0,0,0]}).p;
 const TOUR=[
  {n:'COMA CLUSTER · z = 0',t:[0,0,0],r:0.9,orbit:true,d:26,m:0},
+ {n:'THE COSMIC WEB AROUND COMA',t:[0,0,0],r:4.5,orbit:true,d:22,m:0},
  {n:'NGC 4889 · THE BRIGHTEST CLUSTER GALAXY',t:[0,0,0],off:0.075,d:16},
  {n:'INTRACLUSTER LIGHT',t:[0,0,0],off:0.16,d:14,m:4},
  {n:'JELLYFISH GALAXY · RAM-PRESSURE STRIPPING',t:poiK('6'),off:0.06,d:16,m:0},
@@ -636,9 +759,14 @@ const TOUR=[
  {n:'HOT INTRACLUSTER MEDIUM · X-RAY',t:[0,0,0],r:0.9,orbit:true,d:20,m:1},
  {n:'SUNYAEV-ZELDOVICH · COMPTON y',t:[0,0,0],r:0.9,orbit:true,d:16,m:9},
  {n:'GAS TEMPERATURE',t:[0,0,0],r:0.9,orbit:true,d:20,m:2},
+ {n:'GAS MOTIONS · THE XRISM VIEW',t:[0,0,0],r:0.7,orbit:true,d:16,m:10},
+ {n:'TURBULENCE',t:[0,0,0],r:0.7,orbit:true,d:14,m:11},
+ {n:'METALS IN THE ICM',t:[0,0,0],r:0.8,orbit:true,d:14,m:12},
  {n:'GAS ENTROPY · COLD FRONTS',t:[0,0,0],r:0.5,orbit:true,d:18,m:6},
  {n:'MAGNETIC FIELD',t:[0,0,0],r:0.6,orbit:true,d:18,m:8},
  {n:'RADIO RELICS · MERGER SHOCKS',t:[0,0,0],r:0.9,orbit:true,d:18,m:7},
+ {n:'RADIO HALO',t:[0,0,0],r:0.9,orbit:true,d:14,m:14},
+ {n:'FARADAY ROTATION',t:[0,0,0],r:0.9,orbit:true,d:14,m:13},
  {n:'ASSEMBLY OF THE CLUSTER · z = 2 → 0',t:[0,0,0],r:0.9,orbit:true,d:34,m:0,tl:true}];
 const TR=7;TOUR.forEach((l,i)=>{l.s=i?TOUR[i-1].s+TR+TOUR[i-1].d:0;});const TOUR_T=TOUR[TOUR.length-1].s+TR+TOUR[TOUR.length-1].d;
 function camAt(l,h){if(l.orbit){const az=0.09*h;return [l.r*Math.sin(az),0.14,-l.r*Math.cos(az)];}
@@ -657,13 +785,59 @@ const LABELS=[{n:'NGC 4889 · BCG',p:[0,0,0]},{n:'NGC 4874',p:[0.0293,-0.0716,-0
  .concat((META.pois||[]).filter(q=>q.k!=='5'&&q.k!=='9').map(q=>({n:q.n,p:q.p,dim:true,d:q.d})));
 {const w=document.getElementById('labels');for(const l of LABELS){const e=document.createElement('div');e.className='lab';e.innerHTML='<span>'+l.n+'</span><i></i>';if(l.dim)e.style.color='var(--hud-dim)';
  e.addEventListener('click',()=>{if(l.cur)goSight(l.cur,l.d||0.075,l.n);});w.appendChild(e);l.el=e;l.tx=e.firstChild;l.ld=e.lastChild;}}
-const HUDS=['tl','tr','bl','br','cb','sb'];   // HUD panels the labels keep clear of
+const HUDS=['tl','tr','bl','br','cb','sb','gi','pr'];   // HUD panels the labels keep clear of
+// ---- galaxy inspector: click a galaxy at z = 0 for its subhalo catalogue entry (data/galaxies.json, pack_cubes.py galaxies) ----
+let GAL=null,gsel=null;fetch('data/galaxies.json').then(r=>r.ok?r.json():null).then(g=>{GAL=g;}).catch(()=>{});
+function galName(g){const l=LABELS.find(l=>!l.dim&&Math.hypot(l.p[0]-g.p[0],l.p[1]-g.p[1],l.p[2]-g.p[2])<0.02);return l?l.n:'GALAXY · SUBHALO '+g.i;}
+function fmtM(l){return l>0?sci(Math.pow(10,l))+' M☉':'–';}
+function pick(px,py){if(!GAL||ep!==EP0){select(null);return;}const[f,r,u]=earth?earthBasis():basis(),asp=innerWidth/innerHeight;let best=null,bd=22;
+ for(const g of GAL){const rel=[g.p[0]-pos[0],g.p[1]-pos[1],g.p[2]-pos[2]];const z=rel[0]*f[0]+rel[1]*f[1]+rel[2]*f[2];if(z<0.02)continue;
+  const x=((rel[0]*r[0]+rel[1]*r[1]+rel[2]*r[2])/(z*FOV)/asp+1)/2*innerWidth,y=(1-(rel[0]*u[0]+rel[1]*u[1]+rel[2]*u[2])/(z*FOV))/2*innerHeight;
+  const d=Math.hypot(x-px,y-py)-(g.ms-9)*2;if(d<bd){bd=d;best=g;}}   // the nearest, massive ones favoured
+ select(best);}
+function select(g){gsel=g;const e=document.getElementById('gi');if(!g){e.hidden=true;document.getElementById('gm').hidden=true;return;}e.hidden=false;
+ document.getElementById('gin').textContent=galName(g);
+ document.getElementById('gib').innerHTML=[['M<sub>★</sub>',fmtM(g.ms)+(g.i===0?' incl. the intracluster light':'')],['SFR',g.sfr>0?g.sfr.toFixed(2)+' M☉ / yr':'quenched'],
+  ['M<sub>gas</sub>',fmtM(g.mg)],['M<sub>subhalo</sub>',fmtM(g.mh)],['r<sub>½,★</sub>',g.rh+' kpc'],['V<sub>max</sub>',g.v+' km/s'],['g − r',g.gr.toFixed(2)],
+  ['M<sub>BH</sub>',fmtM(g.bh)],['d<sub>BCG</sub>',g.d.toFixed(2)+' Mpc']].map(([k,v])=>'<div>'+k+'&nbsp; <b>'+v+'</b></div>').join('');}
+document.getElementById('gix').addEventListener('click',()=>select(null));
+document.getElementById('gif').addEventListener('click',()=>{if(gsel)goSight(gsel.p,0.06,galName(gsel));});
+// ---- radial profiles (I): spherical means of the resident cubes about the centre, the camera's radius marked ----
+let prOn=false;const PRB=36,PR0=30,PR1=4500;
+function profile(a,n,st,off,dec,geo){   // mean of dec(byte/255) per log-r bin over the voxels with byte > 0 (geo: mean of the log)
+ const sum=new Float64Array(PRB),cnt=new Float64Array(PRB),h=n/2,k=PRB/Math.log(PR1/PR0),r0=PR0/4500,r1=PR1/4500;
+ for(let i=0;i<n;i++){const x=(i+0.5-h)/h;for(let j=0;j<n;j++){const y=(j+0.5-h)/h,xy=x*x+y*y;for(let l=0;l<n;l++){const z=(l+0.5-h)/h;
+  const b=a[((i*n+j)*n+l)*st+off];if(!b)continue;const r=Math.sqrt(xy+z*z);if(r<r0||r>=r1)continue;
+  const q=Math.floor(Math.log(r/r0)*k),v=dec(b/255);sum[q]+=geo?Math.log10(v):v;cnt[q]++;}}}
+ return Array.from(sum,(v,q)=>cnt[q]>3?(geo?Math.pow(10,v/cnt[q]):v/cnt[q]):NaN);}
+const dec=(sc,k)=>b=>k*Math.pow(10,sc[0]+b*(sc[1]-sc[0]));
+function profiles(P){const out=[];
+ const nH=profile(P.rho,P.n,P.st,0,dec(SCL.rho,NH),false),T=profile(P.t,192,1,0,dec(SCL.temp,1),true);
+ out.push({n:'n_H [cm⁻³]',v:nH},{n:'T [K]',v:T},{n:'K [keV cm²]',v:nH.map((x,i)=>T[i]*8.617e-8/Math.pow(1.17*x,2/3))});
+ if(P.mag)out.push({n:'B [μG]',v:profile(P.mag,192,1,0,dec(SCL.mag,1),true)});
+ if(P.vel)out.push({n:'σ [km/s]',v:profile(P.vel,P.nvel,4,3,dec(SCL.sig,1),true)});
+ if(P.met)out.push({n:'Z [Z☉]',v:profile(P.met,192,1,0,dec(SCL.met,1),true)});
+ if(P.dm)out.push({n:'ρ_DM [M☉ kpc⁻³]',v:profile(P.dm,P.ndm,1,0,dec(SCL.dm,VOX),false)});
+ return out;}
+function drawProfiles(rr){const P=ep===EP0?PROBE0:EPOCHS[ep].arr;const cvs=document.getElementById('prc'),c=cvs.getContext('2d'),W=cvs.width,H=cvs.height;
+ c.clearRect(0,0,W,H);if(!P){c.fillStyle='#4d6a74';c.fillText('no cubes resident',4,12);return;}
+ if(!P.prof)P.prof=profiles(P);const pr=P.prof,L=44,R=W-6,SH=Math.floor((H-14)/pr.length),k=(R-L)/Math.log(PR1/PR0),xr=r=>L+Math.log(r/PR0)*k;
+ c.font='9.5px IBM Plex Mono,monospace';c.lineWidth=1;
+ pr.forEach((q,s)=>{const y0=s*SH+4,y1=y0+SH-8;const vv=q.v.filter(v=>isFinite(v)&&v>0);if(!vv.length)return;
+  const lo=Math.log10(Math.min(...vv)),hi=Math.log10(Math.max(...vv)),sp=Math.max(hi-lo,0.3),yv=v=>y1-(Math.log10(v)-lo)/sp*(y1-y0);
+  c.strokeStyle='rgba(159,216,232,.15)';c.strokeRect(L,y0,R-L,y1-y0);c.fillStyle='#4d6a74';c.textAlign='right';
+  c.fillText(sci(Math.pow(10,hi)),L-2,y0+8);c.fillText(sci(Math.pow(10,lo)),L-2,y1);c.textAlign='left';c.fillStyle='#9fd8e8';c.fillText(q.n,L+3,y0+9);
+  c.strokeStyle='#9fd8e8';c.beginPath();let on=false;q.v.forEach((v,i)=>{if(!isFinite(v)||v<=0){on=false;return;}const x=L+(i+0.5)/PRB*(R-L),y=yv(v);if(on)c.lineTo(x,y);else c.moveTo(x,y);on=true;});c.stroke();});
+ const yb=pr.length*SH;c.fillStyle='#4d6a74';c.textAlign='center';for(const r of[100,300,1000,3000])c.fillText(r>=1000?(r/1000)+' Mpc':r+' kpc',xr(r),yb+8);
+ c.strokeStyle='#e8a24a';c.beginPath();const xc=xr(Math.min(Math.max(rr*4500,PR0),PR1));c.moveTo(xc,0);c.lineTo(xc,yb);c.stroke();
+ c.strokeStyle='rgba(159,216,232,.5)';c.setLineDash([3,3]);c.beginPath();const x2=xr(EPOCHS[ep].r);c.moveTo(x2,0);c.lineTo(x2,yb);c.stroke();c.setLineDash([]);
+ c.fillStyle='#e8a24a';c.textAlign='left';c.fillText('camera',Math.min(xc+3,R-40),yb-2);c.fillStyle='rgba(159,216,232,.7)';c.fillText('R200',Math.min(x2+3,R-30),10);}
 // ---- shareable view: #p=x,y,z&y=yaw&pi=pitch&m=mode ----
 function writeHash(){history.replaceState(null,'','#p='+pos.map(v=>v.toFixed(4)).join(',')+'&y='+yaw.toFixed(3)+'&pi='+pitch.toFixed(3)+'&m='+mode+(showStars?'':'&g=0')+(showCold?'':'&c=0')+(ep!==EP0?'&z='+EPOCHS[ep].s:''));}
 (function readHash(){const h=new URLSearchParams(location.hash.slice(1));if(!h.has('p'))return;
  const p=h.get('p').split(',').map(Number);if(p.length!==3||p.some(isNaN))return;
  pos=p;yaw=+h.get('y')||0;pitch=+h.get('pi')||0;vel=[0,0,0];auto=false;
- const m=+h.get('m');if([3,5,7,8].includes(m))wantMode=m;else if(m>=0&&m<=9)setMode(m);
+ const m=+h.get('m');if(NEED[m])wantMode=m;else if(m>=0&&m<=14)setMode(m);
  if(h.get('g')==='0')showStars=false;if(h.get('c')==='0')showCold=false;
  const zs=+h.get('z');const ei=EPOCHS.findIndex(q=>q.s===zs);if(ei>=0)wantEp=ei;})();
 document.getElementById('go').addEventListener('click',()=>document.getElementById('intro').remove());
@@ -674,14 +848,14 @@ function resize(){const k=BENCH?1:Math.min(devicePixelRatio,1.5)*qual;
 addEventListener('resize',resize);resize();
 const uS={};
 const uV={};
-for(const n of['uPk','uAux','uIPk','uDM','uIDM','uShk','uIShk','uPos','uFwd','uRight','uUp','uRes','uExpo','uJit','uStars','uCold','uMode','uInner','uKt','uPy'])uV[n]=gl.getUniformLocation(pV,n);
-for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain'])uS[n]=gl.getUniformLocation(pS,n);
-for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain'])uB[n]=gl.getUniformLocation(pB,n);
+for(const n of['uPk','uAux','uIPk','uDM','uIDM','uShk','uIShk','uPos','uFwd','uRight','uUp','uRes','uExpo','uJit','uStars','uCold','uMode','uInner','uKt','uPy','uVel','uMet','uBv','uOut','uKin','uRm','uBv0','uWide','uMv0','uMv1','uMovie','uMvT','uFov','uSky'])uV[n]=gl.getUniformLocation(pV,n);
+for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain','uFov'])uS[n]=gl.getUniformLocation(pS,n);
+for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain','uFov'])uB[n]=gl.getUniformLocation(pB,n);
 for(const n of['uT0','uRes','uOp','uDir'])uPp[n]=gl.getUniformLocation(pP,n);
 for(const n of['uT0','uT1','uT2','uHold','uRes','uTm','uBloom','uFade'])uCc[n]=gl.getUniformLocation(pC,n);
 const uUu={};for(const n of['uT0','uRes','uSrc'])uUu[n]=gl.getUniformLocation(pU,n);
-const uG={};for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain','uT'])uG[n]=gl.getUniformLocation(pG,n);
-let tp=performance.now(),fA=0.016,lastQ=0;
+const uG={};for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain','uT','uFov'])uG[n]=gl.getUniformLocation(pG,n);
+let tp=performance.now(),fA=0.016,lastQ=0,mvLast=-1;
 function holdFrame(now,ms){if(!lastSrc)return;gl.useProgram(pU);gl.bindFramebuffer(gl.FRAMEBUFFER,fboHold);gl.viewport(0,0,bw,bh);gl.disable(gl.BLEND);
  gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,lastSrc);gl.uniform1i(uUu.uT0,5);gl.uniform2f(uUu.uRes,bw,bh);gl.uniform2f(uUu.uSrc,bw,bh);gl.drawArrays(gl.TRIANGLES,0,3);fadeT0=now;fadeMs=ms;}
 function frame(){
@@ -695,30 +869,37 @@ function frameInner(){
  if(BENCH){auto=true;if(BT.n===0)atau=parseFloat(new URLSearchParams(location.search).get('t0')||'0');}
  if(!BENCH&&now-lastQ>1500){if(fA>0.030&&qual>0.75){qual*=0.88;resize();lastQ=now;}
   else if(fA<0.0195&&qual<1.0){qual=Math.min(1.,qual*1.3);resize();lastQ=now;}}
- const[f,r,u]=basis();
- const sp3=(keys.ShiftLeft||keys.ShiftRight)?0.6:0.14;
- const ax=(keys.KeyD?1:0)-(keys.KeyA?1:0), az=(keys.KeyW?1:0)-(keys.KeyS?1:0),
+ let [f,r,u]=basis();
+ if(earth){[f,r,u]=earthBasis();pos=SKY.n.map(v=>-v*SKY.Du);vel=[0,0,0];auto=false;
+  const zz=(keys.KeyW?1:0)-(keys.KeyS?1:0);if(zz)FOV=Math.min(0.62,Math.max(0.012,FOV*Math.exp(-zz*dt*1.2)));}
+ const sp3=((keys.ShiftLeft||keys.ShiftRight)?0.6:0.14)*Math.max(1,Math.hypot(pos[0],pos[1],pos[2]));   // faster out in the cosmic web
+ const ax=earth?0:(keys.KeyD?1:0)-(keys.KeyA?1:0), az=earth?0:(keys.KeyW?1:0)-(keys.KeyS?1:0),
        ay=(keys.Space?1:0)-(keys.KeyC?1:0);
  const ry=(keys.ArrowRight?1:0)-(keys.ArrowLeft?1:0), rp=(keys.ArrowUp?1:0)-(keys.ArrowDown?1:0);
- yaw+=ry*1.3*dt; pitch+=rp*1.3*dt; 
+ if(!earth){yaw+=ry*1.3*dt; pitch+=rp*1.3*dt;} 
  if(ax||az||ay||ry||rp||drag)auto=false;
  // still camera: full-res volume + jittered frame averaging; after 96 frames stop re-rendering the scene
- const moving=drag||auto||ax||az||ay||ry||rp||Math.hypot(vel[0],vel[1],vel[2])>2e-4;
+ const moving=(!earth&&(drag||ax||az||ay||ry||rp))||auto||Math.hypot(vel[0],vel[1],vel[2])>2e-4||(earth&&(keys.KeyW||keys.KeyS));
  if(moving){stillT=0;accN=0;}else stillT+=dt;
  const still=!BENCH&&postOn&&stillT>0.25, skipScene=still&&accN>=96;
  if(auto){atau+=dt;const tc=tourCam(atau);pos=tc[0];yaw=tc[1];pitch=tc[2];vel=[0,0,0];
   if(tc[3]!==tourLeg){tourLeg=tc[3];const leg=TOUR[tourLeg];if(leg.m!==undefined&&leg.m!==mode&&modeOK(leg.m))setMode(leg.m);showCap(leg.n);
-   if(leg.tl)timelapse();else if(ep!==EP0||tlActive){stopTimelapse();setEpoch(EP0);}}}
+   if(leg.tl){if(MV){mvT=0;mvReq=1;mvPlay=true;}else timelapse();}else if(ep!==EP0||tlActive||mvOn){stopTimelapse();stopMovie();setEpoch(EP0);}}}
  else tourLeg=-1;
  for(let k=0;k<3;k++){vel[k]+=(f[k]*az+r[k]*ax+u[k]*ay)*sp3*dt*3.2;vel[k]*=Math.pow(0.06,dt);}
  for(let k=0;k<3;k++)pos[k]+=vel[k]*dt;
  const rr=Math.hypot(pos[0],pos[1],pos[2]);
  const expo=Math.min(Math.max(Math.pow(rr/1.15,1.6),0.06),1.0);
- const expoV=(mode===5||mode===7)?Math.max(expo,0.4):expo;   // shocks are thin sheets: keep them readable inside the core
+ const expoV=(mode===5||mode===7||mode===14)?Math.max(expo,0.4):expo;   // shocks are thin sheets: keep them readable inside the core
+ const wide=rr>1.02&&!!T0.out&&!mvOn&&!earth;   // outside the cluster sphere the outer cube is drawn (the wide branch of the shader)
  fbos();const tgt=postOn?fboA:null;
  // an epoch or mode switch keeps the last frame of the old scene and crossfades to the new one
  if(pendingEp>=0){if(pendingEp!==ep){holdFrame(now,900);applyEpoch(pendingEp);}pendingEp=-1;}
  if(pendingMode>=0){if(pendingMode!==mode){holdFrame(now,500);applyMode(pendingMode);}pendingMode=-1;}
+ if(mvReq){holdFrame(now,600);if(mvReq>0){mvOn=true;mvPrev=mode;if(!MVOK.has(mode))applyMode(0);select(null);showCap('TIME SLIDER · Z PLAYS · , . BACK TO THE EPOCHS');}else{mvOn=false;mvShow=null;if(MVOK.has(mode)&&!MVOK.has(mvPrev)&&modeOK(mvPrev))applyMode(mvPrev);}
+  document.getElementById('tsw').hidden=!mvOn;document.getElementById('mvb').classList.toggle('on',mvOn);EPOCHS.forEach((r,j)=>r.el.classList.toggle('on',!mvOn&&j===ep));mvReq=0;accN=0;}
+ if(mvOn){if(mvPlay){const nx=Math.min(mvT+dt*MVRATE,MV.length-1);if(mvReady(nx))mvT=nx;if(mvT>=MV.length-1){mvPlay=false;mvReq=-1;}}
+  if(mvT!==mvLast){accN=0;mvLast=mvT;}mvUpdate();}
  const fadeK=Math.min(1,(now-fadeT0)/fadeMs);
  let bt0,bt1,bt2,bt3;
  if(!skipScene){
@@ -726,33 +907,41 @@ function frameInner(){
  gl.bindFramebuffer(gl.FRAMEBUFFER,tgt);gl.viewport(0,0,bw,bh);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
  gl.useProgram(pS);gl.bindVertexArray(vao);
  gl.uniform3fv(uS.uPos,pos);gl.uniform3fv(uS.uFwd,f);gl.uniform3fv(uS.uRight,r);gl.uniform3fv(uS.uUp,u);
- gl.uniform2f(uS.uRes,cv.width,cv.height);gl.uniform1f(uS.uGain,Math.min(1.,expo*2.)*fadeK);
+ gl.uniform2f(uS.uRes,cv.width,cv.height);gl.uniform1f(uS.uGain,Math.min(1.,expo*2.)*fadeK*(earth?SKY.Du*SKY.Du*0.35:1));gl.uniform1f(uS.uFov,FOV);
  gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE);
  // galaxy sprites: the z=0 set, or the epoch's own set when it shipped one
- if(mode!==4&&mode!==5&&mode!==7&&showStars){if(ep===EP0)gl.drawArrays(gl.POINTS,0,NS);
+ if(!NOGAL.has(mode)&&showStars&&!mvOn){if(ep===EP0)gl.drawArrays(gl.POINTS,0,NS);
   else if(EPOCHS[ep].svao){gl.bindVertexArray(EPOCHS[ep].svao);gl.drawArrays(gl.POINTS,0,EPOCHS[ep].ns);}}
  gl.useProgram(pB);gl.bindVertexArray(bvao);
  gl.uniform3fv(uB.uPos,pos);gl.uniform3fv(uB.uFwd,f);gl.uniform3fv(uB.uRight,r);gl.uniform3fv(uB.uUp,u);
- gl.uniform2f(uB.uRes,cv.width,cv.height);gl.uniform1f(uB.uGain,Math.min(1.,expo*2.)*fadeK);
+ gl.uniform2f(uB.uRes,cv.width,cv.height);gl.uniform1f(uB.uGain,Math.min(1.,expo*2.)*fadeK*(earth?SKY.Du*SKY.Du*0.35:1));gl.uniform1f(uB.uFov,FOV);
  // black holes and cold gas: the z=0 sets, or the epoch's own (meta.json / ep*_gas.bin.gz) when it shipped them
  const EQ=EPOCHS[ep];
- if(showStars){if(ep===EP0)gl.drawArrays(gl.POINTS,0,NB);else if(EQ.bh){gl.bindVertexArray(EQ.bh.vao);gl.drawArrays(gl.POINTS,0,EQ.bh.n);}}
+ if(showStars&&!mvOn){if(ep===EP0)gl.drawArrays(gl.POINTS,0,NB);else if(EQ.bh){gl.bindVertexArray(EQ.bh.vao);gl.drawArrays(gl.POINTS,0,EQ.bh.n);}}
  const gv=ep===EP0?gvao:EQ.gvao,gn=ep===EP0?NG:EQ.ng;
- if(gv&&SPRITES(mode)&&showCold){gl.useProgram(pG);gl.bindVertexArray(gv);
+ if(gv&&SPRITES(mode)&&showCold&&!mvOn){gl.useProgram(pG);gl.bindVertexArray(gv);
   gl.uniform3fv(uG.uPos,pos);gl.uniform3fv(uG.uFwd,f);gl.uniform3fv(uG.uRight,r);gl.uniform3fv(uG.uUp,u);
-  gl.uniform2f(uG.uRes,cv.width,cv.height);gl.uniform1f(uG.uGain,Math.min(1.,expo*2.)*fadeK);
+  gl.uniform2f(uG.uRes,cv.width,cv.height);gl.uniform1f(uG.uGain,Math.min(1.,expo*2.)*fadeK*(earth?SKY.Du*SKY.Du*0.35:1));gl.uniform1f(uG.uFov,FOV);
   gl.drawArrays(gl.POINTS,0,gn);}
  if(BENCH){bsync();bt1=performance.now();}
  gl.useProgram(pV);
- const E=ep===EP0?{pk:tPk,x:tX,t:tT,dm:tDM,shk:tShk,mag:tMag}:EPOCHS[ep].tex;
+ const E=ep===EP0?Object.assign({pk:tPk,x:tX,t:tT},T0):EPOCHS[ep].tex;
  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_3D,E.pk);gl.uniform1i(uV.uPk,0);
  gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_3D,mode===1?E.x:mode===8?E.mag:E.t);gl.uniform1i(uV.uAux,1);
  gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_3D,tIPk);gl.uniform1i(uV.uIPk,2);
  if(E.dm){gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_3D,E.dm);gl.uniform1i(uV.uDM,3);gl.activeTexture(gl.TEXTURE4);gl.bindTexture(gl.TEXTURE_3D,tIDM||E.dm);gl.uniform1i(uV.uIDM,4);}
  if(E.shk){gl.activeTexture(gl.TEXTURE8);gl.bindTexture(gl.TEXTURE_3D,E.shk);gl.uniform1i(uV.uShk,8);gl.activeTexture(gl.TEXTURE9);gl.bindTexture(gl.TEXTURE_3D,tIShk||E.shk);gl.uniform1i(uV.uIShk,9);}
- gl.uniform1f(uV.uInner,ep===EP0?1.:0.);gl.uniform4f(uV.uKt,KT[0],KT[1],KT[2],0.);gl.uniform4f(uV.uPy,PY[0],PY[1],PY[2],PY[3]);
+ if(E.vel){gl.activeTexture(gl.TEXTURE11);gl.bindTexture(gl.TEXTURE_3D,E.vel);gl.uniform1i(uV.uVel,11);}
+ if(E.met){gl.activeTexture(gl.TEXTURE12);gl.bindTexture(gl.TEXTURE_3D,E.met);gl.uniform1i(uV.uMet,12);}
+ if(E.bvec){gl.activeTexture(gl.TEXTURE13);gl.bindTexture(gl.TEXTURE_3D,E.bvec);gl.uniform1i(uV.uBv,13);}
+ if(T0.out){gl.activeTexture(gl.TEXTURE14);gl.bindTexture(gl.TEXTURE_3D,T0.out);gl.uniform1i(uV.uOut,14);}
+ {const zz=EPOCHS[ep].z;gl.uniform4f(uV.uKin,SCL.vel,VLIM,3.24*(1+zz)*(1+zz),0.);gl.uniform4f(uV.uRm,NE0,4500/0.681/(1+zz),RMLIM,0.);
+  gl.uniform2f(uV.uBv0,SCL.bvec[0],Math.asinh(SCL.bvec[1]/SCL.bvec[0]));gl.uniform1f(uV.uWide,wide?1.:0.);}
+ const mvUse=mvOn&&mvShow;gl.uniform1f(uV.uMovie,mvUse?1.:0.);
+ if(mvUse){gl.activeTexture(gl.TEXTURE15);gl.bindTexture(gl.TEXTURE_3D,mvShow[0]);gl.uniform1i(uV.uMv0,15);gl.activeTexture(gl.TEXTURE6);gl.bindTexture(gl.TEXTURE_3D,mvShow[1]);gl.uniform1i(uV.uMv1,6);gl.uniform1f(uV.uMvT,mvShow[2]);}
+ gl.uniform1f(uV.uInner,ep===EP0&&!mvUse?1.:0.);gl.uniform4f(uV.uKt,KT[0],KT[1],KT[2],0.);gl.uniform4f(uV.uPy,PY[0],PY[1],PY[2],PY[3]);
  gl.uniform3fv(uV.uPos,pos);gl.uniform3fv(uV.uFwd,f);gl.uniform3fv(uV.uRight,r);gl.uniform3fv(uV.uUp,u);
- gl.uniform1f(uV.uJit,still?(accN%64)*3.7:0.);gl.uniform1f(uV.uStars,showStars?1.:0.);gl.uniform1f(uV.uCold,showCold?1.:0.);
+ gl.uniform1f(uV.uJit,still?(accN%64)*3.7:0.);gl.uniform1f(uV.uStars,showStars?1.:0.);gl.uniform1f(uV.uCold,showCold?1.:0.);gl.uniform1f(uV.uFov,FOV);gl.uniform1f(uV.uSky,showStars&&!earth?1.:0.);
  gl.disable(gl.BLEND);
  if(fboV&&!still){gl.uniform2f(uV.uRes,vw,vh);gl.uniform1f(uV.uExpo,expoV);gl.uniform1i(uV.uMode,mode);
   gl.bindFramebuffer(gl.FRAMEBUFFER,fboV);gl.viewport(0,0,vw,vh);gl.drawArrays(gl.TRIANGLES,0,3);
@@ -806,24 +995,27 @@ function frameInner(){
  // HUD
  const kpc=rr*META.half;
  document.getElementById('hr').textContent=(kpc/1000).toFixed(2);
- document.getElementById('hr2').textContent=(kpc/EPOCHS[ep].r).toFixed(2);
- document.getElementById('hf').textContent=names[mode]+(showStars||mode===4||mode===5||mode===7?'':' · galaxies off')+(showCold||!SPRITES(mode)?'':' · dense gas off');
+ const ME=mvOn?MV[Math.round(mvT)]:null;   // the slider's snapshot (HUD: z, mass, R200 come from it)
+ document.getElementById('hr2').textContent=(kpc/(ME?ME.r:EPOCHS[ep].r)).toFixed(2);
+ if(ME){document.getElementById('hz').textContent=ME.z.toFixed(2)+' ('+ME.t.toFixed(1)+' Gyr ago)';document.getElementById('hm').innerHTML=ME.m>0?sci(ME.m):'–';}
+ else if(mvLast>=0&&!mvOn){mvLast=-1;const q=EPOCHS[ep];document.getElementById('hz').textContent=q.z+(q.t&&q.t!=='today'?' ('+q.t+')':'');document.getElementById('hm').innerHTML=q.m;}
+ document.getElementById('hf').textContent=names[mode]+(showStars||NOGAL.has(mode)?'':' · galaxies off')+(showCold||!SPRITES(mode)?'':' · dense gas off')+(wide?' · cosmic web':'');
  document.getElementById('hp').innerHTML=probe();
  const v=Math.hypot(vel[0],vel[1],vel[2])*META.half;
  document.getElementById('hv').textContent=v.toFixed(0);
  document.getElementById('hq').textContent=(1/fA).toFixed(0)+' @ '+Math.round(qual*100)+'%'+(still?' · still '+Math.min(accN,96):hiQ?' · vol 1:1':' · vol ½');
  // scale bar: physical length at the distance of the core
- {const ppu=(innerHeight/2)/(Math.max(rr,0.01)*0.62);let L=20;for(const c of[20,50,100,200,500,1000,2000,4000]){if(c/META.half*ppu<=260)L=c;}
+ {const ppu=(innerHeight/2)/(Math.max(rr,0.01)*FOV);let L=20;for(const c of[20,50,100,200,500,1000,2000,4000]){if(c/META.half*ppu<=260)L=c;}
   document.getElementById('sbl').style.width=Math.max(4,L/META.half*ppu).toFixed(0)+'px';
-  document.getElementById('sbt').textContent=(L>=1000?(L/1000)+' Mpc/h':L+' kpc/h')+' at the core · z = '+EPOCHS[ep].z;}
+  document.getElementById('sbt').textContent=(L>=1000?(L/1000)+' Mpc/h':L+' kpc/h')+' at the core · z = '+(ME?ME.z.toFixed(2):EPOCHS[ep].z);}
  // labels: project, fade with distance, hide behind the camera. A label that would overlap an already placed
  // one (named galaxies first, nearest first) or a HUD panel climbs up its leader line; past 150 px it hides.
  {const asp=innerWidth/innerHeight,cand=[];
   // off z = 0 a named galaxy is shown where its most bound particles are at that epoch (meta.json "labels"); sights are z = 0 only
-  const LP=ep===EP0?null:(EPOCHS[ep].lab||{});
-  for(const l of LABELS){const lp=LP?LP[l.n]:l.p;l.cur=lp;let op=0;
+  const LP=mvOn?null:ep===EP0?null:(EPOCHS[ep].lab||{});
+  for(const l of LABELS){const lp=mvOn?(l.dim?null:mvPos(l.n)):LP?LP[l.n]:l.p;l.cur=lp;let op=0;
    if(lp){const rel=[lp[0]-pos[0],lp[1]-pos[1],lp[2]-pos[2]];const z=rel[0]*f[0]+rel[1]*f[1]+rel[2]*f[2];const d=Math.hypot(rel[0],rel[1],rel[2]);
-    if(z>0.02){const x=(rel[0]*r[0]+rel[1]*r[1]+rel[2]*r[2])/(z*.62)/asp,y=(rel[0]*u[0]+rel[1]*u[1]+rel[2]*u[2])/(z*.62);
+    if(z>0.02){const x=(rel[0]*r[0]+rel[1]*r[1]+rel[2]*r[2])/(z*FOV)/asp,y=(rel[0]*u[0]+rel[1]*u[1]+rel[2]*u[2])/(z*FOV);
      if(Math.abs(x)<1.05&&Math.abs(y)<1.05){op=Math.min(1,Math.max(0,(1.0-d)/0.5))*Math.min(1,Math.max(0,(d-0.02)/0.03));
       if(op>0)cand.push({l:l,sx:(x+1)/2*innerWidth,sy:(1-y)/2*innerHeight-6,d:d,op:op});}}}
    if(op<=0){l.el.style.opacity='0';l.el.style.pointerEvents='none';}}
@@ -837,6 +1029,31 @@ function frameInner(){
    boxes.push([c.sx-w/2-5,c.sy-16-dy-th-4,c.sx+w/2+5,c.sy-16-dy+4]);
    c.l.ld.style.height=(14+dy)+'px';c.l.el.style.pointerEvents='auto';
    c.l.el.style.transform='translate('+c.sx.toFixed(0)+'px,'+c.sy.toFixed(0)+'px) translate(-50%,-100%)';c.l.el.style.opacity=c.op.toFixed(2);}}
+ // orbits of the tracked galaxies on the time slider (the overlay canvas): the past solid, the future faint
+ {const ov=document.getElementById('ov');if(ov.width!==innerWidth||ov.height!==innerHeight){ov.width=innerWidth;ov.height=innerHeight;}
+  const c=ov.getContext('2d');c.clearRect(0,0,ov.width,ov.height);
+  if(mvOn&&MV){const asp=innerWidth/innerHeight,proj=q=>{const rel=[q[0]-pos[0],q[1]-pos[1],q[2]-pos[2]];const z=rel[0]*f[0]+rel[1]*f[1]+rel[2]*f[2];if(z<0.02)return null;
+    return [((rel[0]*r[0]+rel[1]*r[1]+rel[2]*r[2])/(z*FOV)/asp+1)/2*innerWidth,(1-(rel[0]*u[0]+rel[1]*u[1]+rel[2]*u[2])/(z*FOV))/2*innerHeight];};
+   c.lineWidth=1;for(const l of LABELS){if(l.dim)continue;let prev=null;
+    for(let k=0;k<MV.length;k++){const q=MV[k].lab&&MV[k].lab[l.n],pt=q?proj(q):null;
+     if(pt&&prev){c.strokeStyle=k<=mvT?'rgba(159,216,232,.55)':'rgba(159,216,232,.15)';c.beginPath();c.moveTo(prev[0],prev[1]);c.lineTo(pt[0],pt[1]);c.stroke();}
+     prev=pt;}}}}
+ if(earth&&SKY){const c=document.getElementById('ov').getContext('2d'),asp=innerWidth/innerHeight,E=SKY.east,U=SKY.up,N=SKY.n;
+  c.strokeStyle='rgba(232,162,74,.85)';c.lineWidth=1;
+  for(const g of SKY.gal){const tx=Math.tan(g[0]*Math.PI/180),ty=Math.tan(g[1]*Math.PI/180);const d=[N[0]+tx*E[0]+ty*U[0],N[1]+tx*E[1]+ty*U[1],N[2]+tx*E[2]+ty*U[2]];
+   const z=d[0]*f[0]+d[1]*f[1]+d[2]*f[2],x=(d[0]*r[0]+d[1]*r[1]+d[2]*r[2])/(z*FOV)/asp,y=(d[0]*u[0]+d[1]*u[1]+d[2]*u[2])/(z*FOV);
+   if(Math.abs(x)>1.05||Math.abs(y)>1.05)continue;const R=Math.min(9,Math.max(1.5,(12.5-g[2])*1.3));
+   c.beginPath();c.arc((x+1)/2*innerWidth,(1-y)/2*innerHeight,R,0,6.283);c.stroke();}
+  // compass and the angular scale: 1 degree at Coma's distance
+  const cx=innerWidth-60,cy=Math.min(innerHeight-190,innerHeight*0.55);c.strokeStyle='#9fd8e8';c.fillStyle='#9fd8e8';c.font='11px IBM Plex Mono,monospace';c.textAlign='center';
+  c.beginPath();c.moveTo(cx,cy);c.lineTo(cx,cy-34);c.moveTo(cx,cy);c.lineTo(cx-34,cy);c.stroke();c.fillText('N',cx,cy-38);c.fillText('E',cx-42,cy+4);
+  const dpx=Math.tan(Math.PI/180)/FOV*innerHeight/2;c.beginPath();c.moveTo(cx-34,cy+22);c.lineTo(cx-34+dpx,cy+22);c.stroke();c.fillText('1°',cx-34+dpx/2,cy+34);}
+ // the selected galaxy's ring, and the profile panel
+ {const gm=document.getElementById('gm');if(gsel&&ep===EP0){const rel=[gsel.p[0]-pos[0],gsel.p[1]-pos[1],gsel.p[2]-pos[2]];const z=rel[0]*f[0]+rel[1]*f[1]+rel[2]*f[2];
+   if(z>0.02){const x=(rel[0]*r[0]+rel[1]*r[1]+rel[2]*r[2])/(z*FOV)/(innerWidth/innerHeight),y=(rel[0]*u[0]+rel[1]*u[1]+rel[2]*u[2])/(z*FOV);
+    gm.hidden=false;gm.style.transform='translate('+((x+1)/2*innerWidth).toFixed(0)+'px,'+((1-y)/2*innerHeight).toFixed(0)+'px) translate(-50%,-50%)';}else gm.hidden=true;}
+  else gm.hidden=true;
+  if(prOn)drawProfiles(rr);}
  // keep the URL in sync with the framed view once the camera settles
  if(moving)hashW=false;else if(stillT>0.5&&!hashW){hashW=true;writeHash();}
  if(shotReq){shotReq=false;const a=document.createElement('a');a.download='coma_'+names[mode].replace(/[^a-z0-9]+/gi,'_')+'_'+Math.round(rr*META.half)+'kpch.png';a.href=cv.toDataURL('image/png');document.body.appendChild(a);a.click();a.remove();showCap('SAVED '+cv.width+'×'+cv.height+' PNG');}}

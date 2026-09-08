@@ -2,7 +2,8 @@
 # One-pass cube extraction for the Coma Virtual Observatory (run on raven via run_cubes.sbatch).
 #   python extract_cubes.py SNAP            -> /ptmp/uli/coma_cubes/raw_SNAP.h5
 #   python extract_cubes.py SNAP sp+hires   -> add only the named parts to an existing raw_SNAP.h5
-#                                              (reuses its centre; parts: gas dm stars sp cold bh lab mag hires)
+#                                              (reuses its centre; parts: gas dm stars sp cold bh lab mag kin met bvec
+#                                               hires, and outer = the 60 Mpc/h surroundings, meant for 139 only)
 # Raw float32 cubes (192^3 over +-4500 ckpc/h around the main progenitor of the z=0 BCG;
 # snapshot 139 additionally 384^3 + 192^3 inner +-1200 ckpc/h; snapshots 109, 121, 139 the
 # 384^3 gas mass and star light, "hires") for gas mass, temperature, X-ray proxies, Arepo
@@ -15,11 +16,11 @@ import sys, os, glob, time, numpy as np, h5py
 from multiprocessing import Pool
 
 SNAP = int(sys.argv[1])
-PARTS = sys.argv[2].replace(',', '+').split('+') if len(sys.argv) > 2 else ['gas', 'dm', 'stars', 'sp', 'cold', 'bh', 'lab', 'mag']
+PARTS = sys.argv[2].replace(',', '+').split('+') if len(sys.argv) > 2 else ['gas', 'dm', 'stars', 'sp', 'cold', 'bh', 'lab', 'mag', 'kin', 'met', 'bvec']
 LISTS = ('sp_', 'cg_', 'bh_', 'lab_')                # per-particle dumps: concatenated, not summed
 BASE = '/raven/ptmp/uli/sims/borg_coma_zoom_TNG100_first_try/step_011/output'
 OUT = '/ptmp/uli/coma_cubes'
-HALF = 4500.0; N = 192; N2 = 384; IH = 1200.0; NI = 192
+HALF = 4500.0; N = 192; N2 = 384; IH = 1200.0; NI = 192; HO = 30000.0   # outer cube: +-30 Mpc/h, 192^3
 FULL = SNAP == 139                                   # inner cubes + 384^3 shocks / DM
 HIRES = SNAP in (109, 121, 139) or 'hires' in PARTS  # 384^3 gas mass + star light (the late epochs)
 SP_MINLOGL = 3.0                                     # star particles kept for the sprites (log10 L_r, mag zero point)
@@ -182,6 +183,73 @@ def do_mag(args):
     icm = sfr <= 0
     return grids(d[icm], {'gas_mB': mass[icm] * B[icm], 'gas_mB_m': mass[icm]}, HALF, N)
 
+def gas_T(g, m):
+    """temperature [K] of the selected cells, star-forming ones set to 1e4 K"""
+    u = g['InternalEnergy'][:][m]; xe = g['ElectronAbundance'][:][m]; XH = g['GFM_Metals'][:, 0][m]; sfr = g['StarFormationRate'][:][m]
+    mu = 4. / (1. + 3. * XH + 4. * XH * xe); T = (GAMMA - 1.) * u * 1e10 * mu * MP / KB
+    T[sfr > 0] = 1e4; return T, sfr
+
+def do_kin(args):
+    """kinematics of the hot gas (T > 1e6 K, not star-forming): mass-weighted velocity vector [km/s physical,
+    code x sqrt(a)] and the in-voxel velocity dispersion via sum m v^2 (sigma^2 = <v^2> - <v>^2), gas_mhot = the mass"""
+    fn, cen = args
+    with h5py.File(fn, 'r') as f:
+        g = f['PartType0']
+        d = wrap(g['Coordinates'][:].astype(np.float64), cen)
+        m = np.max(np.abs(d), axis=1) < HALF
+        if not m.any(): return {}
+        d = d[m]; mass = g['Masses'][:][m].astype(np.float64); T, sfr = gas_T(g, m)
+        v = g['Velocities'][:][m].astype(np.float64) * np.sqrt(1. / (1. + Z))
+    hot = (T > 1e6) & (sfr <= 0)
+    if not hot.any(): return {}
+    d = d[hot]; mass = mass[hot]; v = v[hot]
+    return grids(d, {'gas_mhot': mass, 'gas_mvx': mass * v[:, 0], 'gas_mvy': mass * v[:, 1], 'gas_mvz': mass * v[:, 2],
+                     'gas_mv2': mass * (v * v).sum(1)}, HALF, N)
+
+ZSUN = 0.0127                                        # TNG's solar metallicity (mass fraction)
+def do_met(args):
+    """mass-weighted metallicity Z/Zsun of the non-star-forming gas: gas_mZ = sum m Z/Zsun, gas_mZ_m = the mass"""
+    fn, cen = args
+    with h5py.File(fn, 'r') as f:
+        g = f['PartType0']
+        d = wrap(g['Coordinates'][:].astype(np.float64), cen)
+        m = np.max(np.abs(d), axis=1) < HALF
+        if not m.any(): return {}
+        d = d[m]; mass = g['Masses'][:][m].astype(np.float64); sfr = g['StarFormationRate'][:][m]
+        Zm = g['GFM_Metallicity'][:][m].astype(np.float64) / ZSUN
+    icm = sfr <= 0
+    return grids(d[icm], {'gas_mZ': mass[icm] * Zm[icm], 'gas_mZ_m': mass[icm]}, HALF, N)
+
+def do_bvec(args):
+    """mass-weighted magnetic field vector [uG] of the non-star-forming gas (for the Faraday rotation measure)"""
+    fn, cen = args
+    with h5py.File(fn, 'r') as f:
+        g = f['PartType0']
+        d = wrap(g['Coordinates'][:].astype(np.float64), cen)
+        m = np.max(np.abs(d), axis=1) < HALF
+        if not m.any(): return {}
+        d = d[m]; mass = g['Masses'][:][m].astype(np.float64); sfr = g['StarFormationRate'][:][m]
+        B = g['MagneticField'][:][m].astype(np.float64) * B_UG
+    icm = sfr <= 0; d = d[icm]; mass = mass[icm]; B = B[icm]
+    return grids(d, {'gas_mBx': mass * B[:, 0], 'gas_mBy': mass * B[:, 1], 'gas_mBz': mass * B[:, 2], 'gas_mBv_m': mass}, HALF, N)
+
+def do_outer(args):
+    """the surroundings: total matter (all DM types + gas + stars) and gas mass over +-30 Mpc/h at 192^3 (312 kpc/h voxels)"""
+    fn, cen = args
+    out = {}
+    with h5py.File(fn, 'r') as f:
+        for pt in (0, 1, 2, 3, 4):
+            k = 'PartType%d' % pt
+            if k not in f or 'Coordinates' not in f[k]: continue
+            d = wrap(f[k + '/Coordinates'][:].astype(np.float64), cen)
+            m = np.max(np.abs(d), axis=1) < HO
+            if not m.any(): continue
+            d = d[m]
+            wgt = f[k + '/Masses'][:][m].astype(np.float64) if 'Masses' in f[k] else np.full(len(d), float(MT[pt]))
+            add(out, grids(d, {'all_mO': wgt}, HO, N))
+            if pt == 0: add(out, grids(d, {'gas_mO': wgt}, HO, N))
+    return out
+
 def do_bh(args):
     fn, cen = args
     with h5py.File(fn, 'r') as f:
@@ -247,7 +315,8 @@ if __name__ == '__main__':
             cen = cen_tr; info['group_M200'] = 0.0; info['group_R200'] = 0.0; info['group_dist'] = -1.0
         print('snap', SNAP, 'z=%.3f' % Z, 'tracers', len(tr), 'centre', cen, 'offset from z=0 centre', wrap(cen[None], cen0)[0], info, flush=True)
     acc = {}
-    todo = [(n, f) for n, f in (('gas', do_gas), ('dm', do_dm), ('stars', do_stars), ('sp', do_sp), ('cold', do_cold), ('bh', do_bh), ('mag', do_mag))
+    todo = [(n, f) for n, f in (('gas', do_gas), ('dm', do_dm), ('stars', do_stars), ('sp', do_sp), ('cold', do_cold), ('bh', do_bh), ('mag', do_mag),
+                                ('kin', do_kin), ('met', do_met), ('bvec', do_bvec), ('outer', do_outer))
             if n in PARTS or ('hires' in PARTS and n in ('gas', 'stars'))]
     for name, fun in todo:
         with Pool(NPROC) as p:
@@ -259,6 +328,13 @@ if __name__ == '__main__':
         for k in ('cg_pos', 'cg_lrho', 'cg_sf'): acc[k] = acc[k][keep]
         print('cold: %d cells kept (SF %d), log rho >= %.2f' % (len(keep), int(acc['cg_sf'].sum()), acc['cg_lrho'].min()), flush=True)
     if 'bh_mass' in acc: print('bh: %d black holes' % len(acc['bh_mass']), flush=True)
+    if 'gas_mhot' in acc:
+        mh = acc['gas_mhot']; ok = mh > 0; vm = np.stack([acc['gas_mv' + c][ok] / mh[ok] for c in 'xyz'], 1)
+        s2 = np.maximum(acc['gas_mv2'][ok] / mh[ok] - (vm * vm).sum(1), 0.)
+        print('kin: %d hot voxels, |<v>| pct 50/95 = %s km/s, sigma pct 10/50/90/99 = %s km/s' % (ok.sum(), np.round(np.percentile(np.linalg.norm(vm, axis=1), [50, 95])), np.round(np.sqrt(np.percentile(s2, [10, 50, 90, 99])))), flush=True)
+    if 'gas_mZ' in acc:
+        mm = acc['gas_mZ_m']; ok = mm > 0; print('met: Z/Zsun pct 10/50/90/99 = %s' % np.round(np.percentile(acc['gas_mZ'][ok] / mm[ok], [10, 50, 90, 99]), 3), flush=True)
+    if 'all_mO' in acc: print('outer: %d of %d voxels with matter, gas %d' % ((acc['all_mO'] > 0).sum(), N ** 3, (acc['gas_mO'] > 0).sum()), flush=True)
     if 'gas_mB' in acc:
         mm = acc['gas_mB_m']; Bv = acc['gas_mB'][mm > 0] / mm[mm > 0]
         print('mag: %d voxels with ICM gas, |B| [uG] pct 5/50/95/99.9: %s' % (len(Bv), np.round(np.percentile(Bv, [5, 50, 95, 99.9]), 3)), flush=True)

@@ -7,6 +7,10 @@
 #                                   data/stars.bin.gz against the star particles of raw_139.h5 (sp_* datasets)
 #   python pack_cubes.py calib_cg -> the cold-gas sprite encoding of data/gas.bin.gz against raw_139.h5 (cg_* datasets)
 #   python pack_cubes.py 139     -> data/dm384.u8.gz idm192.u8.gz shock384.u8.gz ishock192.u8.gz
+#   python pack_cubes.py kin|met|bvec -> vel192 (RGBA: v vector + log sigma), met192, bvec192 (+ ep*_ versions)
+#   python pack_cubes.py outer   -> data/outer192.u8.gz (RG: matter + gas over +-30 Mpc/h, z=0)
+#   python pack_cubes.py movie   -> data/mv/mv_SNAP.u8.gz (128^3 RGB) + data/movie.json from extract_movie.py
+#   python pack_cubes.py galaxies -> data/galaxies.json (z=0 subhaloes for the galaxy inspector)
 #   python pack_cubes.py mag     -> data/mag192.u8.gz + data/ep*_mag192.u8.gz for every raw file with the magnetic
 #                                   field (extract_cubes.py SNAP mag); the log scale is fitted once at z=0 (`mag`)
 #   python pack_cubes.py 27      -> data/ep027_{pk,xray,temp,dm,shock}192.u8.gz (same scales as z=0)
@@ -27,8 +31,9 @@ def rd(name, n):
     return np.frombuffer(gzip.decompress(open(os.path.join(DATA, name), 'rb').read()), np.uint8).reshape(n, n, n)
 
 def wr(name, u8):
-    open(os.path.join(DATA, name), 'wb').write(gzip.compress(np.ascontiguousarray(u8).tobytes(), 9))
-    print('  wrote', name, '%.1f MB' % (os.path.getsize(os.path.join(DATA, name)) / 1e6), flush=True)
+    path = os.path.join(DATA, name)
+    with open(path, 'wb') as f: f.write(gzip.compress(np.ascontiguousarray(u8).tobytes(), 9)); f.flush(); os.fsync(f.fileno())
+    print('  wrote', name, '%.1f MB' % (os.path.getsize(path) / 1e6), flush=True)
 
 def u8(q, lo, hi, floor=0, quant=1):
     """floor: values the shader never shows (below its smoothstep threshold) are zeroed, quant: keep 256/quant
@@ -238,6 +243,149 @@ def pack_epoch(snap):
     if 'cg_lrho' in f and 'cg_n' in S: wr(p + 'gas.bin.gz', gas_pack(f, S))
     if 'bh_mass' in f or 'lab_pos' in f: meta_json(f, p + 'meta.json')
 
+def galaxies():
+    """data/galaxies.json: the subhaloes of the z=0 catalogue inside the cube with M* >= 1e9 Msun, for the page's
+    galaxy inspector: p (cube units), ms/mg/mh = log10 of stellar, gas, total subhalo mass [Msun], sfr [Msun/yr],
+    rh = stellar half-mass radius [kpc], v = Vmax [km/s], gr = g-r, bh = log10 M_BH, d = distance from the BCG [Mpc]
+    (h = 0.681 taken out), i = subhalo index"""
+    H = 0.681; cen = np.load(RAW + '/cen139.npy'); box = None; P = []; MT = []; SF = []; RH = []; VM = []; PH = []; BH = []
+    for gf in sorted(glob.glob('/raven/ptmp/uli/sims/borg_coma_zoom_TNG100_first_try/step_011/output/groups_139/fof_subhalo_tab_139.*.hdf5')):
+        with h5py.File(gf, 'r') as g:
+            box = float(g['Header'].attrs['BoxSize'])
+            if 'Subhalo' not in g or 'SubhaloPos' not in g['Subhalo']: continue
+            S = g['Subhalo']; P.append(S['SubhaloPos'][:]); MT.append(S['SubhaloMassType'][:]); SF.append(S['SubhaloSFR'][:])
+            RH.append(S['SubhaloHalfmassRadType'][:, 4]); VM.append(S['SubhaloVmax'][:]); PH.append(S['SubhaloStellarPhotometrics'][:]); BH.append(S['SubhaloBHMass'][:])
+    P = np.concatenate(P).astype(np.float64); MT = np.concatenate(MT); SF = np.concatenate(SF); RH = np.concatenate(RH); VM = np.concatenate(VM); PH = np.concatenate(PH); BH = np.concatenate(BH)
+    d = P - cen; d -= np.round(d / box) * box
+    ms = MT[:, 4] * 1e10 / H; keep = np.where((np.max(np.abs(d), axis=1) < HALF) & (ms >= 1e9))[0]
+    keep = keep[np.argsort(-ms[keep])]
+    out = []
+    for i in keep:
+        out.append({'i': int(i), 'p': [round(float(v), 4) for v in d[i] / HALF], 'ms': round(float(np.log10(ms[i])), 2),
+                    'mg': round(float(np.log10(max(MT[i, 0] * 1e10 / H, 1.))), 2), 'mh': round(float(np.log10(MT[i].sum() * 1e10 / H)), 2),
+                    'sfr': round(float(SF[i]), 3), 'rh': round(float(RH[i] / H), 1), 'v': round(float(VM[i]), 0),
+                    'gr': round(float(PH[i, 4] - PH[i, 5]), 2), 'bh': round(float(np.log10(max(BH[i] * 1e10 / H, 1.))), 2),
+                    'd': round(float(np.linalg.norm(d[i]) / H / 1000.), 3)})
+    json.dump(out, open(os.path.join(DATA, 'galaxies.json'), 'w'), separators=(',', ':'))
+    print('wrote galaxies.json: %d subhaloes with M* >= 1e9 Msun inside the cube (%.0f kB); M* pct 50/90/max = %s; SFR > 0: %d' % (
+        len(out), os.path.getsize(os.path.join(DATA, 'galaxies.json')) / 1e3, [o['ms'] for o in [out[len(out) // 2], out[len(out) // 10], out[0]]], sum(o['sfr'] > 0 for o in out)))
+
+VMAX = 1500.                 # velocity byte: 128 + v / VMAX * 127 (km/s, relative to the hot gas within 500 kpc/h)
+SIG = (1.0, 3.0)             # velocity dispersion byte: log10 sigma [km/s] over 10 .. 1000
+BV0, BVMAX = 0.05, 10.       # B vector byte: 128 + 127 asinh(B / BV0) / asinh(BVMAX / BV0)  (signed, 0.01 uG still resolved)
+MET = (-2.0, 0.5)            # metallicity byte: log10 Z/Zsun
+def raw_files():
+    return [(int(os.path.basename(q)[4:7]), q) for q in sorted(glob.glob(RAW + '/raw_*.h5'))]
+
+def epname(snap, base):
+    return base if snap == 139 else 'ep%03d_' % snap + base
+
+def pack_kin():
+    """vel192: RGBA8 = hot-gas velocity vector relative to the cluster's systemic velocity (the mass-weighted mean of
+    the hot gas within 500 kpc/h of the centre) and log10 of the in-voxel velocity dispersion (extract_cubes.py kin)"""
+    S = json.load(open(SC)); S['vel'] = [VMAX]; S['sig'] = list(SIG); json.dump(S, open(SC, 'w'), indent=1)
+    n = 192; c = (np.arange(n) + 0.5) / n * 2 * HALF - HALF; X, Y, Z = np.meshgrid(c, c, c, indexing='ij'); r = np.sqrt(X * X + Y * Y + Z * Z)
+    for snap, path in raw_files():
+        with h5py.File(path, 'r') as f:
+            if 'gas_mhot' not in f: print('snap', snap, 'has no kin part'); continue
+            mh = f['gas_mhot'][:]; ok = mh > 0; core = ok & (r < 500.)
+            mv = [f['gas_mv' + k][:] for k in 'xyz']; v2 = f['gas_mv2'][:]
+        vs = np.array([q[core].sum() / mh[core].sum() for q in mv])
+        if snap != 139:   # the epochs at 96^3 (2x2x2 sums, ~2 MB each); z = 0 keeps 192^3 for the XRISM view (19 MB)
+            rb = lambda q: q.reshape(96, 2, 96, 2, 96, 2).sum(axis=(1, 3, 5))
+            mh = rb(mh); mv = [rb(q) for q in mv]; v2 = rb(v2); ok = mh > 0; n = 96
+        else: n = 192
+        v = np.stack([np.where(ok, q / np.maximum(mh, 1e-30), 0.) - vs[i] for i, q in enumerate(mv)], -1); v[~ok] = 0.
+        s2 = np.where(ok, np.maximum(v2 / np.maximum(mh, 1e-30) - ((v + vs) ** 2).sum(-1), 0.), 0.)
+        u = np.zeros((n, n, n, 4), np.uint8)
+        # 24 km/s and 0.06 dex steps: the noisy bytes gzip 2-3x better than the full 8 bits
+        u[..., :3] = (np.clip(np.round(128 + v / VMAX * 127), 1, 255).astype(np.uint8) // 2) * 2; u[~ok, :3] = 128
+        u[..., 3] = u8(0.5 * logq(s2), SIG[0], SIG[1], 0, 8) * ok
+        print('snap %d: systemic v = %s km/s, |v| pct 50/90/99 = %s, sigma pct 50/90/99 = %s km/s' % (snap, np.round(vs), np.round(np.percentile(np.linalg.norm(v[ok], axis=1), [50, 90, 99])), np.round(np.sqrt(np.percentile(s2[ok], [50, 90, 99])))))
+        wr(epname(snap, 'vel%d.u8.gz' % n), u)
+
+def pack_met():
+    S = json.load(open(SC)); S['met'] = list(MET); json.dump(S, open(SC, 'w'), indent=1)
+    for snap, path in raw_files():
+        with h5py.File(path, 'r') as f:
+            if 'gas_mZ' not in f: print('snap', snap, 'has no met part'); continue
+            mm = f['gas_mZ_m'][:]; ok = mm > 0; z = np.where(ok, logq(f['gas_mZ'][:] / np.maximum(mm, 1e-30)), -30.)
+        print('snap %d: Z/Zsun pct 10/50/90/99 = %s' % (snap, np.round(10 ** np.percentile(z[ok], [10, 50, 90, 99]), 3)))
+        wr(epname(snap, 'met192.u8.gz'), u8(z, MET[0], MET[1]))
+
+def pack_bvec():
+    S = json.load(open(SC)); S['bvec'] = [BV0, BVMAX]; json.dump(S, open(SC, 'w'), indent=1)
+    k = 127. / np.arcsinh(BVMAX / BV0)
+    for snap, path in raw_files():
+        with h5py.File(path, 'r') as f:
+            if 'gas_mBx' not in f: print('snap', snap, 'has no bvec part'); continue
+            mm = f['gas_mBv_m'][:]; ok = mm > 0
+            B = np.stack([np.where(ok, f['gas_mB' + c][:] / np.maximum(mm, 1e-30), 0.) for c in 'xyz'], -1)
+        u = (np.clip(np.round(128 + k * np.arcsinh(B / BV0)), 1, 255).astype(np.uint8) // 2) * 2; u[~ok] = 128
+        print('snap %d: |B| pct 50/99 = %s uG, |B_z|/|B| median %.2f' % (snap, np.round(np.percentile(np.linalg.norm(B[ok], axis=1), [50, 99]), 3), np.median(np.abs(B[ok, 2]) / np.maximum(np.linalg.norm(B[ok], axis=1), 1e-9))))
+        wr(epname(snap, 'bvec192.u8.gz'), u)
+
+def pack_outer():
+    """outer192: RG8 = log total matter mass and log gas mass per 312 kpc/h voxel over +-30 Mpc/h (z=0 only),
+    1-voxel smoothed, stretched between the 40th and 99.95th percentiles of the populated voxels"""
+    S = json.load(open(SC))
+    with h5py.File(RAW + '/raw_139.h5', 'r') as f: am = f['all_mO'][:]; gm = f['gas_mO'][:]
+    out = []
+    for key, q in (('outer_m', am), ('outer_g', gm)):
+        lg = logq(gaussian_filter(q, 1.0)); lo, hi = np.percentile(lg[q > 0], [40, 99.95]); S[key] = [float(lo), float(hi), 1.0]
+        print('  %s: lo=%.3f hi=%.3f (populated %d)' % (key, lo, hi, (q > 0).sum())); out.append(u8(lg, lo, hi, 0, 2))
+    json.dump(S, open(SC, 'w'), indent=1); wr('outer192.u8.gz', np.stack(out, -1))
+
+def lookback(z, h=0.681, om=0.306):
+    """lookback time [Gyr] in flat LCDM"""
+    zz = np.linspace(0, z, 2001); E = np.sqrt(om * (1 + zz) ** 3 + 1 - om)
+    return float(np.trapz(1. / ((1 + zz) * E), zz) * 977.8 / (100 * h))
+
+def pack_movie():
+    """data/mv/mv_SNAP.u8.gz: 128^3 RGB8 (density, log T, star light) of every snapshot on the z=0 scales (the voxel
+    is 3x the 384 one: +3 log10 3 on the mass-like fields), T and light kept at 64 levels; data/movie.json: per
+    snapshot z, lookback time, M200, R200, centre offset and the tracked label positions (cube units)"""
+    S = json.load(open(SC)); sh = 3 * np.log10(3.); os.makedirs(os.path.join(DATA, 'mv'), exist_ok=True); meta = []
+    for path in sorted(glob.glob(RAW + '/movie/mv_*.h5')):
+        with h5py.File(path, 'r') as f:
+            snap = int(f.attrs['snap']); z = max(float(f.attrs['z']), 0.); m = f['gas_m'][:]; lt = np.where(m > 0, f['gas_mlt'][:] / np.maximum(m, 1e-30), 0.)
+            L = f['st_L'][:] if 'st_L' in f else np.zeros_like(m)
+            # snapshot 139 is centred by cen139.npy, without a group lookup: its M200 / R200 are the page's z = 0 values
+            e = {'s': snap, 'z': round(max(z, 0.), 4), 't': round(lookback(max(z, 0.)), 3), 'm': float(f.attrs.get('group_M200', 1.1e5 if snap == 139 else 0)) * 1e10,
+                 'r': float(f.attrs.get('group_R200', 1476.35 if snap == 139 else 0)),
+                 'off': [round(float(v), 4) for v in (f.attrs['cen'] - f.attrs['cen139']) / HALF]}
+            if 'lab_pos' in f:
+                names = [q.decode() for q in f.attrs['lab_names']]; lp = f['lab_pos'][:] / HALF; ln = f['lab_n'][:]
+                e['lab'] = {nm: [round(float(v), 4) for v in lp[i]] for i, nm in enumerate(names) if np.isfinite(lp[i]).all() and ln[i] >= 20}
+        rho = u8(logq(gaussian_filter(m, 0.7)), S['rho'][0] + sh, S['rho'][1] + sh)
+        t = u8(lt, S['temp'][0], S['temp'][1], 0, 4); sl = u8(logq(L), S['slum'][0] + sh, S['slum'][1] + sh, 0, 4)
+        wr('mv/mv_%03d.u8.gz' % snap, np.stack([rho, t, sl], -1)); meta.append(e)
+    meta.sort(key=lambda e: e['s']); json.dump(meta, open(os.path.join(DATA, 'movie.json'), 'w'), separators=(',', ':'))
+    print('wrote movie.json: %d snapshots, z %.2f .. %.2f, total %.0f MB' % (len(meta), meta[0]['z'], meta[-1]['z'], sum(os.path.getsize(os.path.join(DATA, 'mv', 'mv_%03d.u8.gz' % e['s'])) for e in meta) / 1e6))
+
+def sky():
+    """data/sky.json: the observer's frame of this realisation (coma_300/data/zoom_rotations.npz, step 11: the
+    observer at the parent box centre, n = Earth -> Coma unit vector in the sim axes, North = +x, the distance from
+    coma_300/data/parent_radec.npz) and the real 2M++ galaxies (Lavaux & Hudson 2011, VizieR cone of 6 deg around
+    Coma) within 4000 < v_cmb < 10000 km/s as tangent-plane offsets [deg] from NGC 4889 (east +, north +) with Ks"""
+    C3 = os.path.expanduser('~/coma_300/data'); STEP = 11
+    z = np.load(C3 + '/zoom_rotations.npz'); rd = np.load(C3 + '/parent_radec.npz')
+    i = int(np.where(z['step'] == STEP)[0][0]); n = z['n_los'][i]; up = z['up'][i]; east = np.cross(up, n)
+    RA0, DEC0 = 195.0338, 27.9770   # NGC 4889
+    gal = []
+    for line in open(C3 + '/coma_obs/twompp_coma_6deg.tsv'):
+        if line.startswith('#') or not line.strip(): continue
+        f = line.rstrip('\n').split('\t')
+        try: ra, dec, ks, vc = float(f[1]), float(f[2]), float(f[4]), float(f[6])
+        except (ValueError, IndexError): continue
+        if not 4000 < vc < 10000: continue
+        gal.append([round((ra - RA0) * np.cos(np.radians(DEC0)), 4), round(dec - DEC0, 4), round(ks, 2), int(vc)])
+    out = {'step': STEP, 'n': [round(float(v), 6) for v in n], 'up': [round(float(v), 6) for v in up], 'east': [round(float(v), 6) for v in east],
+           'D': float(rd['dist'][i]), 'ra': float(rd['ra'][i]), 'dec': float(rd['dec'][i]), 'ra0': RA0, 'dec0': DEC0,
+           'src': '2M++ (Lavaux & Hudson 2011) within 6 deg of Coma, 4000 < v_cmb < 10000 km/s; frame: coma_300 zoom_rotations step %d' % STEP, 'gal': gal}
+    json.dump(out, open(os.path.join(DATA, 'sky.json'), 'w'), separators=(',', ':'))
+    print('wrote sky.json: %d galaxies, halo at RA %.2f Dec %.2f, D = %.0f ckpc/h (%.2f deg per Mpc/h)' % (len(gal), out['ra'], out['dec'], out['D'], np.degrees(np.arctan(1000 / out['D']))))
+
 def pack_mag():
     """magnetic field: mass-weighted |B| [uG] of the non-star-forming gas per 192^3 voxel (extract_cubes.py mag),
     physical uG at every epoch on one log10 scale, 0.01 .. 10 uG (z=0 profile: 3.3 uG within 100 kpc/h, 1.2 at
@@ -264,4 +412,11 @@ if __name__ == '__main__':
     elif a == 'meta139': meta_json(h5py.File(RAW + '/raw_139.h5', 'r'), 'ep139_meta.json')   # check against D_BH / LABELS, not shipped
     elif a == '139': pack139()
     elif a == 'mag': pack_mag()
+    elif a == 'galaxies': galaxies()
+    elif a == 'sky': sky()
+    elif a == 'kin': pack_kin()
+    elif a == 'met': pack_met()
+    elif a == 'bvec': pack_bvec()
+    elif a == 'outer': pack_outer()
+    elif a == 'movie': pack_movie()
     else: pack_epoch(int(a))
