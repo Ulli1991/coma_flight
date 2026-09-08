@@ -884,7 +884,7 @@ function select(g){gsel=g;const e=document.getElementById('gi');if(!g){e.hidden=
  document.getElementById('gin').textContent=galName(g);
  document.getElementById('gib').innerHTML=[['M<sub>★</sub>',fmtM(g.ms)+(g.i===0?' incl. the intracluster light':'')],['SFR',g.sfr>0?g.sfr.toFixed(2)+' M☉ / yr':'quenched'],
   ['M<sub>gas</sub>',fmtM(g.mg)],['M<sub>subhalo</sub>',fmtM(g.mh)],['r<sub>½,★</sub>',g.rh+' kpc'],['V<sub>max</sub>',g.v+' km/s'],['g − r',g.gr.toFixed(2)],
-  ['M<sub>BH</sub>',fmtM(g.bh)],['d<sub>BCG</sub>',g.d.toFixed(2)+' Mpc']].map(([k,v])=>'<div>'+k+'&nbsp; <b>'+v+'</b></div>').join('');history(g);}
+  ['M<sub>BH</sub>',g.bh>0?fmtM(g.bh):'none · lost to a neighbour (TNG pins black holes to the potential minimum)'],['d<sub>BCG</sub>',g.d.toFixed(2)+' Mpc']].map(([k,v])=>'<div>'+k+'&nbsp; <b>'+v+'</b></div>').join('');history(g);}
 document.getElementById('gix').addEventListener('click',()=>select(null));
 document.getElementById('gif').addEventListener('click',()=>{if(gsel)goSight(gsel.p,0.06,galName(gsel));});
 // ---- radial profiles (I): spherical means of the resident cubes about the centre, the camera's radius marked ----

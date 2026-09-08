@@ -215,6 +215,9 @@ Sept 8, fourth round ("beyond state of the art"): new physics, the cosmic web, t
   -> `data/galaxy_tracks.json` [movie index, r / R200, log M*, SF]; the inspector shows the history: since when
   inside R200 and the stellar mass then, when star formation ended, and a sparkline of r / R200 (blue while
   star-forming, orange when quenched) with the M* curve.
+- 504 of the 803 z = 0 galaxies above 1e9 Msun have no black hole, 59% even above 1e11: TNG repositions black
+  holes to the local potential minimum, so satellites hand theirs to a more massive neighbour; the inspector says
+  so instead of a dash. The beacons in the movie therefore mark the galaxies that still hold one.
 - Lite build (the GPU load: ~400 MB of 3D textures at z = 0 in the full build, up to ~850 MB with two 384^3
   epochs resident): `pack_cubes.py lite` -> `lite_pk192 / lite_dm192 / lite_shock192` (the epoch recipe on
   raw_139, 9 MB); with `?lite=1` (or automatically for Intel / Mali / Adreno / PowerVR / software GPUs and
