@@ -408,7 +408,7 @@ void main(){vec2 q=(gl_PointCoord*2.-1.)*vq;float r=dot(q,q);
 // textures
 let GLINFO='';{try{const d=gl.getExtension('WEBGL_debug_renderer_info');GLINFO=(d?gl.getParameter(d.UNMASKED_RENDERER_WEBGL):'')+' · units '+gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS)+' · 3D max '+gl.getParameter(gl.MAX_3D_TEXTURE_SIZE);}catch(e){}}
 let texFail=0,texMB=0;
-function vol3d(data,n,ch){n=n||192;ch=ch||1;const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_3D,t);texMB+=data.length/1e6;
+function vol3d(data,n,ch){n=n||192;ch=ch||1;gl.getError();const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_3D,t);texMB+=data.length/1e6;
  gl.texStorage3D(gl.TEXTURE_3D,1,ch===4?gl.RGBA8:ch===3?gl.RGB8:ch===2?gl.RG8:gl.R8,n,n,n);
  gl.pixelStorei(gl.UNPACK_ALIGNMENT,1);
  gl.texSubImage3D(gl.TEXTURE_3D,0,0,0,0,n,n,n,ch===4?gl.RGBA:ch===3?gl.RGB:ch===2?gl.RG:gl.RED,gl.UNSIGNED_BYTE,data);
@@ -754,7 +754,9 @@ const mvHas=i=>!!(MVC[i]&&MVC[i].tex);
 function mvReady(t){const i0=Math.floor(t);return mvHas(i0)&&mvHas(Math.min(i0+1,MV.length-1));}
 function mvUpdate(){const i0=Math.floor(mvT),i1=Math.min(i0+1,MV.length-1);
  const ahead=LITE?4:8,keep=LITE?12:26,far=LITE?5:12;for(let k=0;k<=ahead;k++){mvFetch(i0+k);if(k<2)mvFetch(i0-k);}   // ahead in time first, a little behind
- const keys=Object.keys(MVC).map(Number);if(keys.length>keep)for(const k of keys)if(Math.abs(k-mvT)>far&&MVC[k].tex){gl.deleteTexture(MVC[k].tex);if(MVC[k].flow)gl.deleteTexture(MVC[k].flow);delete MVC[k];}
+ // evict far snapshots, but never the pair on screen (after a fast drag mvShow can still be an old pair until the new one is in)
+ const keys=Object.keys(MVC).map(Number),shown=t=>mvShow&&(mvShow[0]===t||mvShow[1]===t);
+ if(keys.length>keep)for(const k of keys)if(Math.abs(k-mvT)>far&&MVC[k].tex&&!shown(MVC[k].tex)){gl.deleteTexture(MVC[k].tex);if(MVC[k].flow)gl.deleteTexture(MVC[k].flow);delete MVC[k];}
  if(mvHas(i0)&&mvHas(i1))mvShow=[MVC[i0].tex,MVC[i1].tex,mvT-i0,MVC[i0].flow||null];else showCap('LOADING z = '+MV[i0].z);
  mvGalaxies();
  const e=MV[Math.round(mvT)],t=document.getElementById('ts');t.value=mvT;t.style.setProperty('--p',(100*mvT/(MV.length-1)).toFixed(1)+'%');
