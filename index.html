@@ -857,9 +857,9 @@ const LABELS=[{n:'NGC 4889 · BCG',p:[0,0,0]},{n:'NGC 4874',p:[0.0293,-0.0716,-0
 const HUDS=['tl','tr','bl','br','cb','sb','gi','pr','tsw'];   // HUD panels the labels keep clear of
 // ---- galaxy inspector: click a galaxy at z = 0 for its subhalo catalogue entry (data/galaxies.json, pack_cubes.py galaxies) ----
 let GAL=null,gsel=null,TRK=null;fetch('data/galaxies.json').then(r=>r.ok?r.json():null).then(g=>{GAL=g;}).catch(()=>{});
-fetch('data/galaxy_tracks.json').then(r=>r.ok?r.json():null).then(t=>{if(t){TRK={};for(const q of t)TRK[q.i]=q.t;if(gsel)history(gsel);}}).catch(()=>{});
+fetch('data/galaxy_tracks.json').then(r=>r.ok?r.json():null).then(t=>{if(t){TRK={};for(const q of t)TRK[q.i]=q.t;if(gsel)galHistory(gsel);}}).catch(()=>{});
 // the infall history: r / R200 and log M* against lookback time, star-forming stretches in blue, quenched in orange
-function history(g){const h=document.getElementById('gih'),cvs=document.getElementById('gic'),c=cvs.getContext('2d');c.clearRect(0,0,cvs.width,cvs.height);
+function galHistory(g){const h=document.getElementById('gih'),cvs=document.getElementById('gic'),c=cvs.getContext('2d');c.clearRect(0,0,cvs.width,cvs.height);
  const t=TRK&&TRK[g.i];if(!t||!MV||t.length<2){h.textContent=TRK?'no history (not tracked through the snapshots)':'';cvs.hidden=true;return;}cvs.hidden=false;
  const inf=t.find(q=>q[1]<1),lastSF=[...t].reverse().find(q=>q[3]>0),tl=k=>MV[k].t;
  const parts=[];if(g.i===0)parts.push('the cluster itself');else if(inf)parts.push('inside R200 since '+tl(inf[0]).toFixed(1)+' Gyr ago (z = '+MV[inf[0]].z.toFixed(2)+'), M★ then '+sci(Math.pow(10,inf[2]))+' M☉');else parts.push('still outside R200');
@@ -884,7 +884,7 @@ function select(g){gsel=g;const e=document.getElementById('gi');if(!g){e.hidden=
  document.getElementById('gin').textContent=galName(g);
  document.getElementById('gib').innerHTML=[['M<sub>★</sub>',fmtM(g.ms)+(g.i===0?' incl. the intracluster light':'')],['SFR',g.sfr>0?g.sfr.toFixed(2)+' M☉ / yr':'quenched'],
   ['M<sub>gas</sub>',fmtM(g.mg)],['M<sub>subhalo</sub>',fmtM(g.mh)],['r<sub>½,★</sub>',g.rh+' kpc'],['V<sub>max</sub>',g.v+' km/s'],['g − r',g.gr.toFixed(2)],
-  ['M<sub>BH</sub>',g.bh>0?fmtM(g.bh):'none · lost to a neighbour (TNG pins black holes to the potential minimum)'],['d<sub>BCG</sub>',g.d.toFixed(2)+' Mpc']].map(([k,v])=>'<div>'+k+'&nbsp; <b>'+v+'</b></div>').join('');history(g);}
+  ['M<sub>BH</sub>',g.bh>0?fmtM(g.bh):'none · lost to a neighbour (TNG pins black holes to the potential minimum)'],['d<sub>BCG</sub>',g.d.toFixed(2)+' Mpc']].map(([k,v])=>'<div>'+k+'&nbsp; <b>'+v+'</b></div>').join('');galHistory(g);}
 document.getElementById('gix').addEventListener('click',()=>select(null));
 document.getElementById('gif').addEventListener('click',()=>{if(gsel)goSight(gsel.p,0.06,galName(gsel));});
 // ---- radial profiles (I): spherical means of the resident cubes about the centre, the camera's radius marked ----
