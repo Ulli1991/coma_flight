@@ -120,7 +120,7 @@ Sept 8, third round (magnetic field, Compton y, one key scheme, labels, mode cro
 - Magnetic field (key 7, mode 8): `data/mag192.u8.gz` and `ep{S}_mag192.u8.gz` = log10 of the
   mass-weighted |B| [uG] of the non-star-forming gas per 192^3 voxel (`extract_cubes.py SNAP mag`,
   `pack_cubes.py mag`; Arepo code units -> Gauss with 2.60e-6 h / a^2, h = 0.681), physical uG at
-  every epoch over 0.01 .. 10 uG (`mag` in `cube_scales.json`). z=0 profile: 3.3 uG inside 100 kpc/h,
+  every epoch over 0.001 .. 10 uG (`mag` in `cube_scales.json`; the floor was 0.01 uG until the z = 2 audit showed only 6% of the voxels above it). z=0 profile: 3.3 uG inside 100 kpc/h,
   1.2 at 300-600, 0.34 at 1-1.5 Mpc/h, 0.11 at 1.5-2.5, 0.017 beyond, peak 11 uG. Shader: colour by
   field strength (`bmap`, indigo -> violet -> magenta -> pale yellow), emissivity = gas density x
   (0.3 + 1.7 x). The star-forming ISM is left out because its 10s of uG would mark every galaxy.
@@ -184,6 +184,19 @@ Sept 8, fourth round ("beyond state of the art"): new physics, the cosmic web, t
   realisation's massive companion is 1.9 deg east of the core (PA 100), not at NGC 4839's PA 228 /
   0.61 R200; NGC 4874's analogue sits 0.21 deg west. The eROSITA and Planck images of coma_300 are not on
   raven (only the Planck y profile), so no image overlay yet.
+- Temperature scale extended (Sept 8, late): the shipped z=0 temp192 started at 1.3e7 K, so at z = 2 (progenitor
+  gas ~1e7 K) 99% of the voxels were byte 0 = "cold": the young cluster was cyan-tinted and veiled, and the
+  temperature / entropy / Compton-y modes were dark. `pack_cubes.py temp` now writes temp192 for z = 0 (from
+  raw_139, replacing the viper cube) and every epoch on log10 T = 5.5 .. 8.0318 (3e5 .. 1.1e8 K; `temp` in
+  cube_scales.json, the old scale kept as `temp_viper`; do not re-run `calib`, it would refit the old one), and
+  `movie` was repacked. Shader thresholds are now physical: cold tint below ~1e6 K, hot-wind tint 5e7..7e7 K,
+  the temperature ramp 3e6 .. 9e7 K, entropy and Compton y only above ~2e6 K. The cyan tint at z = 0 therefore
+  marks truly cold gas (1e4 K tails and filaments), no longer everything below 1.7e7 K.
+- Floors at high redshift (audit of the z = 1.95 cubes against z = 0): X-ray 8% nonzero (core byte 184), DM 38%, metals
+  11%, star light 0.5%, sigma 18% -- the cores sit mid-scale, only the outskirts fall below, physical. Shocks: 56% of
+  the z = 2 voxels carry a Mach number vs 10% today (accretion everywhere); if the shock mode is a wall there, raise
+  the lower edge of the Mach ramp for the epochs. Every byte scale is calibrated on Coma today: check a new field at
+  z = 2 before shipping it.
 - Untested by eye: all of it; the velocity colour range (VLIM), RMLIM, the wide-view
   stretches (smoothstep 0.15 / 0.2 on the outer bytes), the movie brightness (the 128^3 voxel is 3x the
   384 one: +3 log10 3 on the mass fields), the movie streaming on a slow connection.

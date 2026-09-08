@@ -11,6 +11,7 @@
 #   python pack_cubes.py outer   -> data/outer192.u8.gz (RG: matter + gas over +-30 Mpc/h, z=0)
 #   python pack_cubes.py movie   -> data/mv/mv_SNAP.u8.gz (128^3 RGB) + data/movie.json from extract_movie.py
 #   python pack_cubes.py galaxies -> data/galaxies.json (z=0 subhaloes for the galaxy inspector)
+#   python pack_cubes.py temp    -> temp192.u8.gz + ep*_temp192.u8.gz on the 3e5 .. 1.1e8 K scale (then re-run movie)
 #   python pack_cubes.py mag     -> data/mag192.u8.gz + data/ep*_mag192.u8.gz for every raw file with the magnetic
 #                                   field (extract_cubes.py SNAP mag); the log scale is fitted once at z=0 (`mag`)
 #   python pack_cubes.py 27      -> data/ep027_{pk,xray,temp,dm,shock}192.u8.gz (same scales as z=0)
@@ -386,15 +387,26 @@ def sky():
     json.dump(out, open(os.path.join(DATA, 'sky.json'), 'w'), separators=(',', ':'))
     print('wrote sky.json: %d galaxies, halo at RA %.2f Dec %.2f, D = %.0f ckpc/h (%.2f deg per Mpc/h)' % (len(gal), out['ra'], out['dec'], out['D'], np.degrees(np.arctan(1000 / out['D']))))
 
+TEMP2 = (5.5, 8.0318)        # temperature byte: log10 T over 3e5 .. 1.1e8 K (the shipped z=0 scale started at 1.3e7 K, which
+                             # left 99% of the z = 2 voxels at byte 0 = "cold": the young cluster was tinted cyan and veiled)
+def pack_temp():
+    """temp192 for z = 0 and every epoch on the TEMP2 scale, all from the raw mass-weighted log T (the z=0 cube from viper
+    is replaced: same pipeline at every epoch). Star-forming cells are 1e4 K -> byte 0 = cold, as the shader expects."""
+    S = json.load(open(SC)); S['temp_viper'] = S.get('temp_viper', S['temp']); S['temp'] = list(TEMP2) + [1.0]; json.dump(S, open(SC, 'w'), indent=1)
+    for snap, path in raw_files():
+        with h5py.File(path, 'r') as f: lt = logT(f); m = f['gas_m'][:]
+        ok = m > 0; print('snap %d: log T pct 1/10/50/90 = %s, below 1e7 K %.0f%%' % (snap, np.round(np.percentile(lt[ok], [1, 10, 50, 90]), 2), 100 * (lt[ok] < 7).mean()))
+        wr(epname(snap, 'temp192.u8.gz'), u8(lt, TEMP2[0], TEMP2[1]))
+
 def pack_mag():
     """magnetic field: mass-weighted |B| [uG] of the non-star-forming gas per 192^3 voxel (extract_cubes.py mag),
-    physical uG at every epoch on one log10 scale, 0.01 .. 10 uG (z=0 profile: 3.3 uG within 100 kpc/h, 1.2 at
+    physical uG at every epoch on one log10 scale, 0.001 .. 10 uG (z=0 profile: 3.3 uG within 100 kpc/h, 1.2 at
     300-600, 0.34 at 1-1.5 Mpc/h, 0.11 at 1.5-2.5, 0.017 beyond; peak 11 uG); empty voxels are byte 0"""
     S = json.load(open(SC))
     def lB(f):
         mm = f['gas_mB_m'][:]; return np.where(mm > 0, logq(f['gas_mB'][:] / np.maximum(mm, 1e-30)), -30.), mm > 0
-    if 'mag' not in S:
-        S['mag'] = [-2.0, 1.0, 1.0]; json.dump(S, open(SC, 'w'), indent=1); print('wrote', SC, 'mag', S['mag'])
+    # 0.001 .. 10 uG: at z = 2 only 6% of the voxels were above a 0.01 uG floor (the young field is weaker), which hid its structure
+    S['mag'] = [-3.0, 1.0, 1.0]; json.dump(S, open(SC, 'w'), indent=1); print('wrote', SC, 'mag', S['mag'])
     for path in sorted(glob.glob(RAW + '/raw_*.h5')):
         snap = int(os.path.basename(path)[4:7])
         with h5py.File(path, 'r') as f:
@@ -414,6 +426,7 @@ if __name__ == '__main__':
     elif a == 'mag': pack_mag()
     elif a == 'galaxies': galaxies()
     elif a == 'sky': sky()
+    elif a == 'temp': pack_temp()
     elif a == 'kin': pack_kin()
     elif a == 'met': pack_met()
     elif a == 'bvec': pack_bvec()
