@@ -84,7 +84,7 @@ key `e` for the epoch, this page uses `,` `.` and `z`.
   progenitor (384^3 density + star light at z = 0.2, 0.1), on the z=0 intensity scales,
   plus that snapshot's galaxy sprites, cold-gas sprites, black holes and the tracked
   named galaxies (ep{S}_meta.json). Loaded on first use (~30 MB per epoch, ~50 MB for
-  the two 384 ones); the sights (5-9 labels) are z=0 only; the camera stays put.
+  the two 384 ones); the sights (J / label clicks) are z=0 only; the camera stays put.
 
 Sept 8, second round (page: entropy, radio, probe, legend, video, texture freeing; raven: cold gas,
 black holes and tracked labels per epoch):
@@ -116,6 +116,30 @@ black holes and tracked labels per epoch):
   (NGC 4874 is a 7e10 Msun stripped satellite today; its tracers may scatter early on,
   `n_tracers` in meta.json tells how many were found), video capture on Safari (mp4).
 
+Sept 8, third round (magnetic field, Compton y, one key scheme, labels, mode crossfade):
+- Magnetic field (key 7, mode 8): `data/mag192.u8.gz` and `ep{S}_mag192.u8.gz` = log10 of the
+  mass-weighted |B| [uG] of the non-star-forming gas per 192^3 voxel (`extract_cubes.py SNAP mag`,
+  `pack_cubes.py mag`; Arepo code units -> Gauss with 2.60e-6 h / a^2, h = 0.681), physical uG at
+  every epoch over 0.01 .. 10 uG (`mag` in `cube_scales.json`). z=0 profile: 3.3 uG inside 100 kpc/h,
+  1.2 at 300-600, 0.34 at 1-1.5 Mpc/h, 0.11 at 1.5-2.5, 0.017 beyond, peak 11 uG. Shader: colour by
+  field strength (`bmap`, indigo -> violet -> magenta -> pale yellow), emissivity = gas density x
+  (0.3 + 1.7 x). The star-forming ISM is left out because its 10s of uG would mark every galaxy.
+  The HUD probe shows B. Loaded like DM / shocks: the button appears when the cube loads; an epoch
+  without its cube falls back to density.
+- Compton y (key 5, mode 9): no data, computed in the shader from the density and temperature bytes as
+  the electron pressure P_e = 1.17 n_H kT (`PY` constants, `uPy`), shown over 3 dex below the top of the
+  byte ranges (~3e-6 .. 4e-3 keV cm^-3 on the 23 kpc/h voxel means); dark below the temperature scale
+  so the cold ISM does not show its density. Colour `ymap` (black -> blue -> sky -> white).
+- One key scheme: the fields sit on the digit keys in the order 1 DM, 2 density, 3 temperature,
+  4 X-ray, 5 Compton y, 6 entropy, 7 magnetic, 8 shocks, 9 radio, 0 ICL (`ORDER`; the internal mode ids
+  and the `#m=` of old links are unchanged). The letter aliases I / K / F are gone. The sights moved
+  from 5-9 to J (cycles through them) and to clicking a label.
+- Labels no longer overlap: named galaxies first (nearest first), then the sights; a label that would
+  cover a placed label or a HUD panel climbs up its leader line (up to 150 px, then hides).
+- Mode switches crossfade (0.5 s) through the same hold buffer as the epoch switches (0.9 s).
+- Untested by eye: the magnetic stretch (if the core is a flat magenta blob lower the 1.7 boost or the
+  `hi`), the Compton-y range (`PY[3]`, 3 dex), the label climbing, the ten buttons on a narrow window.
+
 ## RAVEN — needs the snapshots (run there, then copy into data/ and push)
 - Shock cubes: if Mach 1.2-1.5 turbulence still litters the ICM, raise the lower edge of
   the shader's Mach ramp; the cube scale (`mach`, 1..5) only needs repacking if the
@@ -141,10 +165,11 @@ black holes and tracked labels per epoch):
 - `_bench_baseline.html` / `_bench_expC.html`: untracked benchmark copies, safe to delete.
 
 ## Controls (current)
-drag / arrows look · WASD fly · SPACE/C rise/sink · SHIFT boost · Q/E roll
+drag / arrows look · WASD fly · SPACE/C rise/sink · SHIFT boost
 , . step epoch · Z time-lapse · X galaxies on/off · N dense gas on/off
-1 density · 2 X-ray · 3 temperature · 0 dark matter · 4 shocks · K entropy · F radio relics · I intracluster light
-, . step through epochs · 5–9 sights · T tour · H hide HUD · G volume 1:1 · B bloom on/off
+fields on the digit keys: 1 dark matter · 2 density · 3 temperature · 4 X-ray · 5 Compton y · 6 entropy ·
+7 magnetic field · 8 shocks · 9 radio relics · 0 intracluster light (the top-right buttons in the same order)
+J next sight, or click a label · T tour · H hide HUD · G volume 1:1 · B bloom on/off
 P save PNG · V record video · L copy link (includes the epoch) · R reset
 
 Photo recipe: frame the view, release all keys, wait for "still N" in the HUD to

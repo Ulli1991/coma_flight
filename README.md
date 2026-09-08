@@ -27,15 +27,17 @@ Live copy: https://claude.ai/code/artifact/04ee4360-12d9-4361-bb20-76108562c6c6
 - 260k brightest star particles as point masses (g−r as age proxy:
   blue young → red old), 16-bit positions
 - 200k densest cold/star-forming gas cells (cyan layer, jellyfish tails)
-- HUD in real units (r_BCG, r/R200, speed), sights on keys 5–9,
+- HUD in real units (r_BCG, r/R200, speed), sights on J or by clicking a label,
   T autopilot, H photo mode, adaptive render quality
 
 ## Controls
 drag / arrows look · WASD fly · SPACE/C rise/sink · SHIFT boost ·
-Q/E roll · 1/2/3 density / X-ray / temperature · 5–9 sights · T autopilot ·
-H hide HUD · , . step epoch · Z time-lapse z = 2 → 0 · X hide/show galaxies · N hide/show dense gas · P photo (PNG) · V record video · L copy link to this view · I intracluster light ·
-0 dark matter · 4 shocks · K entropy · F radio relics · , . step through the epochs (these only in the
-GitHub Pages build, and only when their cubes are present) · B bloom on/off · R reset
+fields on the digit keys, in this order: 1 dark matter · 2 density · 3 temperature · 4 X-ray ·
+5 Compton y · 6 entropy · 7 magnetic field · 8 shocks · 9 radio relics · 0 intracluster light
+(dark matter, magnetic field, shocks and radio only when their cubes are present) ·
+J next sight (or click a label) · T autopilot · H hide HUD · , . step epoch · Z time-lapse z = 2 → 0 ·
+X hide/show galaxies · N hide/show dense gas · P photo (PNG) · V record video · L copy link to this view ·
+B bloom on/off · R reset
 
 ## Data provenance
 Built from /ptmp/uli/movie011/grids/freeze_139.h5, epoch_139{,_vel}.h5,

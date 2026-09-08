@@ -21,8 +21,8 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
 #bl{bottom:8px;left:10px;border-left:1px solid var(--line);padding-left:12px}
 #bl b{color:var(--hud);font-weight:500}
 #br{bottom:8px;right:12px;text-align:right;color:var(--hud-dim);font-size:11px}
-#tr{top:10px;right:12px;text-align:right;pointer-events:auto}
-.fbtn{display:inline-block;margin-left:8px;padding:4px 10px;border:1px solid var(--line);color:var(--hud-dim);
+#tr{top:10px;right:12px;text-align:right;pointer-events:auto;max-width:calc(100vw - 460px)}
+.fbtn{display:inline-block;margin:0 0 4px 8px;padding:4px 10px;border:1px solid var(--line);color:var(--hud-dim);
  background:rgba(5,6,10,.55);font:inherit;font-size:11.5px;letter-spacing:.08em;cursor:pointer}
 .fbtn.on{color:var(--hud);border-color:var(--hud)}
 .fbtn:focus-visible{outline:1px solid var(--amber)}
@@ -39,7 +39,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
 #sb{left:50%;bottom:10px;transform:translateX(-50%);text-align:center;color:var(--hud-dim);font-size:11px;letter-spacing:.06em}
 #sbl{height:0;border-top:1px solid var(--hud);margin:0 auto 4px;position:relative}
 #sbl:before,#sbl:after{content:'';position:absolute;top:-4px;height:7px;border-left:1px solid var(--hud)}#sbl:before{left:0}#sbl:after{right:-1px}
-.lab{position:fixed;left:0;top:0;pointer-events:none;color:var(--hud);font-size:11.5px;letter-spacing:.08em;text-shadow:0 0 6px rgba(0,0,0,.9);white-space:nowrap;transform:translate(-50%,-100%);opacity:0}
+.lab{position:fixed;left:0;top:0;pointer-events:auto;cursor:pointer;color:var(--hud);font-size:11.5px;letter-spacing:.08em;text-shadow:0 0 6px rgba(0,0,0,.9);white-space:nowrap;transform:translate(-50%,-100%);opacity:0}
 .lab i{display:block;width:1px;height:14px;background:var(--hud);margin:2px auto 0;opacity:.6}
 #lbar{height:2px;background:var(--line);margin-top:8px}#lbar i{display:block;height:100%;width:0;background:var(--hud)}
 #cb{right:12px;bottom:54px;width:236px;font-size:10.5px;color:var(--hud-dim);letter-spacing:.04em;line-height:1.3}
@@ -59,11 +59,11 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
  <div>here&nbsp;&nbsp; <b id="hp">--</b></div>
  <div style="color:var(--hud-dim)">fps <b id="hq" style="color:var(--hud-dim)">--</b></div>
 </div>
-<div class="hud" id="br">5-9 sights &middot; , . epoch &middot; Z time-lapse &middot; X galaxies &middot; N dense gas &middot; G quality &middot; B bloom &middot; H hide HUD &middot; P photo &middot; V video &middot; L link &middot; T tour &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1 2 3 0 4 K F I fields &middot; R reset</div>
+<div class="hud" id="br">J sights &middot; , . epoch &middot; Z time-lapse &middot; X galaxies &middot; N dense gas &middot; G quality &middot; B bloom &middot; H hide HUD &middot; P photo &middot; V video &middot; L link &middot; T tour &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1&ndash;9 0 fields &middot; R reset</div>
 <div class="hud" id="cb"><div class="t" id="cbn"></div><canvas id="cbc" width="256" height="1"></canvas><div id="cbt"></div>
  <div id="cbl"><span class="sw" style="background:linear-gradient(90deg,#598cff,#fff2d0,#ff8038)"></span> galaxies young &rarr; old &nbsp; <span class="sw" style="background:#73d9ff"></span> cold gas &nbsp; <span class="sw" style="background:#c08cff"></span> black holes</div></div>
 <div class="hud" id="tr">
- <button class="fbtn on" id="b1">1 DENSITY</button><button class="fbtn" id="b2">2 X-RAY</button><button class="fbtn" id="b3">3 TEMP</button><button class="fbtn" id="b5" hidden>0 DM</button><button class="fbtn" id="b6">I ICL</button><button class="fbtn" id="b7" hidden>4 SHOCKS</button><button class="fbtn" id="b8">K ENTROPY</button><button class="fbtn" id="b9" hidden>F RADIO</button>
+ <button class="fbtn" data-m="3" hidden>1 DM</button><button class="fbtn on" data-m="0">2 DENSITY</button><button class="fbtn" data-m="2">3 TEMP</button><button class="fbtn" data-m="1">4 X-RAY</button><button class="fbtn" data-m="9">5 COMPTON y</button><button class="fbtn" data-m="6">6 ENTROPY</button><button class="fbtn" data-m="8" hidden>7 MAGNETIC</button><button class="fbtn" data-m="5" hidden>8 SHOCKS</button><button class="fbtn" data-m="7" hidden>9 RADIO</button><button class="fbtn" data-m="4">0 ICL</button>
  <div id="ep"></div>
 </div>
 <div class="hud" id="cap" style="left:50%;bottom:64px;transform:translateX(-50%);font-family:Unica One,monospace;font-size:22px;letter-spacing:.2em;color:var(--hud);opacity:0;transition:opacity .6s"></div>
@@ -75,7 +75,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
  re-simulation at TNG100 resolution &mdash; the closing frame of the formation film.
  A 9 cMpc/h volume: hot ICM, cold stripped gas, and the 40&thinsp;000 brightest galaxies.</p>
  <p><span class="k">Drag / arrow keys</span> to look &middot; <span class="k">W A S D</span> to fly &middot;
- <span class="k">SHIFT</span> boost &middot; <span class="k">1 / 2 / 3</span> gas density / X-ray / temperature &middot; <span class="k">0 / 4</span> dark matter / shocks &middot; <span class="k">5&ndash;9</span> sights &middot; <span class="k">, .</span> step through time (z = 2 &rarr; 0)</p>
+ <span class="k">SHIFT</span> boost &middot; <span class="k">1&ndash;9, 0</span> fields: dark matter, density, temperature, X-ray, Compton y, entropy, magnetic field, shocks, radio relics, intracluster light &middot; <span class="k">J</span> next sight (or click a label) &middot; <span class="k">, .</span> step through time (z = 2 &rarr; 0)</p>
  <p style="color:var(--hud-dim)">magma = hot ICM &middot; cyan = cold / star-forming gas &middot; stellar light of ALL 30M stars (volume) + particle sparkle; blue young &rarr; red old &middot; violet beacons = black holes (size by mass)</p>
  <p id="warn" hidden>WebGL2 unavailable in this browser.</p>
  <div class="go" id="go"><span id="got">LOADING&hellip;</span><div id="lbar"><i></i></div></div>
@@ -85,7 +85,7 @@ const D_BH = [0.00023, -0.00129, 0.00167, 0.12381, 8e-05, 0.00329, -0.00244, 0.0
 const META = {"half": 4500.0, "r200": 1476.3539982975688, "n": 192, "nstars": 939637, "naux": 128, "innerHalf": 0.26666666666666666, "starsGz": true, "ngas": 200000, "pois": [{"k": "5", "n": "THE BCG", "p": [0.0, 0.0, 0.0], "d": 0.1}, {"k": "6", "n": "JELLYFISH GALAXY", "p": [-0.01586104929447174, -0.6161878108978271, -0.17097829282283783], "d": 0.06}, {"k": "7", "n": "MERGER SHOCK", "p": [0.08616187989556146, 0.23237597911227148, -0.19060052219321144], "d": 0.16}, {"k": "8", "n": "COLD FILAMENT", "p": [-0.25848563968668403, 0.43603133159268936, -0.1488250652741514], "d": 0.2}, {"k": "9", "n": "CLUSTER OVERVIEW", "p": [0.0, 0.0, 0.0], "d": 1.3}]};
 const D_ISLUM="data/islum192.u8.gz", D_ISCOL="data/iscol192.u8.gz",
  D_SLUM="data/slum384.u8.gz", D_SCOL="data/scol384.u8.gz", D_DM="data/dm384.u8.gz", D_IDM="data/idm192.u8.gz",
- D_SHK="data/shock384.u8.gz", D_ISHK="data/ishock192.u8.gz",
+ D_SHK="data/shock384.u8.gz", D_ISHK="data/ishock192.u8.gz", D_MAG="data/mag192.u8.gz",
  D_GAS="data/gas.bin.gz", D_RHO="data/rho384.u8.gz", D_XRAY="data/xray192.u8.gz",
  D_TEMP="data/temp192.u8.gz", D_STARS="data/stars.bin.gz", D_IRHO="data/irho192.u8.gz";
 // earlier snapshots of the same run (extract_cubes.py + pack_cubes.py): 192^3 cubes around the main
@@ -119,7 +119,7 @@ void main(){vec2 p=vec2(gl_VertexID==1?3.:-1.,gl_VertexID==2?3.:-1.);gl_Position
 const FS_T=`#version 300 es
 precision highp float;precision highp sampler3D;
 uniform sampler3D uPk,uAux,uIPk,uDM,uIDM,uShk,uIShk;uniform vec3 uPos,uFwd,uRight,uUp;
-uniform vec2 uRes;uniform float uExpo,uJit,uInner,uStars,uCold;uniform int uMode;uniform vec4 uKt;out vec4 oc;
+uniform vec2 uRes;uniform float uExpo,uJit,uInner,uStars,uCold;uniform int uMode;uniform vec4 uKt,uPy;out vec4 oc;
 // entropy: low (cool core, cold fronts) deep blue -> teal -> green -> high (shocked, outskirts) yellow
 vec3 entmap(float v){
  return v<0.33?mix(vec3(.05,.03,.25),vec3(.13,.30,.55),v/.33)
@@ -128,6 +128,16 @@ vec3 entmap(float v){
 // radio: faint deep red -> orange -> white-hot
 vec3 radiomap(float v){
  return v<0.5?mix(vec3(.25,.02,.02),vec3(.95,.35,.08),v/.5):mix(vec3(.95,.35,.08),vec3(1.,.95,.80),(v-.5)/.5);}
+// magnetic field: dark indigo -> violet -> magenta -> orange -> pale yellow
+vec3 bmap(float v){
+ return v<0.35?mix(vec3(.04,.02,.14),vec3(.42,.10,.62),v/.35)
+  :v<0.7?mix(vec3(.42,.10,.62),vec3(.90,.25,.50),(v-.35)/.35)
+  :mix(vec3(.90,.25,.50),vec3(1.,.88,.55),(v-.7)/.3);}
+// Compton y: black -> deep blue -> sky -> white
+vec3 ymap(float v){
+ return v<0.4?mix(vec3(.02,.03,.10),vec3(.10,.25,.75),v/.4)
+  :v<0.75?mix(vec3(.10,.25,.75),vec3(.45,.78,1.),(v-.4)/.35)
+  :mix(vec3(.45,.78,1.),vec3(1.,1.,1.),(v-.75)/.25);}
 vec3 dmmap(float v){
  return v<0.5?mix(vec3(.01,.02,.10),vec3(.22,.12,.62),v/.5):mix(vec3(.22,.12,.62),vec3(.92,.88,1.),(v-.5)/.5);}
 // shock Mach number: weak (M~1.5) deep teal -> M~3 cyan -> strong (M>4) white-yellow
@@ -227,6 +237,16 @@ void main(){
    float j=eff*pow(10.,2.5*(s.g-1.));      // the dissipation byte spans ~3 dex: back to a linear weight
    float es=j*9.; float ctx=0.06*v;
    col=(radiomap(clamp(j*1.5,0.,1.))*es+vec3(.30,.34,.44)*ctx)/(es+ctx+1e-4); em=es+ctx; v=max(clamp(j,0.,1.),v*.3);
+  }else if(uMode==8){
+   // magnetic field: aux = log |B| byte (mass-weighted over the non-star-forming gas, pack_cubes.py mag);
+   // colour by field strength, emissivity = gas density, boosted where the field is strong
+   float x=smoothstep(0.02,1.0,aux); col=bmap(x); em=v*(0.3+1.7*x);
+  }else if(uMode==9){
+   // thermal Sunyaev-Zeldovich / Compton y ~ integral n_e T dl: the electron pressure from the density and
+   // temperature bytes (uPy: log10 P_e[keV cm^-3] = uPy.x + d*uPy.y + aux*uPy.z, shown over uPy.w .. +3 dex);
+   // gas below the temperature scale is dark (the cold ISM would otherwise show its density)
+   float lP=uPy.x+d*uPy.y+aux*uPy.z;
+   float x=clamp((lP-uPy.w)/3.,0.,1.)*smoothstep(0.02,0.10,aux); col=ymap(x); em=x*x*1.6;
   }else if(uMode==1){
    float x=smoothstep(0.20,1.0,aux); x*=x; col=teal(x); em=x; v=x;
   }else{
@@ -235,7 +255,7 @@ void main(){
   // all-star light field (30M stars binned; colour = age)
   float sv=pk.g, sc2=pk.b;
   sv=sv*sv*sv;
-  if(sv>0.001&&(uMode<3||uMode==6)&&uStars>0.5){
+  if(sv>0.001&&(uMode<3||uMode==6||uMode>=8)&&uStars>0.5){
    vec3 scol=mix(vec3(.45,.62,1.),vec3(1.,.62,.32),sc2);
    C+=(1.-A)*clamp(sv*edge*nf*dt*uExpo*2.2,0.,.9)*scol;}
   float a=clamp(em*edge*nf*dt*uExpo*3.6,0.,.9);
@@ -306,7 +326,7 @@ function vol3d(data,n,ch){n=n||192;ch=ch||1;const t=gl.createTexture();gl.bindTe
 // numpy C-order (x,y,z): texture z-fastest = our z ✓ sample (z,y,x) reversed.
 // simplest: swap in shader via uv -> uv.zyx handled here by uploading as-is and
 // sampling p.zyx:
-let tPk,tX,tT,tIPk,tDM=null,tIDM=null,haveDM=false,tShk=null,tIShk=null,haveShk=false,ready=false;
+let tPk,tX,tT,tIPk,tDM=null,tIDM=null,haveDM=false,tShk=null,tIShk=null,haveShk=false,tMag=null,haveMag=false,ready=false;
 function pack3(a,b,c){const n=a.length,o=new Uint8Array(n*3);for(let i=0,j=0;i<n;i++,j+=3){o[j]=a[i];o[j+1]=b[i];o[j+2]=c[i];}return o}
 const T_LOAD0=performance.now();let T_LOAD=0;
 (async()=>{try{
@@ -317,9 +337,11 @@ const T_LOAD0=performance.now();let T_LOAD=0;
  tPk=vol3d(pack3(rho,sl,scl),384,3);tIPk=vol3d(pack3(ir,isl,isc),192,3);ready=true;T_LOAD=performance.now()-T_LOAD0;
  const g=document.getElementById('got'); if(g) g.textContent='ENGAGE'; const lb=document.getElementById('lbar'); if(lb) lb.hidden=true;
  // optional dark-matter cubes (pack_cubes.py 139); the mode appears only when both load
- try{const [dm,idm]=await Promise.all([D_DM,D_IDM].map(ugz));tDM=vol3d(dm,384);tIDM=vol3d(idm,192);PROBE0.dm=dm;PROBE0.ndm=384;haveDM=true;document.getElementById('b5').hidden=false;if(wantMode===3)setMode(3);}catch(e){}
+ try{const [dm,idm]=await Promise.all([D_DM,D_IDM].map(ugz));tDM=vol3d(dm,384);tIDM=vol3d(idm,192);PROBE0.dm=dm;PROBE0.ndm=384;haveDM=true;showBtn(3);if(wantMode===3)setMode(3);}catch(e){}
  // optional shock cubes (Mach number + dissipation, see pack_cubes.py): SHOCKS and RADIO appear when both load
- try{const [sk,isk]=await Promise.all([D_SHK,D_ISHK].map(ugz));tShk=vol3d(sk,384,2);tIShk=vol3d(isk,192,2);haveShk=true;document.getElementById('b7').hidden=false;document.getElementById('b9').hidden=false;if(wantMode===5||wantMode===7)setMode(wantMode);}catch(e){}
+ try{const [sk,isk]=await Promise.all([D_SHK,D_ISHK].map(ugz));tShk=vol3d(sk,384,2);tIShk=vol3d(isk,192,2);haveShk=true;showBtn(5);showBtn(7);if(wantMode===5||wantMode===7)setMode(wantMode);}catch(e){}
+ // optional magnetic field cube (pack_cubes.py mag): MAGNETIC appears when it loads
+ try{const mg=await ugz(D_MAG);tMag=vol3d(mg,192);PROBE0.mag=mg;haveMag=true;showBtn(8);if(wantMode===8)setMode(8);}catch(e){}
  if(wantEp>=0&&wantEp!==EP0)setEpoch(wantEp);
 }catch(e){const w=document.getElementById('warn');w.hidden=false;w.textContent='load error: '+e;}})();
 let sraw=null,PROBE0=null; const NS=META.nstars;
@@ -437,11 +459,15 @@ let gvao=null,graw=null;
 const GREC=[[0,3,gl.SHORT,0],[1,1,gl.UNSIGNED_BYTE,6],[2,1,gl.UNSIGNED_BYTE,7]];   // int16 xyz, bytes log rho, SF flag
 function gbuf(){gvao=gl.createVertexArray();gl.bindVertexArray(gvao);rawbuf(graw,8,GREC);}
 // flight state
-let pos=[0,0.10,-0.88],yaw=0,pitch=-0.02,vel=[0,0,0],mode=0,keys={},auto=true,atau=0;
+let pos=[0,0.10,-0.88],yaw=0,pitch=-0.02,vel=[0,0,0],mode=0,keys={},auto=true,atau=0,pendingMode=-1,fadeMs=900;
 let stillT=0,accN=0;
-const names=['gas density + cold gas','X-ray emission','temperature','dark matter','intracluster light','shocks · Mach number','gas entropy','radio relics'];
-const modeOK=m=>m===3?haveDM:(m===5||m===7)?haveShk:true;
-const SPRITES=m=>m<3||m===6;                       // modes that draw the galaxy light and the cold gas
+const names=['gas density + cold gas','X-ray emission','temperature','dark matter','intracluster light','shocks · Mach number','gas entropy','radio relics','magnetic field','Compton y · electron pressure'];
+// the fields on the digit keys 1 .. 9, 0, in this order (mode ids stay as in the share links)
+const ORDER=[3,0,2,1,9,6,8,5,7,4];
+// a mode needs its cubes: at z = 0 the optional ones (DM, shocks, magnetic), at an epoch the magnetic cube of that epoch
+const modeOK=(m,i)=>{i=i===undefined?ep:i;if(i===EP0)return m===3?haveDM:(m===5||m===7)?haveShk:m===8?haveMag:true;
+ return m===8?!!(EPOCHS[i].tex&&EPOCHS[i].tex.mag):true;};
+const SPRITES=m=>m<3||m===6||m>=8;                 // modes that draw the galaxy light and the cold gas
 // ---- video capture of the canvas (V): WebM via MediaRecorder, saved when stopped ----
 let rec=null,recChunks=[];
 function toggleRec(){if(rec){rec.stop();return;}
@@ -459,13 +485,12 @@ function basis(){const cy=Math.cos(yaw),sy=Math.sin(yaw),cp=Math.cos(pitch),sp2=
  const u=[f[1]*r[2]-f[2]*r[1],f[2]*r[0]-f[0]*r[2],f[0]*r[1]-f[1]*r[0]];
  return[f,r,u]}
 addEventListener('keydown',e=>{keys[e.code]=1;accN=0;
- if(e.code==='Digit1')setMode(0);if(e.code==='Digit2')setMode(1);if(e.code==='Digit3')setMode(2);if(e.code==='Digit0'&&haveDM)setMode(3);if(e.code==='Digit4'&&haveShk)setMode(5);
+ if(e.code.startsWith('Digit')){const m=ORDER[(+e.code.slice(5)+9)%10];if(modeOK(m))setMode(m);}
  if(e.code==='Comma'){stopTimelapse();setEpoch(ep-1);}if(e.code==='Period'){stopTimelapse();setEpoch(ep+1);}
  if(e.code==='KeyZ'){if(tlActive)stopTimelapse();else timelapse();}
  if(e.code==='KeyR'){pos=[0,0.10,-0.88];yaw=0;pitch=-0.02;vel=[0,0,0];auto=false;}
  if(e.code==='KeyT'){auto=!auto;atau=0;}
  if(e.code==='KeyB'){bloomOn=!bloomOn;showCap(bloomOn?'BLOOM ON':'BLOOM OFF');}
- if(e.code==='KeyI')setMode(4);if(e.code==='KeyK')setMode(6);if(e.code==='KeyF'&&haveShk)setMode(7);
  if(e.code==='KeyV')toggleRec();
  if(e.code==='KeyX'){showStars=!showStars;showCap(showStars?'GALAXIES ON':'GALAXIES OFF');}
  if(e.code==='KeyN'){showCold=!showCold;showCap(showCold?'DENSE GAS ON':'DENSE GAS OFF');}
@@ -473,8 +498,9 @@ addEventListener('keydown',e=>{keys[e.code]=1;accN=0;
  if(e.code==='KeyL'){writeHash();navigator.clipboard.writeText(location.href).then(()=>showCap('LINK COPIED'),()=>showCap(location.hash));}
  if(e.code==='KeyG'){hiQ=!hiQ;volScale=hiQ?1.0:0.5;}
  if(e.code==='KeyH'){document.querySelectorAll('.hud').forEach(el=>el.style.display=el.style.display==='none'?'':'none');}
- const poi=(META.pois||[]).find(q=>'Digit'+q.k===e.code);
- if(poi){auto=false;pos=camFor(poi.p,poi.d);vel=[0,0,0];[yaw,pitch]=lookAt(pos,poi.p);showCap(poi.n);}});
+ if(e.code==='KeyJ'){const P=META.pois||[];if(P.length){sightI=(sightI+1)%P.length;goSight(P[sightI].p,P[sightI].d,P[sightI].n);}}});
+let sightI=-1;
+function goSight(t,off,name){auto=false;stopTimelapse();pos=camFor(t,off);vel=[0,0,0];[yaw,pitch]=lookAt(pos,t);showCap(name);}
 addEventListener('keyup',e=>{keys[e.code]=0});
 let drag=false,lx=0,ly=0;
 cv.addEventListener('pointerdown',e=>{drag=true;accN=0;lx=e.clientX;ly=e.clientY;cv.setPointerCapture(e.pointerId)});
@@ -482,12 +508,13 @@ addEventListener('pointerup',()=>drag=false);
 addEventListener('pointermove',e=>{if(!drag)return;
  yaw+=(e.clientX-lx)*0.0035;pitch-=(e.clientY-ly)*0.0035;
  lx=e.clientX;ly=e.clientY;});
-const bs=['b1','b2','b3','b5','b6','b7','b8','b9'].map(i=>document.getElementById(i));   // index = mode
+const bs=[];document.querySelectorAll('#tr .fbtn').forEach(b=>bs[+b.dataset.m]=b);   // index = mode id
+function showBtn(m){bs[m].hidden=false;}
 // ---- colour bar: the current field's ramp (the shader's, ported) with ticks in physical units.
 // Cube scales from cube_scales.json: u8 = 255 (q - lo) / (hi - lo); the ticks go through the same
 // smoothstep stretches as the shader, so a tick sits where that value is drawn. ----
 const SCL={rho:[-4.213250411493134,-1.4482135396231652],temp:[7.1183,8.0318],xray:[-8.395869887118087,-2.1756899200389395],
- dm:[-4.5162882804870605,-0.398705455660775],scol:[0.1009701246701794,1.1038364340893168],mach:[1,5]};
+ dm:[-4.5162882804870605,-0.398705455660775],scol:[0.1009701246701794,1.1038364340893168],mach:[1,5],mag:[-2.0,1.0]};
 const ss=(a,b,x)=>{x=Math.min(Math.max((x-a)/(b-a),0),1);return x*x*(3-2*x)};
 const mx=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
 const CMAP={
@@ -498,12 +525,17 @@ const CMAP={
  shock:v=>v<.45?mx([.02,.10,.16],[.10,.62,.86],v/.45):v<.8?mx([.10,.62,.86],[.80,.98,1],(v-.45)/.35):mx([.80,.98,1],[1,.92,.55],(v-.8)/.2),
  scol:v=>mx([.55,.62,1],[1,.78,.50],v),
  ent:v=>v<.33?mx([.05,.03,.25],[.13,.30,.55],v/.33):v<.66?mx([.13,.30,.55],[.15,.68,.55],(v-.33)/.33):mx([.15,.68,.55],[.99,.91,.25],(v-.66)/.34),
- radio:v=>v<.5?mx([.25,.02,.02],[.95,.35,.08],v/.5):mx([.95,.35,.08],[1,.95,.80],(v-.5)/.5)};
+ radio:v=>v<.5?mx([.25,.02,.02],[.95,.35,.08],v/.5):mx([.95,.35,.08],[1,.95,.80],(v-.5)/.5),
+ bmag:v=>v<.35?mx([.04,.02,.14],[.42,.10,.62],v/.35):v<.7?mx([.42,.10,.62],[.90,.25,.50],(v-.35)/.35):mx([.90,.25,.50],[1,.88,.55],(v-.7)/.3),
+ ice:v=>v<.4?mx([.02,.03,.10],[.10,.25,.75],v/.4):v<.75?mx([.10,.25,.75],[.45,.78,1],(v-.4)/.35):mx([.45,.78,1],[1,1,1],(v-.75)/.25)};
 // voxel mass (log10 of 1e10 Msun/h per 23.4 ckpc/h voxel, 384 grid) -> Msun/kpc^3, and hydrogen atoms per cm^3 (h = 0.681, X = 0.76)
 const VOX=1e10*0.681*0.681/Math.pow(9000/384,3),NH=VOX*3.076e-8,lg=Math.log10;
 // entropy K = kT / n_e^(2/3) in keV cm^2 from the temperature byte (aux) and density byte (d):
 // log10 K = KT[0] + aux*KT[1] - d*KT[2]   (kT in keV: T[K] * 8.617e-8; n_e = 1.17 n_H)
 const KT=[SCL.temp[0]+lg(8.617e-8)-2/3*(lg(1.17)+lg(NH)+SCL.rho[0]),SCL.temp[1]-SCL.temp[0],2/3*(SCL.rho[1]-SCL.rho[0])];
+// electron pressure P_e = n_e kT in keV cm^-3 from the same two bytes: log10 P_e = PY[0] + d*PY[1] + aux*PY[2],
+// drawn over PY[3] .. PY[3] + 3 dex (the byte ranges span 3.7 dex in all)
+const PY=[lg(1.17*NH*8.617e-8)+SCL.rho[0]+SCL.temp[0],SCL.rho[1]-SCL.rho[0],SCL.temp[1]-SCL.temp[0],0];PY[3]=PY[0]+PY[1]+PY[2]-3.0;
 const BARS=[
  {n:'gas density n<sub>H</sub> [cm&#8315;&sup3;]',c:'magma',u:n=>Math.pow(ss(.2,1,(lg(n/NH)-SCL.rho[0])/(SCL.rho[1]-SCL.rho[0])),2),ticks:[[1e-5,'10&#8315;&#8309;'],[3e-5,'3&times;10&#8315;&#8309;'],[1e-4,'10&#8315;&#8308;'],[3e-4,'3&times;10&#8315;&#8308;']]},
  {n:'X-ray emissivity &prop; n&sup2; T<sup>&frac12;</sup> (relative)',c:'teal',u:e=>Math.pow(ss(.2,1,1+lg(e)/(SCL.xray[1]-SCL.xray[0])),2),ticks:[[1e-4,'10&#8315;&#8308;'],[1e-3,'10&#8315;&sup3;'],[1e-2,'10&#8315;&sup2;'],[1e-1,'10&#8315;&sup1;'],[1,'1']]},
@@ -512,7 +544,9 @@ const BARS=[
  {n:'stellar colour g &minus; r &middot; young &rarr; old',c:'scol',u:g=>(g-SCL.scol[0])/(SCL.scol[1]-SCL.scol[0]),ticks:[[0.3,'0.3'],[0.5,'0.5'],[0.7,'0.7'],[0.9,'0.9']]},
  {n:'shock Mach number',c:'shock',u:M=>ss(.05,.75,(M-SCL.mach[0])/(SCL.mach[1]-SCL.mach[0])),ticks:[[1.5,'1.5'],[2,'2'],[3,'3'],[4,'4'],[5,'5']]},
  {n:'gas entropy K = kT / n<sub>e</sub><sup>2/3</sup> [keV cm&sup2;]',c:'ent',u:K=>(lg(K)-2.3)/1.5,ticks:[[300,'300'],[1000,'10&sup3;'],[3000,'3&times;10&sup3;']]},
- {n:'radio relic emissivity &prop; dissipation &times; &xi;(Mach) (relative)',c:'radio',u:j=>Math.min(1,j*1.5),ticks:[[0.1,'0.1'],[0.3,'0.3'],[0.66,'1']]}];
+ {n:'radio relic emissivity &prop; dissipation &times; &xi;(Mach) (relative)',c:'radio',u:j=>Math.min(1,j*1.5),ticks:[[0.1,'0.1'],[0.3,'0.3'],[0.66,'1']]},
+ {n:'magnetic field |B| [&mu;G] &middot; mass-weighted ICM',c:'bmag',u:B=>ss(.02,1,(lg(B)-SCL.mag[0])/(SCL.mag[1]-SCL.mag[0])),ticks:[[0.03,'0.03'],[0.1,'0.1'],[0.3,'0.3'],[1,'1'],[3,'3']]},
+ {n:'Compton y &prop; &int; n<sub>e</sub> T dl &middot; P<sub>e</sub> [keV cm&#8315;&sup3;]',c:'ice',u:P=>(lg(P)-PY[3])/3,ticks:[[1e-5,'10&#8315;&#8309;'],[1e-4,'10&#8315;&#8308;'],[1e-3,'10&#8315;&sup3;']]}];
 // ---- HUD probe: the cube values at the camera position (nearest voxel of the outer cubes, same scales) ----
 const SUP={'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
 function sci(x){const e=Math.floor(lg(x)),m=x/Math.pow(10,e);return (m>=9.95?'10':m.toFixed(1)+'×10')+String(e).split('').map(c=>SUP[c]).join('');}
@@ -522,15 +556,18 @@ function probe(){const P=ep===EP0?PROBE0:EPOCHS[ep].arr;if(!P||Math.hypot(pos[0]
  out.push(d>0?'n<sub>H</sub> '+sci(NH*Math.pow(10,SCL.rho[0]+d*(SCL.rho[1]-SCL.rho[0])))+' cm⁻³':'n<sub>H</sub> &lt; '+sci(NH*Math.pow(10,SCL.rho[0]))+' cm⁻³');
  out.push(t>0?'T '+sci(Math.pow(10,SCL.temp[0]+t*(SCL.temp[1]-SCL.temp[0])))+' K':'T &lt; '+sci(Math.pow(10,SCL.temp[0]))+' K');
  if(P.dm){const q=at(P.dm,P.ndm,1);if(q>0)out.push('ρ<sub>DM</sub> '+sci(VOX*Math.pow(10,SCL.dm[0]+q*(SCL.dm[1]-SCL.dm[0])))+' M☉ kpc⁻³');}
+ if(P.mag){const q=at(P.mag,192,1);if(q>0)out.push('B '+Math.pow(10,SCL.mag[0]+q*(SCL.mag[1]-SCL.mag[0])).toPrecision(2)+' μG');}
  return out.join(' · ');}
 function cbar(m){const b=BARS[m],cvs=document.getElementById('cbc'),ctx=cvs.getContext('2d'),W=cvs.width;
  for(let i=0;i<W;i++){const c=CMAP[b.c](i/(W-1));ctx.fillStyle='rgb('+c.map(x=>Math.round(255*x)).join(',')+')';ctx.fillRect(i,0,1,1);}
  document.getElementById('cbn').innerHTML=b.n;document.getElementById('cbl').hidden=!SPRITES(m);
  document.getElementById('cbt').innerHTML=b.ticks.map(([v,l])=>'<span style="left:'+(100*Math.min(Math.max(b.u(v),0),1)).toFixed(1)+'%">'+l+'</span>').join('');}
-function setMode(m){mode=m;accN=0;document.getElementById('hf').textContent=names[m];
- bs.forEach((b,i)=>b.classList.toggle('on',i===m));cbar(m);}
+// a mode switch crossfades like an epoch switch: the frame keeps the old scene (holdFrame), then applies
+function setMode(m){if(ready&&lastSrc&&m!==mode){pendingMode=m;return;}applyMode(m);}
+function applyMode(m){mode=m;accN=0;document.getElementById('hf').textContent=names[m];
+ bs.forEach((b,i)=>{if(b)b.classList.toggle('on',i===m);});cbar(m);}
 cbar(0);
-bs.forEach((b,i)=>b.addEventListener('click',()=>setMode(i)));
+bs.forEach((b,i)=>{if(b)b.addEventListener('click',()=>{if(modeOK(i))setMode(i);});});
 function showCap(t){const c=document.getElementById('cap');c.textContent=t;c.style.opacity=1;clearTimeout(c._t);c._t=setTimeout(()=>c.style.opacity=0,4500);}
 // ---- epochs: swap the volume cubes, camera stays put; sprites/labels/BHs are z=0 objects and hide ----
 let ep=EP0;
@@ -540,10 +577,10 @@ function fetchEpoch(q){if(q.tex)return Promise.resolve();if(q.loading)return q.l
  const b='data/ep'+String(q.s).padStart(3,'0')+'_',npk=q.hi?384:192;
  // the sprites are optional: an epoch without ep*_stars.bin.gz simply shows no galaxies off z = 0
  // optional per-epoch objects: galaxy sprites, cold-gas sprites, black holes + tracked labels (meta.json)
- const opt=[ugz(b+'stars.bin.gz'),ugz(b+'gas.bin.gz'),fetch(b+'meta.json').then(r=>r.ok?r.json():null)].map(p=>p.catch(()=>null));
+ const opt=[ugz(b+'stars.bin.gz'),ugz(b+'gas.bin.gz'),fetch(b+'meta.json').then(r=>r.ok?r.json():null),ugz(b+'mag192.u8.gz')].map(p=>p.catch(()=>null));
  q.loading=Promise.all(['pk'+npk+'.u8.gz','xray192.u8.gz','temp192.u8.gz','dm192.u8.gz','shock192.u8.gz'].map(f=>ugz(b+f)).concat(opt))
-  .then(([pk,x,t,dm,sk,st,cg,meta])=>{q.tex={pk:vol3d(pk,npk,3),x:vol3d(x,192),t:vol3d(t,192),dm:vol3d(dm,192),shk:vol3d(sk,192,2)};
-   q.arr={rho:pk,n:npk,st:3,t:t,x:x,dm:dm,ndm:192};   // for the HUD probe
+  .then(([pk,x,t,dm,sk,st,cg,meta,mg])=>{q.tex={pk:vol3d(pk,npk,3),x:vol3d(x,192),t:vol3d(t,192),dm:vol3d(dm,192),shk:vol3d(sk,192,2),mag:mg?vol3d(mg,192):null};
+   q.arr={rho:pk,n:npk,st:3,t:t,x:x,dm:dm,ndm:192,mag:mg};   // for the HUD probe
    if(st&&st.length>=10){q.svao=gl.createVertexArray();gl.bindVertexArray(q.svao);q.sbuf=rawbuf(st,10,SREC);q.ns=Math.floor(st.length/10);}
    if(cg&&cg.length>=8){q.gvao=gl.createVertexArray();gl.bindVertexArray(q.gvao);q.gbuf=rawbuf(cg,8,GREC);q.ng=Math.floor(cg.length/8);}
    if(meta){if(meta.bh&&meta.bh.length>=4)q.bh=bhVao(meta.bh);
@@ -552,7 +589,7 @@ function fetchEpoch(q){if(q.tex)return Promise.resolve();if(q.loading)return q.l
  return q.loading;}
 // GPU memory: keep only the current epoch and its neighbours (plus z = 0) resident; a freed epoch is
 // re-fetched from the browser cache when stepped to again
-function freeEpoch(q){if(q.tex){for(const k in q.tex)gl.deleteTexture(q.tex[k]);q.tex=null;}
+function freeEpoch(q){if(q.tex){for(const k in q.tex)if(q.tex[k])gl.deleteTexture(q.tex[k]);q.tex=null;}
  if(q.svao){gl.deleteVertexArray(q.svao);gl.deleteBuffer(q.sbuf);q.svao=null;q.sbuf=null;q.ns=0;}
  if(q.gvao){gl.deleteVertexArray(q.gvao);gl.deleteBuffer(q.gbuf);q.gvao=null;q.gbuf=null;q.ng=0;}
  if(q.bh){gl.deleteVertexArray(q.bh.vao);q.bh.bufs.forEach(b=>gl.deleteBuffer(b));q.bh=null;}
@@ -571,7 +608,7 @@ async function setEpoch(i,tok){
  pendingEp=i;}                              // the frame captures the old scene, then switches (crossfade)
 function applyEpoch(i){const q=EPOCHS[i];ep=i;accN=0;EPOCHS.forEach((r,j)=>r.el.classList.toggle('on',j===ep));
  document.getElementById('hz').textContent=q.z+(q.t&&q.t!=='today'?' ('+q.t+')':'');document.getElementById('hm').innerHTML=q.m;
- if(ep===EP0&&!modeOK(mode))setMode(0);
+ if(!modeOK(mode))setMode(0);
  showCap('z = '+q.z+(q.t?' · '+q.t:''));
  EPOCHS.forEach((r,j)=>{if(j!==EP0&&Math.abs(j-i)>1&&!r.loading)freeEpoch(r);});
  setTimeout(()=>{if(i>0)fetchEpoch(EPOCHS[i-1]).catch(()=>{});if(i<EP0)fetchEpoch(EPOCHS[i+1]).catch(()=>{});},400);}
@@ -597,8 +634,10 @@ const TOUR=[
  {n:'SHOCK FRONTS · MACH NUMBER',t:[0,0,0],r:0.9,orbit:true,d:20,m:5},
  {n:'COLD FILAMENT',t:poiK('8'),off:0.2,d:14},
  {n:'HOT INTRACLUSTER MEDIUM · X-RAY',t:[0,0,0],r:0.9,orbit:true,d:20,m:1},
+ {n:'SUNYAEV-ZELDOVICH · COMPTON y',t:[0,0,0],r:0.9,orbit:true,d:16,m:9},
  {n:'GAS TEMPERATURE',t:[0,0,0],r:0.9,orbit:true,d:20,m:2},
  {n:'GAS ENTROPY · COLD FRONTS',t:[0,0,0],r:0.5,orbit:true,d:18,m:6},
+ {n:'MAGNETIC FIELD',t:[0,0,0],r:0.6,orbit:true,d:18,m:8},
  {n:'RADIO RELICS · MERGER SHOCKS',t:[0,0,0],r:0.9,orbit:true,d:18,m:7},
  {n:'ASSEMBLY OF THE CLUSTER · z = 2 → 0',t:[0,0,0],r:0.9,orbit:true,d:34,m:0,tl:true}];
 const TR=7;TOUR.forEach((l,i)=>{l.s=i?TOUR[i-1].s+TR+TOUR[i-1].d:0;});const TOUR_T=TOUR[TOUR.length-1].s+TR+TOUR[TOUR.length-1].d;
@@ -615,14 +654,16 @@ let tourLeg=-1,shotReq=false,hashW=false,wantMode=-1,wantEp=-1;
 // ---- named galaxies + sights as on-screen labels (positions: mass-ranked black holes) ----
 // z = 0 positions: the subhaloes' most bound particles (label_tracers.npz; NGC 4839 group = subhalo 1, 5e13 Msun)
 const LABELS=[{n:'NGC 4889 · BCG',p:[0,0,0]},{n:'NGC 4874',p:[0.0293,-0.0716,-0.0449]},{n:'NGC 4839 GROUP',p:[-0.1393,0.5333,-0.0729]}]
- .concat((META.pois||[]).filter(q=>q.k!=='5'&&q.k!=='9').map(q=>({n:q.n,p:q.p,dim:true})));
-{const w=document.getElementById('labels');for(const l of LABELS){const e=document.createElement('div');e.className='lab';e.innerHTML=l.n+'<i></i>';if(l.dim)e.style.color='var(--hud-dim)';w.appendChild(e);l.el=e;}}
+ .concat((META.pois||[]).filter(q=>q.k!=='5'&&q.k!=='9').map(q=>({n:q.n,p:q.p,dim:true,d:q.d})));
+{const w=document.getElementById('labels');for(const l of LABELS){const e=document.createElement('div');e.className='lab';e.innerHTML='<span>'+l.n+'</span><i></i>';if(l.dim)e.style.color='var(--hud-dim)';
+ e.addEventListener('click',()=>{if(l.cur)goSight(l.cur,l.d||0.075,l.n);});w.appendChild(e);l.el=e;l.tx=e.firstChild;l.ld=e.lastChild;}}
+const HUDS=['tl','tr','bl','br','cb','sb'];   // HUD panels the labels keep clear of
 // ---- shareable view: #p=x,y,z&y=yaw&pi=pitch&m=mode ----
 function writeHash(){history.replaceState(null,'','#p='+pos.map(v=>v.toFixed(4)).join(',')+'&y='+yaw.toFixed(3)+'&pi='+pitch.toFixed(3)+'&m='+mode+(showStars?'':'&g=0')+(showCold?'':'&c=0')+(ep!==EP0?'&z='+EPOCHS[ep].s:''));}
 (function readHash(){const h=new URLSearchParams(location.hash.slice(1));if(!h.has('p'))return;
  const p=h.get('p').split(',').map(Number);if(p.length!==3||p.some(isNaN))return;
  pos=p;yaw=+h.get('y')||0;pitch=+h.get('pi')||0;vel=[0,0,0];auto=false;
- const m=+h.get('m');if(m>=0&&m<=7&&m!==3&&m!==5&&m!==7)setMode(m);else if(m===3||m===5||m===7)wantMode=m;
+ const m=+h.get('m');if([3,5,7,8].includes(m))wantMode=m;else if(m>=0&&m<=9)setMode(m);
  if(h.get('g')==='0')showStars=false;if(h.get('c')==='0')showCold=false;
  const zs=+h.get('z');const ei=EPOCHS.findIndex(q=>q.s===zs);if(ei>=0)wantEp=ei;})();
 document.getElementById('go').addEventListener('click',()=>document.getElementById('intro').remove());
@@ -633,7 +674,7 @@ function resize(){const k=BENCH?1:Math.min(devicePixelRatio,1.5)*qual;
 addEventListener('resize',resize);resize();
 const uS={};
 const uV={};
-for(const n of['uPk','uAux','uIPk','uDM','uIDM','uShk','uIShk','uPos','uFwd','uRight','uUp','uRes','uExpo','uJit','uStars','uCold','uMode','uInner','uKt'])uV[n]=gl.getUniformLocation(pV,n);
+for(const n of['uPk','uAux','uIPk','uDM','uIDM','uShk','uIShk','uPos','uFwd','uRight','uUp','uRes','uExpo','uJit','uStars','uCold','uMode','uInner','uKt','uPy'])uV[n]=gl.getUniformLocation(pV,n);
 for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain'])uS[n]=gl.getUniformLocation(pS,n);
 for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain'])uB[n]=gl.getUniformLocation(pB,n);
 for(const n of['uT0','uRes','uOp','uDir'])uPp[n]=gl.getUniformLocation(pP,n);
@@ -641,6 +682,8 @@ for(const n of['uT0','uT1','uT2','uHold','uRes','uTm','uBloom','uFade'])uCc[n]=g
 const uUu={};for(const n of['uT0','uRes','uSrc'])uUu[n]=gl.getUniformLocation(pU,n);
 const uG={};for(const n of['uPos','uFwd','uRight','uUp','uRes','uGain','uT'])uG[n]=gl.getUniformLocation(pG,n);
 let tp=performance.now(),fA=0.016,lastQ=0;
+function holdFrame(now,ms){if(!lastSrc)return;gl.useProgram(pU);gl.bindFramebuffer(gl.FRAMEBUFFER,fboHold);gl.viewport(0,0,bw,bh);gl.disable(gl.BLEND);
+ gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,lastSrc);gl.uniform1i(uUu.uT0,5);gl.uniform2f(uUu.uRes,bw,bh);gl.uniform2f(uUu.uSrc,bw,bh);gl.drawArrays(gl.TRIANGLES,0,3);fadeT0=now;fadeMs=ms;}
 function frame(){
  try{frameInner();}catch(e){const c=document.getElementById('cap');
   c.textContent='ERR: '+e.message;c.style.opacity=1;}
@@ -673,11 +716,10 @@ function frameInner(){
  const expo=Math.min(Math.max(Math.pow(rr/1.15,1.6),0.06),1.0);
  const expoV=(mode===5||mode===7)?Math.max(expo,0.4):expo;   // shocks are thin sheets: keep them readable inside the core
  fbos();const tgt=postOn?fboA:null;
- if(pendingEp>=0){if(pendingEp!==ep){ // keep the last frame of the old epoch for the crossfade, then switch
-  if(lastSrc){gl.useProgram(pU);gl.bindFramebuffer(gl.FRAMEBUFFER,fboHold);gl.viewport(0,0,bw,bh);gl.disable(gl.BLEND);
-   gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,lastSrc);gl.uniform1i(uUu.uT0,5);gl.uniform2f(uUu.uRes,bw,bh);gl.uniform2f(uUu.uSrc,bw,bh);gl.drawArrays(gl.TRIANGLES,0,3);fadeT0=now;}
-  applyEpoch(pendingEp);}pendingEp=-1;}
- const fadeK=Math.min(1,(now-fadeT0)/900);
+ // an epoch or mode switch keeps the last frame of the old scene and crossfades to the new one
+ if(pendingEp>=0){if(pendingEp!==ep){holdFrame(now,900);applyEpoch(pendingEp);}pendingEp=-1;}
+ if(pendingMode>=0){if(pendingMode!==mode){holdFrame(now,500);applyMode(pendingMode);}pendingMode=-1;}
+ const fadeK=Math.min(1,(now-fadeT0)/fadeMs);
  let bt0,bt1,bt2,bt3;
  if(!skipScene){
  // stars first (additive), then the volume composited over them with its cold-gas extinction
@@ -702,13 +744,13 @@ function frameInner(){
   gl.drawArrays(gl.POINTS,0,gn);}
  if(BENCH){bsync();bt1=performance.now();}
  gl.useProgram(pV);
- const E=ep===EP0?{pk:tPk,x:tX,t:tT,dm:tDM,shk:tShk}:EPOCHS[ep].tex;
+ const E=ep===EP0?{pk:tPk,x:tX,t:tT,dm:tDM,shk:tShk,mag:tMag}:EPOCHS[ep].tex;
  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_3D,E.pk);gl.uniform1i(uV.uPk,0);
- gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_3D,mode===1?E.x:E.t);gl.uniform1i(uV.uAux,1);
+ gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_3D,mode===1?E.x:mode===8?E.mag:E.t);gl.uniform1i(uV.uAux,1);
  gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_3D,tIPk);gl.uniform1i(uV.uIPk,2);
  if(E.dm){gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_3D,E.dm);gl.uniform1i(uV.uDM,3);gl.activeTexture(gl.TEXTURE4);gl.bindTexture(gl.TEXTURE_3D,tIDM||E.dm);gl.uniform1i(uV.uIDM,4);}
  if(E.shk){gl.activeTexture(gl.TEXTURE8);gl.bindTexture(gl.TEXTURE_3D,E.shk);gl.uniform1i(uV.uShk,8);gl.activeTexture(gl.TEXTURE9);gl.bindTexture(gl.TEXTURE_3D,tIShk||E.shk);gl.uniform1i(uV.uIShk,9);}
- gl.uniform1f(uV.uInner,ep===EP0?1.:0.);gl.uniform4f(uV.uKt,KT[0],KT[1],KT[2],0.);
+ gl.uniform1f(uV.uInner,ep===EP0?1.:0.);gl.uniform4f(uV.uKt,KT[0],KT[1],KT[2],0.);gl.uniform4f(uV.uPy,PY[0],PY[1],PY[2],PY[3]);
  gl.uniform3fv(uV.uPos,pos);gl.uniform3fv(uV.uFwd,f);gl.uniform3fv(uV.uRight,r);gl.uniform3fv(uV.uUp,u);
  gl.uniform1f(uV.uJit,still?(accN%64)*3.7:0.);gl.uniform1f(uV.uStars,showStars?1.:0.);gl.uniform1f(uV.uCold,showCold?1.:0.);
  gl.disable(gl.BLEND);
@@ -774,16 +816,27 @@ function frameInner(){
  {const ppu=(innerHeight/2)/(Math.max(rr,0.01)*0.62);let L=20;for(const c of[20,50,100,200,500,1000,2000,4000]){if(c/META.half*ppu<=260)L=c;}
   document.getElementById('sbl').style.width=Math.max(4,L/META.half*ppu).toFixed(0)+'px';
   document.getElementById('sbt').textContent=(L>=1000?(L/1000)+' Mpc/h':L+' kpc/h')+' at the core · z = '+EPOCHS[ep].z;}
- // labels: project, fade with distance, hide behind the camera
- {const asp=innerWidth/innerHeight;
+ // labels: project, fade with distance, hide behind the camera. A label that would overlap an already placed
+ // one (named galaxies first, nearest first) or a HUD panel climbs up its leader line; past 150 px it hides.
+ {const asp=innerWidth/innerHeight,cand=[];
   // off z = 0 a named galaxy is shown where its most bound particles are at that epoch (meta.json "labels"); sights are z = 0 only
   const LP=ep===EP0?null:(EPOCHS[ep].lab||{});
-  for(const l of LABELS){const lp=LP?LP[l.n]:l.p;if(!lp){l.el.style.opacity='0';continue;}
-   const rel=[lp[0]-pos[0],lp[1]-pos[1],lp[2]-pos[2]];const z=rel[0]*f[0]+rel[1]*f[1]+rel[2]*f[2];const d=Math.hypot(rel[0],rel[1],rel[2]);
-   let op=0;if(z>0.02){const x=(rel[0]*r[0]+rel[1]*r[1]+rel[2]*r[2])/(z*.62)/asp,y=(rel[0]*u[0]+rel[1]*u[1]+rel[2]*u[2])/(z*.62);
-    if(Math.abs(x)<1.05&&Math.abs(y)<1.05){op=Math.min(1,Math.max(0,(1.0-d)/0.5))*Math.min(1,Math.max(0,(d-0.02)/0.03));
-     l.el.style.transform='translate('+((x+1)/2*innerWidth).toFixed(0)+'px,'+((1-y)/2*innerHeight-6).toFixed(0)+'px) translate(-50%,-100%)';}}
-   l.el.style.opacity=op.toFixed(2);}}
+  for(const l of LABELS){const lp=LP?LP[l.n]:l.p;l.cur=lp;let op=0;
+   if(lp){const rel=[lp[0]-pos[0],lp[1]-pos[1],lp[2]-pos[2]];const z=rel[0]*f[0]+rel[1]*f[1]+rel[2]*f[2];const d=Math.hypot(rel[0],rel[1],rel[2]);
+    if(z>0.02){const x=(rel[0]*r[0]+rel[1]*r[1]+rel[2]*r[2])/(z*.62)/asp,y=(rel[0]*u[0]+rel[1]*u[1]+rel[2]*u[2])/(z*.62);
+     if(Math.abs(x)<1.05&&Math.abs(y)<1.05){op=Math.min(1,Math.max(0,(1.0-d)/0.5))*Math.min(1,Math.max(0,(d-0.02)/0.03));
+      if(op>0)cand.push({l:l,sx:(x+1)/2*innerWidth,sy:(1-y)/2*innerHeight-6,d:d,op:op});}}}
+   if(op<=0){l.el.style.opacity='0';l.el.style.pointerEvents='none';}}
+  cand.sort((a,b)=>(a.l.dim?1:0)-(b.l.dim?1:0)||a.d-b.d);
+  const boxes=[];for(const id of HUDS){const e=document.getElementById(id);if(!e)continue;const q=e.getBoundingClientRect();if(q.width>0&&q.height>0)boxes.push([q.left-4,q.top-4,q.right+4,q.bottom+4]);}
+  for(const c of cand){const w=c.l.tx.offsetWidth,th=c.l.tx.offsetHeight;let dy=0,ok=false;
+   for(let k=0;k<8&&!ok;k++){const bot=c.sy-16-dy,bx=[c.sx-w/2-5,bot-th-4,c.sx+w/2+5,bot+4];
+    const hit=boxes.find(b=>bx[0]<b[2]&&bx[2]>b[0]&&bx[1]<b[3]&&bx[3]>b[1]);
+    if(!hit)ok=true;else dy=Math.max(dy+1,c.sy-12-hit[1]);}
+   if(!ok||dy>150){c.l.el.style.opacity='0';c.l.el.style.pointerEvents='none';continue;}
+   boxes.push([c.sx-w/2-5,c.sy-16-dy-th-4,c.sx+w/2+5,c.sy-16-dy+4]);
+   c.l.ld.style.height=(14+dy)+'px';c.l.el.style.pointerEvents='auto';
+   c.l.el.style.transform='translate('+c.sx.toFixed(0)+'px,'+c.sy.toFixed(0)+'px) translate(-50%,-100%)';c.l.el.style.opacity=c.op.toFixed(2);}}
  // keep the URL in sync with the framed view once the camera settles
  if(moving)hashW=false;else if(stillT>0.5&&!hashW){hashW=true;writeHash();}
  if(shotReq){shotReq=false;const a=document.createElement('a');a.download='coma_'+names[mode].replace(/[^a-z0-9]+/gi,'_')+'_'+Math.round(rr*META.half)+'kpch.png';a.href=cv.toDataURL('image/png');document.body.appendChild(a);a.click();a.remove();showCap('SAVED '+cv.width+'×'+cv.height+' PNG');}}

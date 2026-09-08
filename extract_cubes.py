@@ -2,7 +2,7 @@
 # One-pass cube extraction for the Coma Virtual Observatory (run on raven via run_cubes.sbatch).
 #   python extract_cubes.py SNAP            -> /ptmp/uli/coma_cubes/raw_SNAP.h5
 #   python extract_cubes.py SNAP sp+hires   -> add only the named parts to an existing raw_SNAP.h5
-#                                              (reuses its centre; parts: gas dm stars sp hires)
+#                                              (reuses its centre; parts: gas dm stars sp cold bh lab mag hires)
 # Raw float32 cubes (192^3 over +-4500 ckpc/h around the main progenitor of the z=0 BCG;
 # snapshot 139 additionally 384^3 + 192^3 inner +-1200 ckpc/h; snapshots 109, 121, 139 the
 # 384^3 gas mass and star light, "hires") for gas mass, temperature, X-ray proxies, Arepo
@@ -15,7 +15,7 @@ import sys, os, glob, time, numpy as np, h5py
 from multiprocessing import Pool
 
 SNAP = int(sys.argv[1])
-PARTS = sys.argv[2].replace(',', '+').split('+') if len(sys.argv) > 2 else ['gas', 'dm', 'stars', 'sp', 'cold', 'bh', 'lab']
+PARTS = sys.argv[2].replace(',', '+').split('+') if len(sys.argv) > 2 else ['gas', 'dm', 'stars', 'sp', 'cold', 'bh', 'lab', 'mag']
 LISTS = ('sp_', 'cg_', 'bh_', 'lab_')                # per-particle dumps: concatenated, not summed
 BASE = '/raven/ptmp/uli/sims/borg_coma_zoom_TNG100_first_try/step_011/output'
 OUT = '/ptmp/uli/coma_cubes'
@@ -166,6 +166,22 @@ def do_cold(args):
     lr = np.log10(rho[sel]); keep = np.argsort(lr)[::-1][:CG_MAX]
     return {'cg_pos': d[sel][keep].astype(np.float32), 'cg_lrho': lr[keep].astype(np.float32), 'cg_sf': (sfr[sel][keep] > 0).astype(np.uint8)}
 
+# Arepo MagneticField is in (h/a^2) sqrt(UnitPressure): physical Gauss = code x 2.60e-6 x h / a^2 (TNG convention)
+B_UG = 2.6003 * 0.681 * (1. + Z) ** 2                  # code -> microgauss (h = 0.681 as everywhere in the page)
+def do_mag(args):
+    """mass-weighted magnetic field strength of the non-star-forming gas (the ISM of galaxies, 10s of uG, would
+    otherwise dominate the voxel of every galaxy): gas_mB = sum m |B| [uG], gas_mB_m = the mass it is summed over"""
+    fn, cen = args
+    with h5py.File(fn, 'r') as f:
+        g = f['PartType0']
+        d = wrap(g['Coordinates'][:].astype(np.float64), cen)
+        m = np.max(np.abs(d), axis=1) < HALF
+        if not m.any(): return {}
+        d = d[m]; mass = g['Masses'][:][m].astype(np.float64); sfr = g['StarFormationRate'][:][m]
+        B = np.linalg.norm(g['MagneticField'][:][m].astype(np.float64), axis=1) * B_UG
+    icm = sfr <= 0
+    return grids(d[icm], {'gas_mB': mass[icm] * B[icm], 'gas_mB_m': mass[icm]}, HALF, N)
+
 def do_bh(args):
     fn, cen = args
     with h5py.File(fn, 'r') as f:
@@ -231,7 +247,7 @@ if __name__ == '__main__':
             cen = cen_tr; info['group_M200'] = 0.0; info['group_R200'] = 0.0; info['group_dist'] = -1.0
         print('snap', SNAP, 'z=%.3f' % Z, 'tracers', len(tr), 'centre', cen, 'offset from z=0 centre', wrap(cen[None], cen0)[0], info, flush=True)
     acc = {}
-    todo = [(n, f) for n, f in (('gas', do_gas), ('dm', do_dm), ('stars', do_stars), ('sp', do_sp), ('cold', do_cold), ('bh', do_bh))
+    todo = [(n, f) for n, f in (('gas', do_gas), ('dm', do_dm), ('stars', do_stars), ('sp', do_sp), ('cold', do_cold), ('bh', do_bh), ('mag', do_mag))
             if n in PARTS or ('hires' in PARTS and n in ('gas', 'stars'))]
     for name, fun in todo:
         with Pool(NPROC) as p:
@@ -243,6 +259,9 @@ if __name__ == '__main__':
         for k in ('cg_pos', 'cg_lrho', 'cg_sf'): acc[k] = acc[k][keep]
         print('cold: %d cells kept (SF %d), log rho >= %.2f' % (len(keep), int(acc['cg_sf'].sum()), acc['cg_lrho'].min()), flush=True)
     if 'bh_mass' in acc: print('bh: %d black holes' % len(acc['bh_mass']), flush=True)
+    if 'gas_mB' in acc:
+        mm = acc['gas_mB_m']; Bv = acc['gas_mB'][mm > 0] / mm[mm > 0]
+        print('mag: %d voxels with ICM gas, |B| [uG] pct 5/50/95/99.9: %s' % (len(Bv), np.round(np.percentile(Bv, [5, 50, 95, 99.9]), 3)), flush=True)
     lab_names = None
     if 'lab' in PARTS and os.path.exists(OUT + '/label_tracers.npz'):
         part, lab_names = track_labels(cen); acc.update(part)

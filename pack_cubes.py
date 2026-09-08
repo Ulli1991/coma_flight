@@ -7,12 +7,14 @@
 #                                   data/stars.bin.gz against the star particles of raw_139.h5 (sp_* datasets)
 #   python pack_cubes.py calib_cg -> the cold-gas sprite encoding of data/gas.bin.gz against raw_139.h5 (cg_* datasets)
 #   python pack_cubes.py 139     -> data/dm384.u8.gz idm192.u8.gz shock384.u8.gz ishock192.u8.gz
+#   python pack_cubes.py mag     -> data/mag192.u8.gz + data/ep*_mag192.u8.gz for every raw file with the magnetic
+#                                   field (extract_cubes.py SNAP mag); the log scale is fitted once at z=0 (`mag`)
 #   python pack_cubes.py 27      -> data/ep027_{pk,xray,temp,dm,shock}192.u8.gz (same scales as z=0)
 #                                   + ep027_stars.bin.gz (galaxy sprites), ep027_gas.bin.gz (cold-gas sprites),
 #                                   ep027_meta.json (black holes + tracked label positions) + ep027_pk384.u8.gz
 #                                   where the raw file has the 384^3 grids (snapshots 109, 121)
 # All cubes are C-ordered (x,y,z) uint8; the page samples them as uv.zyx.
-import sys, os, json, gzip, numpy as np, h5py
+import sys, os, json, gzip, glob, numpy as np, h5py
 from scipy.ndimage import gaussian_filter, maximum_filter
 RAW = '/ptmp/uli/coma_cubes'; DATA = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data')
 SC = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cube_scales.json')
@@ -236,6 +238,23 @@ def pack_epoch(snap):
     if 'cg_lrho' in f and 'cg_n' in S: wr(p + 'gas.bin.gz', gas_pack(f, S))
     if 'bh_mass' in f or 'lab_pos' in f: meta_json(f, p + 'meta.json')
 
+def pack_mag():
+    """magnetic field: mass-weighted |B| [uG] of the non-star-forming gas per 192^3 voxel (extract_cubes.py mag),
+    physical uG at every epoch on one log10 scale, 0.01 .. 10 uG (z=0 profile: 3.3 uG within 100 kpc/h, 1.2 at
+    300-600, 0.34 at 1-1.5 Mpc/h, 0.11 at 1.5-2.5, 0.017 beyond; peak 11 uG); empty voxels are byte 0"""
+    S = json.load(open(SC))
+    def lB(f):
+        mm = f['gas_mB_m'][:]; return np.where(mm > 0, logq(f['gas_mB'][:] / np.maximum(mm, 1e-30)), -30.), mm > 0
+    if 'mag' not in S:
+        S['mag'] = [-2.0, 1.0, 1.0]; json.dump(S, open(SC, 'w'), indent=1); print('wrote', SC, 'mag', S['mag'])
+    for path in sorted(glob.glob(RAW + '/raw_*.h5')):
+        snap = int(os.path.basename(path)[4:7])
+        with h5py.File(path, 'r') as f:
+            if 'gas_mB' not in f: print('snap', snap, 'has no gas_mB (run extract_cubes.py %d mag)' % snap); continue
+            x, ok = lB(f)
+        print('snap %d: %d voxels with ICM gas, |B| [uG] pct 5/50/95/99.9: %s' % (snap, ok.sum(), np.round(10 ** np.percentile(x[ok], [5, 50, 95, 99.9]), 3)))
+        wr(('mag192.u8.gz' if snap == 139 else 'ep%03d_mag192.u8.gz' % snap), u8(x, S['mag'][0], S['mag'][1]))
+
 if __name__ == '__main__':
     a = sys.argv[1]
     if a == 'check': sys.exit(0 if check() else 1)
@@ -244,4 +263,5 @@ if __name__ == '__main__':
     elif a == 'calib_cg': calib_cg()
     elif a == 'meta139': meta_json(h5py.File(RAW + '/raw_139.h5', 'r'), 'ep139_meta.json')   # check against D_BH / LABELS, not shipped
     elif a == '139': pack139()
+    elif a == 'mag': pack_mag()
     else: pack_epoch(int(a))
