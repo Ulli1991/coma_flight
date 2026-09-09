@@ -51,7 +51,6 @@ body{font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--mist)}
 #gi{left:10px;bottom:150px;border-left:1px solid var(--line);padding-left:12px;font-size:11.5px;pointer-events:auto;max-width:320px}
 #gi b{color:var(--hud);font-weight:500}#gi .t{color:var(--amber);letter-spacing:.08em;margin-bottom:3px}
 #gm{position:fixed;left:0;top:0;width:26px;height:26px;border:1px solid var(--amber);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%)}
-#pr{left:10px;top:78px;font-size:10.5px;color:var(--hud-dim)}#pr .t{color:var(--hud);font-size:11px;margin-bottom:4px;letter-spacing:.08em}
 #tsw{position:fixed;left:50%;bottom:96px;transform:translateX(-50%);width:min(72vw,960px);pointer-events:auto;text-align:center;padding:8px 14px 6px;background:rgba(5,6,10,.55);border:1px solid var(--line)}
 #tsw .row{display:flex;align-items:center;gap:12px}#tsp{font-size:20px;line-height:1;color:var(--amber);cursor:pointer;width:26px;user-select:none}
 #ts{flex:1;height:22px;margin:0;-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer}
@@ -74,7 +73,7 @@ body{font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--mist)}
  <div>here&nbsp;&nbsp; <b id="hp">--</b></div>
  <div style="color:var(--hud-dim)">fps <b id="hq" style="color:var(--hud-dim)">--</b></div>
 </div>
-<div class="hud" id="br">J sights &middot; , . epoch &middot; Z time-lapse &middot; X galaxies &middot; N dense gas &middot; G quality &middot; B bloom &middot; H hide HUD &middot; P photo &middot; V video &middot; L link &middot; T tour &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1&ndash;9 0 fields &middot; K U M F O more fields &middot; I profiles &middot; click a galaxy &middot; E view from Earth &middot; Q lite / full build &middot; R reset</div>
+<div class="hud" id="br">J sights &middot; , . epoch &middot; Z time-lapse &middot; X galaxies &middot; N dense gas &middot; G quality &middot; B bloom &middot; H hide HUD &middot; P photo &middot; V video &middot; L link &middot; T tour &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1&ndash;9 0 fields &middot; K U M F O more fields &middot; click a galaxy &middot; E view from Earth &middot; Q lite / full build &middot; R reset</div>
 <div class="hud" id="cb"><div class="t" id="cbn"></div><canvas id="cbc" width="256" height="1"></canvas><div id="cbt"></div>
  <div id="cbl"><span class="sw" style="background:linear-gradient(90deg,#598cff,#fff2d0,#ff8038)"></span> galaxies young &rarr; old &nbsp; <span class="sw" style="background:#73d9ff"></span> cold gas &nbsp; <span class="sw" style="background:#c08cff"></span> black holes</div></div>
 <div class="hud" id="tr">
@@ -89,14 +88,13 @@ body{font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--mist)}
  <div id="tsi">drag the handle or press Z to play &middot; [ ] one snapshot &middot; + &minus; speed &middot; Y loop &middot; the ticks are the nine full-resolution epochs, click one to switch to it &middot; , . leave the movie</div></div>
 <div class="hud" id="gi" hidden><div class="t"><span id="gin"></span> <span id="gix" style="cursor:pointer;color:var(--hud-dim)">&nbsp;&times;</span></div><div id="gib"></div><div id="gih" style="margin-top:5px;color:var(--hud-dim);font-size:10.5px"></div><div id="gif" style="color:var(--amber);cursor:pointer;margin-top:4px;letter-spacing:.08em">FLY THERE</div></div>
 <div id="gm" hidden></div>
-<div class="hud" id="pr" hidden><div class="t">RADIAL PROFILES</div><canvas id="prc" width="250" height="318"></canvas></div>
 <div id="intro"><div class="card">
  <h1>COMA VIRTUAL OBSERVATORY</h1>
  <p>Free flight through the z&nbsp;=&nbsp;0 snapshot of the Coma_011 constrained
  re-simulation at TNG100 resolution &mdash; the closing frame of the formation film.
  A 9 cMpc/h volume: hot ICM, cold stripped gas, and the 40&thinsp;000 brightest galaxies.</p>
  <p><span class="k">Drag / arrow keys</span> to look &middot; <span class="k">W A S D</span> to fly &middot;
- <span class="k">SHIFT</span> boost &middot; <span class="k">1&ndash;9, 0</span> fields: dark matter, density, temperature, X-ray, Compton y, entropy, magnetic field, shocks, radio relics, intracluster light &middot; <span class="k">K U M F O</span> velocity, turbulence, metals, Faraday rotation, radio halo &middot; <span class="k">5 5</span> kinetic SZ &middot; fly out past the edge for the cosmic web &middot; <span class="k">E</span> the view from Earth (the real 2M++ galaxies in amber, North up, East left) &middot; <span class="k">I</span> radial profiles &middot; click a galaxy for its catalogue entry &middot; <span class="k">J</span> next sight (or click a label) &middot; <span class="k">, .</span> step through the nine full-resolution epochs (z = 2 &rarr; 0) &middot; the <span class="k">time slider</span> top right scrubs all 113 snapshots, <span class="k">Z</span> plays them</p>
+ <span class="k">SHIFT</span> boost &middot; <span class="k">1&ndash;9, 0</span> fields: dark matter, density, temperature, X-ray, Compton y, entropy, magnetic field, shocks, radio relics, intracluster light &middot; <span class="k">K U M F O</span> velocity, turbulence, metals, Faraday rotation, radio halo &middot; <span class="k">5 5</span> kinetic SZ &middot; fly out past the edge for the cosmic web &middot; <span class="k">E</span> the view from Earth (the real 2M++ galaxies in amber, North up, East left) &middot; click a galaxy for its catalogue entry &middot; <span class="k">J</span> next sight (or click a label) &middot; <span class="k">, .</span> step through the nine full-resolution epochs (z = 2 &rarr; 0) &middot; the <span class="k">time slider</span> top right scrubs all 113 snapshots, <span class="k">Z</span> plays them</p>
  <p style="color:var(--hud-dim)">magma = hot ICM &middot; cyan = cold / star-forming gas &middot; stellar light of ALL 30M stars (volume) + particle sparkle; blue young &rarr; red old &middot; violet beacons = black holes (size by mass)</p>
  <p id="warn" hidden>WebGL2 unavailable in this browser.</p>
  <div class="go" id="go"><span id="got">LOADING&hellip;</span><div id="lbar"><i></i></div></div>
@@ -606,7 +604,6 @@ addEventListener('keydown',e=>{keys[e.code]=1;accN=0;
  if(e.code==='KeyT'){auto=!auto;atau=0;}
  if(e.code==='KeyB'){bloomOn=!bloomOn;showCap(bloomOn?'BLOOM ON':'BLOOM OFF');}
  if(e.code==='KeyV')toggleRec();
- if(e.code==='KeyI'){prOn=!prOn;document.getElementById('pr').hidden=!prOn;}
  if(e.code==='KeyE')toggleEarth();
  if(e.code==='KeyQ'){const u=new URL(location.href);u.searchParams.set('lite',LITE?'0':'1');location.href=u.href;}
  if(e.code==='Escape')select(null);
@@ -856,7 +853,7 @@ const LABELS=[{n:'NGC 4889 · BCG',p:[0,0,0]},{n:'NGC 4874',p:[0.0293,-0.0716,-0
  .concat((META.pois||[]).filter(q=>q.k!=='5'&&q.k!=='9').map(q=>({n:q.n,p:q.p,dim:true,d:q.d})));
 {const w=document.getElementById('labels');for(const l of LABELS){const e=document.createElement('div');e.className='lab';e.innerHTML='<span>'+l.n+'</span><i></i>';if(l.dim)e.style.color='var(--hud-dim)';
  e.addEventListener('click',()=>{if(l.cur)goSight(l.cur,l.d||0.075,l.n);});w.appendChild(e);l.el=e;l.tx=e.firstChild;l.ld=e.lastChild;}}
-const HUDS=['tl','tr','bl','br','cb','sb','gi','pr','tsw'];   // HUD panels the labels keep clear of
+const HUDS=['tl','tr','bl','br','cb','sb','gi','tsw'];   // HUD panels the labels keep clear of
 // ---- galaxy inspector: click a galaxy at z = 0 for its subhalo catalogue entry (data/galaxies.json, pack_cubes.py galaxies) ----
 let GAL=null,gsel=null,TRK=null;fetch('data/galaxies.json').then(r=>r.ok?r.json():null).then(g=>{GAL=g;}).catch(()=>{});
 fetch('data/galaxy_tracks.json').then(r=>r.ok?r.json():null).then(t=>{if(t){TRK={};for(const q of t)TRK[q.i]=q.t;if(gsel)galHistory(gsel);}}).catch(()=>{});
@@ -1088,7 +1085,7 @@ function frameInner(){
    if(z>0.02){const x=(rel[0]*r[0]+rel[1]*r[1]+rel[2]*r[2])/(z*FOV)/(innerWidth/innerHeight),y=(rel[0]*u[0]+rel[1]*u[1]+rel[2]*u[2])/(z*FOV);
     gm.hidden=false;gm.style.transform='translate('+((x+1)/2*innerWidth).toFixed(0)+'px,'+((1-y)/2*innerHeight).toFixed(0)+'px) translate(-50%,-50%)';}else gm.hidden=true;}
   else gm.hidden=true;
-  if(prOn)drawProfiles(rr);}
+ }
  // keep the URL in sync with the framed view once the camera settles
  if(moving)hashW=false;else if(stillT>0.5&&!hashW){hashW=true;writeHash();}
  if(shotReq){shotReq=false;const a=document.createElement('a');a.download='coma_'+names[mode].replace(/[^a-z0-9]+/gi,'_')+'_'+Math.round(rr*META.half)+'kpch.png';a.href=cv.toDataURL('image/png');document.body.appendChild(a);a.click();a.remove();showCap('SAVED '+cv.width+'×'+cv.height+' PNG');}}
