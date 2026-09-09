@@ -170,7 +170,7 @@ Sept 8, fourth round ("beyond state of the art"): new physics, the cosmic web, t
   it, pack every other snapshot (`glob` in `pack_movie`, the page needs no change: it reads movie.json).
 - Galaxy inspector: click a galaxy at z = 0 (`data/galaxies.json`, `pack_cubes.py galaxies`: the 803
   subhaloes with M* >= 1e9 Msun inside the cube) for its catalogue entry; FLY THERE; Escape closes.
-- Radial profiles (I): n_H, T, K, B, sigma, Z, rho_DM spherical means from the resident cubes (computed on
+- Radial profiles panel: removed again (the user did not want a panel on click; it was never asked for).
   first use, ~1 s at 384^3), camera radius and R200 marked; works at the epochs too.
 - The view from Earth (E, or the EARTH VIEW button): the observer's frame of this realisation comes from
   `~/coma_300/data/zoom_rotations.npz` (step 11: the observer at the parent box centre, MUSIC only
