@@ -10,7 +10,7 @@
 :root{--bg:#05060a;--hud:#9fd8e8;--hud-dim:#4d6a74;--amber:#e8a24a;--mist:#c8d2da;--line:rgba(159,216,232,.25)}
 html,body{margin:0;height:100%;background:var(--bg);overflow:hidden}
 body{font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--mist)}
-canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crosshair}
+#cv,#ov{position:fixed;inset:0;width:100%;height:100%;display:block}#cv{cursor:crosshair}
 [hidden]{display:none!important}
 .hud{position:fixed;padding:10px 14px;pointer-events:none;font-size:12.5px;line-height:1.55;
  font-variant-numeric:tabular-nums;text-shadow:0 0 6px rgba(0,0,0,.9)}
@@ -87,7 +87,7 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block;cursor:crossh
 <div class="hud" id="labels" style="padding:0"></div>
 <div id="tsw" hidden><div class="row"><span id="tsp" title="play / pause (Z)">&#9654;</span><input type="range" id="ts" min="0" max="1" step="0.002" value="1"><span id="tsz"></span></div><div id="tst"></div>
  <div id="tsi">drag the handle or press Z to play &middot; [ ] one snapshot &middot; + &minus; speed &middot; Y loop &middot; the ticks are the nine full-resolution epochs, click one to switch to it &middot; , . leave the movie</div></div>
-<div class="hud" id="gi" hidden><div class="t"><span id="gin"></span> <span id="gix" style="cursor:pointer;color:var(--hud-dim)">&nbsp;&times;</span></div><div id="gib"></div><div id="gih" style="margin-top:5px;color:var(--hud-dim);font-size:10.5px"></div><canvas id="gic" width="300" height="86" style="display:block;margin-top:4px"></canvas><div id="gif" style="color:var(--amber);cursor:pointer;margin-top:4px;letter-spacing:.08em">FLY THERE</div></div>
+<div class="hud" id="gi" hidden><div class="t"><span id="gin"></span> <span id="gix" style="cursor:pointer;color:var(--hud-dim)">&nbsp;&times;</span></div><div id="gib"></div><div id="gih" style="margin-top:5px;color:var(--hud-dim);font-size:10.5px"></div><div id="gif" style="color:var(--amber);cursor:pointer;margin-top:4px;letter-spacing:.08em">FLY THERE</div></div>
 <div id="gm" hidden></div>
 <div class="hud" id="pr" hidden><div class="t">RADIAL PROFILES</div><canvas id="prc" width="250" height="318"></canvas></div>
 <div id="intro"><div class="card">
@@ -861,64 +861,12 @@ const HUDS=['tl','tr','bl','br','cb','sb','gi','pr','tsw'];   // HUD panels the 
 let GAL=null,gsel=null,TRK=null;fetch('data/galaxies.json').then(r=>r.ok?r.json():null).then(g=>{GAL=g;}).catch(()=>{});
 fetch('data/galaxy_tracks.json').then(r=>r.ok?r.json():null).then(t=>{if(t){TRK={};for(const q of t)TRK[q.i]=q.t;if(gsel)galHistory(gsel);}}).catch(()=>{});
 // the infall history: r / R200 and log M* against lookback time, star-forming stretches in blue, quenched in orange
-function galHistory(g){const h=document.getElementById('gih'),cvs=document.getElementById('gic'),c=cvs.getContext('2d');c.clearRect(0,0,cvs.width,cvs.height);
- const t=TRK&&TRK[g.i];if(!t||!MV||t.length<2){h.textContent=TRK?'no history (not tracked through the snapshots)':'';cvs.hidden=true;return;}cvs.hidden=false;
- const inf=t.find(q=>q[1]<1),lastSF=[...t].reverse().find(q=>q[3]>0),tl=k=>MV[k].t;
- const parts=[];if(g.i===0)parts.push('the cluster itself');else if(inf)parts.push('inside R200 since '+tl(inf[0]).toFixed(1)+' Gyr ago (z = '+MV[inf[0]].z.toFixed(2)+'), M★ then '+sci(Math.pow(10,inf[2]))+' M☉');else parts.push('still outside R200');
+function galHistory(g){const h=document.getElementById('gih');const t=TRK&&TRK[g.i];
+ if(!t||!MV||t.length<2){h.textContent=TRK?'no history (not tracked through the snapshots)':'';return;}
+ const inf=t.find(q=>q[1]<1),lastSF=[...t].reverse().find(q=>q[3]>0),tl=k=>MV[k].t,parts=[];
+ if(g.i===0)parts.push('the cluster itself');else if(inf)parts.push('inside R200 since '+tl(inf[0]).toFixed(1)+' Gyr ago (z = '+MV[inf[0]].z.toFixed(2)+'), M★ then '+sci(Math.pow(10,inf[2]))+' M☉');else parts.push('still outside R200');
  if(lastSF&&lastSF!==t[t.length-1]&&t[t.length-1][3]===0)parts.push('star formation ended '+tl(lastSF[0]).toFixed(1)+' Gyr ago');else if(t[t.length-1][3]>0)parts.push('still forming stars');
- parts.push('tracked from z = '+MV[t[0][0]].z.toFixed(2));h.textContent=parts.join(' · ');
- const W=cvs.width,H=cvs.height,L=34,R=W-6,T=6,B=H-14,tmax=MV[0].t,x=k=>L+(1-tl(k)/tmax)*(R-L);
- const rmax=Math.max(1.5,...t.map(q=>q[1]))*1.05,yr=r=>B-(r/rmax)*(B-T),ms=t.map(q=>q[2]),m0=Math.min(...ms)-0.1,m1=Math.max(...ms)+0.1,ym=m=>B-(m-m0)/(m1-m0)*(B-T);
- c.font='9.5px IBM Plex Mono,monospace';c.strokeStyle='rgba(159,216,232,.15)';c.strokeRect(L,T,R-L,B-T);
- c.strokeStyle='rgba(159,216,232,.5)';c.setLineDash([3,3]);c.beginPath();c.moveTo(L,yr(1));c.lineTo(R,yr(1));c.stroke();c.setLineDash([]);
- c.fillStyle='#4d6a74';c.textAlign='right';c.fillText('R200',L-2,yr(1)+3);c.fillText(rmax.toFixed(0)+' R200',L-2,T+8);c.textAlign='center';for(const g2 of[10,7.5,5,2.5,0])if(g2<=tmax)c.fillText(g2?g2+' Gyr':'now',x(MV.findIndex(e=>e.t<=g2)),H-3);
- c.lineWidth=1.5;for(let i=1;i<t.length;i++){c.strokeStyle=t[i][3]>0?'#598cff':'#e8a24a';c.beginPath();c.moveTo(x(t[i-1][0]),yr(t[i-1][1]));c.lineTo(x(t[i][0]),yr(t[i][1]));c.stroke();}
- c.lineWidth=1;c.strokeStyle='rgba(200,210,218,.55)';c.beginPath();t.forEach((q,i)=>{const px=x(q[0]),py=ym(q[2]);if(i)c.lineTo(px,py);else c.moveTo(px,py);});c.stroke();
- c.fillStyle='rgba(200,210,218,.7)';c.textAlign='left';c.fillText('M★ '+sci(Math.pow(10,m0+0.1)).replace(/×10/,'e')+' → '+sci(Math.pow(10,m1-0.1)).replace(/×10/,'e'),L+3,T+8);}
-function galName(g){const l=LABELS.find(l=>!l.dim&&Math.hypot(l.p[0]-g.p[0],l.p[1]-g.p[1],l.p[2]-g.p[2])<0.02);return l?l.n:'GALAXY · SUBHALO '+g.i;}
-function fmtM(l){return l>0?sci(Math.pow(10,l))+' M☉':'–';}
-function pick(px,py){if(!GAL||ep!==EP0){select(null);return;}const[f,r,u]=earth?earthBasis():basis(),asp=innerWidth/innerHeight;let best=null,bd=22;
- for(const g of GAL){const rel=[g.p[0]-pos[0],g.p[1]-pos[1],g.p[2]-pos[2]];const z=rel[0]*f[0]+rel[1]*f[1]+rel[2]*f[2];if(z<0.02)continue;
-  const x=((rel[0]*r[0]+rel[1]*r[1]+rel[2]*r[2])/(z*FOV)/asp+1)/2*innerWidth,y=(1-(rel[0]*u[0]+rel[1]*u[1]+rel[2]*u[2])/(z*FOV))/2*innerHeight;
-  const d=Math.hypot(x-px,y-py)-(g.ms-9)*2;if(d<bd){bd=d;best=g;}}   // the nearest, massive ones favoured
- select(best);}
-function select(g){gsel=g;const e=document.getElementById('gi');if(!g){e.hidden=true;document.getElementById('gm').hidden=true;return;}e.hidden=false;
- document.getElementById('gin').textContent=galName(g);
- document.getElementById('gib').innerHTML=[['M<sub>★</sub>',fmtM(g.ms)+(g.i===0?' incl. the intracluster light':'')],['SFR',g.sfr>0?g.sfr.toFixed(2)+' M☉ / yr':'quenched'],
-  ['M<sub>gas</sub>',fmtM(g.mg)],['M<sub>subhalo</sub>',fmtM(g.mh)],['r<sub>½,★</sub>',g.rh+' kpc'],['V<sub>max</sub>',g.v+' km/s'],['g − r',g.gr.toFixed(2)],
-  ['M<sub>BH</sub>',g.bh>0?fmtM(g.bh):'none · lost to a neighbour (TNG pins black holes to the potential minimum)'],['d<sub>BCG</sub>',g.d.toFixed(2)+' Mpc']].map(([k,v])=>'<div>'+k+'&nbsp; <b>'+v+'</b></div>').join('');galHistory(g);}
-document.getElementById('gix').addEventListener('click',()=>select(null));
-document.getElementById('gif').addEventListener('click',()=>{if(gsel)goSight(gsel.p,0.06,galName(gsel));});
-// ---- radial profiles (I): spherical means of the resident cubes about the centre, the camera's radius marked ----
-let prOn=false;const PRB=36,PR0=30,PR1=4500;
-function profile(a,n,st,off,dec,geo){   // mean of dec(byte/255) per log-r bin over the voxels with byte > 0 (geo: mean of the log)
- const sum=new Float64Array(PRB),cnt=new Float64Array(PRB),h=n/2,k=PRB/Math.log(PR1/PR0),r0=PR0/4500,r1=PR1/4500;
- for(let i=0;i<n;i++){const x=(i+0.5-h)/h;for(let j=0;j<n;j++){const y=(j+0.5-h)/h,xy=x*x+y*y;for(let l=0;l<n;l++){const z=(l+0.5-h)/h;
-  const b=a[((i*n+j)*n+l)*st+off];if(!b)continue;const r=Math.sqrt(xy+z*z);if(r<r0||r>=r1)continue;
-  const q=Math.floor(Math.log(r/r0)*k),v=dec(b/255);sum[q]+=geo?Math.log10(v):v;cnt[q]++;}}}
- return Array.from(sum,(v,q)=>cnt[q]>3?(geo?Math.pow(10,v/cnt[q]):v/cnt[q]):NaN);}
-const dec=(sc,k)=>b=>k*Math.pow(10,sc[0]+b*(sc[1]-sc[0]));
-function profiles(P){const out=[];
- const nH=profile(P.rho,P.n,P.st,0,dec(SCL.rho,NH),false),T=profile(P.t,192,1,0,dec(SCL.temp,1),true);
- out.push({n:'n_H [cm⁻³]',v:nH},{n:'T [K]',v:T},{n:'K [keV cm²]',v:nH.map((x,i)=>T[i]*8.617e-8/Math.pow(1.17*x,2/3))});
- if(P.mag)out.push({n:'B [μG]',v:profile(P.mag,192,1,0,dec(SCL.mag,1),true)});
- if(P.vel)out.push({n:'σ [km/s]',v:profile(P.vel,P.nvel,4,3,dec(SCL.sig,1),true)});
- if(P.met)out.push({n:'Z [Z☉]',v:profile(P.met,192,1,0,dec(SCL.met,1),true)});
- if(P.dm)out.push({n:'ρ_DM [M☉ kpc⁻³]',v:profile(P.dm,P.ndm,1,0,dec(SCL.dm,VOX),false)});
- return out;}
-function drawProfiles(rr){const P=ep===EP0?PROBE0:EPOCHS[ep].arr;const cvs=document.getElementById('prc'),c=cvs.getContext('2d'),W=cvs.width,H=cvs.height;
- c.clearRect(0,0,W,H);if(!P){c.fillStyle='#4d6a74';c.fillText('no cubes resident',4,12);return;}
- if(!P.prof)P.prof=profiles(P);const pr=P.prof,L=44,R=W-6,SH=Math.floor((H-14)/pr.length),k=(R-L)/Math.log(PR1/PR0),xr=r=>L+Math.log(r/PR0)*k;
- c.font='9.5px IBM Plex Mono,monospace';c.lineWidth=1;
- pr.forEach((q,s)=>{const y0=s*SH+4,y1=y0+SH-8;const vv=q.v.filter(v=>isFinite(v)&&v>0);if(!vv.length)return;
-  const lo=Math.log10(Math.min(...vv)),hi=Math.log10(Math.max(...vv)),sp=Math.max(hi-lo,0.3),yv=v=>y1-(Math.log10(v)-lo)/sp*(y1-y0);
-  c.strokeStyle='rgba(159,216,232,.15)';c.strokeRect(L,y0,R-L,y1-y0);c.fillStyle='#4d6a74';c.textAlign='right';
-  c.fillText(sci(Math.pow(10,hi)),L-2,y0+8);c.fillText(sci(Math.pow(10,lo)),L-2,y1);c.textAlign='left';c.fillStyle='#9fd8e8';c.fillText(q.n,L+3,y0+9);
-  c.strokeStyle='#9fd8e8';c.beginPath();let on=false;q.v.forEach((v,i)=>{if(!isFinite(v)||v<=0){on=false;return;}const x=L+(i+0.5)/PRB*(R-L),y=yv(v);if(on)c.lineTo(x,y);else c.moveTo(x,y);on=true;});c.stroke();});
- const yb=pr.length*SH;c.fillStyle='#4d6a74';c.textAlign='center';for(const r of[100,300,1000,3000])c.fillText(r>=1000?(r/1000)+' Mpc':r+' kpc',xr(r),yb+8);
- c.strokeStyle='#e8a24a';c.beginPath();const xc=xr(Math.min(Math.max(rr*4500,PR0),PR1));c.moveTo(xc,0);c.lineTo(xc,yb);c.stroke();
- c.strokeStyle='rgba(159,216,232,.5)';c.setLineDash([3,3]);c.beginPath();const x2=xr(EPOCHS[ep].r);c.moveTo(x2,0);c.lineTo(x2,yb);c.stroke();c.setLineDash([]);
- c.fillStyle='#e8a24a';c.textAlign='left';c.fillText('camera',Math.min(xc+3,R-40),yb-2);c.fillStyle='rgba(159,216,232,.7)';c.fillText('R200',Math.min(x2+3,R-30),10);}
+ parts.push('tracked from z = '+MV[t[0][0]].z.toFixed(2));h.textContent=parts.join(' · ');}
 // ---- shareable view: #p=x,y,z&y=yaw&pi=pitch&m=mode ----
 function writeHash(){history.replaceState(null,'','#p='+pos.map(v=>v.toFixed(4)).join(',')+'&y='+yaw.toFixed(3)+'&pi='+pitch.toFixed(3)+'&m='+mode+(showStars?'':'&g=0')+(showCold?'':'&c=0')+(ep!==EP0?'&z='+EPOCHS[ep].s:''));}
 (function readHash(){const h=new URLSearchParams(location.hash.slice(1));if(!h.has('p'))return;
