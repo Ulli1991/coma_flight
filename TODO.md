@@ -153,7 +153,7 @@ Sept 8, fourth round ("beyond state of the art"): new physics, the cosmic web, t
   byte where hot gas exists and dl = 4500/0.681/(1+z) kpc per unit; coloured after the ray loop, blue
   negative / red positive over +-300 (RMLIM), white beyond. O = radio halo, emissivity ~ n sigma^2
   B^2/(B^2 + B_CMB^2) with B_CMB = 3.24 (1+z)^2 uG (turbulent re-acceleration in spirit).
-- The cosmic web (`extract_cubes.py 139 outer`, `pack_cubes.py outer` -> `outer192.u8.gz`, RG = log total
+- The cosmic web is opt-in since Sept 9 (I or the COSMIC WEB button; the tour leg switches it on): at 312 kpc/h voxels it looked blobby when it came on by itself past 3 R200. (`extract_cubes.py 139 outer`, `pack_cubes.py outer` -> `outer192.u8.gz`, RG = log total
   matter, log gas over +-30 Mpc/h, 312 kpc/h voxels, all particle types incl. the low-res ones): the
   shader's wide branch takes over when the camera is outside r = 1.02 (the flight speed scales with r);
   inside r < 0.97 the fine density cube is drawn. Tour leg 2. HUD says "cosmic web".

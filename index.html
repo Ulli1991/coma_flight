@@ -73,11 +73,11 @@ body{font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--mist)}
  <div>here&nbsp;&nbsp; <b id="hp">--</b></div>
  <div style="color:var(--hud-dim)">fps <b id="hq" style="color:var(--hud-dim)">--</b></div>
 </div>
-<div class="hud" id="br">J sights &middot; , . epoch &middot; Z time-lapse &middot; X galaxies &middot; N dense gas &middot; G quality &middot; B bloom &middot; H hide HUD &middot; P photo &middot; V video &middot; L link &middot; T tour &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1&ndash;9 0 fields &middot; K U M F O more fields &middot; click a galaxy &middot; E view from Earth &middot; Q lite / full build &middot; R reset</div>
+<div class="hud" id="br">J sights &middot; , . epoch &middot; Z time-lapse &middot; X galaxies &middot; N dense gas &middot; G quality &middot; B bloom &middot; H hide HUD &middot; P photo &middot; V video &middot; L link &middot; T tour &middot; drag/arrows look &middot; WASD fly &middot; SPACE/C rise/sink &middot; SHIFT boost &middot; 1&ndash;9 0 fields &middot; K U M F O more fields &middot; click a galaxy &middot; E view from Earth &middot; I cosmic web &middot; Q lite / full build &middot; R reset</div>
 <div class="hud" id="cb"><div class="t" id="cbn"></div><canvas id="cbc" width="256" height="1"></canvas><div id="cbt"></div>
  <div id="cbl"><span class="sw" style="background:linear-gradient(90deg,#598cff,#fff2d0,#ff8038)"></span> galaxies young &rarr; old &nbsp; <span class="sw" style="background:#73d9ff"></span> cold gas &nbsp; <span class="sw" style="background:#c08cff"></span> black holes</div></div>
 <div class="hud" id="tr">
- <button class="fbtn" id="eb" hidden>E EARTH VIEW</button><button class="fbtn" data-m="3" hidden>1 DM</button><button class="fbtn on" data-m="0">2 DENSITY</button><button class="fbtn" data-m="2">3 TEMP</button><button class="fbtn" data-m="1">4 X-RAY</button><button class="fbtn" data-m="9">5 COMPTON y</button><button class="fbtn" data-m="15" hidden>5&#8239;5 KINETIC SZ</button><button class="fbtn" data-m="6">6 ENTROPY</button><button class="fbtn" data-m="8" hidden>7 MAGNETIC</button><button class="fbtn" data-m="5" hidden>8 SHOCKS</button><button class="fbtn" data-m="7" hidden>9 RADIO</button><button class="fbtn" data-m="4">0 ICL</button><button class="fbtn" data-m="10" hidden>K VELOCITY</button><button class="fbtn" data-m="11" hidden>U TURBULENCE</button><button class="fbtn" data-m="12" hidden>M METALS</button><button class="fbtn" data-m="13" hidden>F FARADAY</button><button class="fbtn" data-m="14" hidden>O RADIO HALO</button>
+ <button class="fbtn" id="eb" hidden>E EARTH VIEW</button><button class="fbtn" id="wb" hidden>I COSMIC WEB</button><button class="fbtn" data-m="3" hidden>1 DM</button><button class="fbtn on" data-m="0">2 DENSITY</button><button class="fbtn" data-m="2">3 TEMP</button><button class="fbtn" data-m="1">4 X-RAY</button><button class="fbtn" data-m="9">5 COMPTON y</button><button class="fbtn" data-m="15" hidden>5&#8239;5 KINETIC SZ</button><button class="fbtn" data-m="6">6 ENTROPY</button><button class="fbtn" data-m="8" hidden>7 MAGNETIC</button><button class="fbtn" data-m="5" hidden>8 SHOCKS</button><button class="fbtn" data-m="7" hidden>9 RADIO</button><button class="fbtn" data-m="4">0 ICL</button><button class="fbtn" data-m="10" hidden>K VELOCITY</button><button class="fbtn" data-m="11" hidden>U TURBULENCE</button><button class="fbtn" data-m="12" hidden>M METALS</button><button class="fbtn" data-m="13" hidden>F FARADAY</button><button class="fbtn" data-m="14" hidden>O RADIO HALO</button>
  <div id="ep"></div>
 
 </div>
@@ -94,7 +94,7 @@ body{font-family:'IBM Plex Mono',ui-monospace,monospace;color:var(--mist)}
  re-simulation at TNG100 resolution &mdash; the closing frame of the formation film.
  A 9 cMpc/h volume: hot ICM, cold stripped gas, and the 40&thinsp;000 brightest galaxies.</p>
  <p><span class="k">Drag / arrow keys</span> to look &middot; <span class="k">W A S D</span> to fly &middot;
- <span class="k">SHIFT</span> boost &middot; <span class="k">1&ndash;9, 0</span> fields: dark matter, density, temperature, X-ray, Compton y, entropy, magnetic field, shocks, radio relics, intracluster light &middot; <span class="k">K U M F O</span> velocity, turbulence, metals, Faraday rotation, radio halo &middot; <span class="k">5 5</span> kinetic SZ &middot; fly out past the edge for the cosmic web &middot; <span class="k">E</span> the view from Earth (the real 2M++ galaxies in amber, North up, East left) &middot; click a galaxy for its catalogue entry &middot; <span class="k">J</span> next sight (or click a label) &middot; <span class="k">, .</span> step through the nine full-resolution epochs (z = 2 &rarr; 0) &middot; the <span class="k">time slider</span> top right scrubs all 113 snapshots, <span class="k">Z</span> plays them</p>
+ <span class="k">SHIFT</span> boost &middot; <span class="k">1&ndash;9, 0</span> fields: dark matter, density, temperature, X-ray, Compton y, entropy, magnetic field, shocks, radio relics, intracluster light &middot; <span class="k">K U M F O</span> velocity, turbulence, metals, Faraday rotation, radio halo &middot; <span class="k">5 5</span> kinetic SZ &middot; <span class="k">I</span> the cosmic web when you fly out past the edge &middot; <span class="k">E</span> the view from Earth (the real 2M++ galaxies in amber, North up, East left) &middot; click a galaxy for its catalogue entry &middot; <span class="k">J</span> next sight (or click a label) &middot; <span class="k">, .</span> step through the nine full-resolution epochs (z = 2 &rarr; 0) &middot; the <span class="k">time slider</span> top right scrubs all 113 snapshots, <span class="k">Z</span> plays them</p>
  <p style="color:var(--hud-dim)">magma = hot ICM &middot; cyan = cold / star-forming gas &middot; stellar light of ALL 30M stars (volume) + particle sparkle; blue young &rarr; red old &middot; violet beacons = black holes (size by mass)</p>
  <p id="warn" hidden>WebGL2 unavailable in this browser.</p>
  <div class="go" id="go"><span id="got">LOADING&hellip;</span><div id="lbar"><i></i></div></div>
@@ -220,7 +220,7 @@ void main(){
   for(int i=0;i<NW;i++){float tc=ta+(float(i)+djw)*dw; vec3 p=uPos+rd*tc; float rp=length(p); vec3 col; float em;
    if(rp<0.97){vec3 pk=texture(uPk,(p*.5+.5).zyx).rgb; float v=smoothstep(0.20,1.0,pk.r); v*=v; col=magma(v); em=v*0.5+pow(pk.g,3.)*0.6;}
    else{vec2 o=texture(uOut,(p/6.6667*.5+.5).zyx).rg; float xm=smoothstep(0.15,1.0,o.r); xm*=xm; float xg=smoothstep(0.2,1.0,o.g); xg*=xg;
-    col=(dmmap(xm)*xm*0.7+magma(0.3+0.7*xg)*xg)/(xm*0.7+xg+1e-4); em=(xm*0.7+xg)*0.35*clamp((RW-rp)/1.5,0.,1.);}
+    col=(dmmap(xm)*xm*0.5+magma(0.3+0.7*xg)*xg)/(xm*0.5+xg+1e-4); em=(xm*0.5+xg)*0.22*clamp((RW-rp)/1.5,0.,1.);}
    float a=clamp(em*dw*uExpo*3.6,0.,.9); Cw+=(1.-Aw)*a*col; Aw+=(1.-Aw)*a*.9; if(Aw>0.985)break;}
   Cw+=(1.-Aw)*sky(rd)*uSky; Cw=1.-exp(-1.45*Cw); float lw=dot(Cw,vec3(.299,.587,.114)); Cw=clamp(mix(vec3(lw),Cw,1.45),0.,1.);
   oc=vec4(Cw,0.); return;}
@@ -445,7 +445,7 @@ const T_LOAD0=performance.now();let T_LOAD=0;
   ugz(D_VEL).then(a=>{RAW0.vel=[a,192,4];PROBE0.vel=a;PROBE0.nvel=192;showBtn(10);showBtn(11);showBtn(15);}).catch(()=>{}),
   ugz(D_MET).then(a=>{RAW0.met=[a,192,1];PROBE0.met=a;showBtn(12);}).catch(()=>{}),
   ugz(D_BVEC).then(a=>{RAW0.bvec=[a,192,3];}).catch(()=>{}),
-  ugz(D_OUT).then(a=>{RAW0.out=[a,192,2];}).catch(()=>{})]);
+  ugz(D_OUT).then(a=>{RAW0.out=[a,192,2];const b=document.getElementById('wb');b.hidden=false;b.addEventListener('click',toggleWeb);}).catch(()=>{})]);
  if(RAW0.bvec&&RAW0.vel){showBtn(13);showBtn(14);} if(wantMode>=10&&modeOK(wantMode))setMode(wantMode);
  const g2=document.getElementById('got');if(g2&&GLINFO)g2.title=GLINFO;
  if(wantEp>=0&&wantEp!==EP0)setEpoch(wantEp);
@@ -605,6 +605,7 @@ addEventListener('keydown',e=>{keys[e.code]=1;accN=0;
  if(e.code==='KeyB'){bloomOn=!bloomOn;showCap(bloomOn?'BLOOM ON':'BLOOM OFF');}
  if(e.code==='KeyV')toggleRec();
  if(e.code==='KeyE')toggleEarth();
+ if(e.code==='KeyI'&&RAW0.out)toggleWeb();
  if(e.code==='KeyQ'){const u=new URL(location.href);u.searchParams.set('lite',LITE?'0':'1');location.href=u.href;}
  if(e.code==='Escape')select(null);
  for(const [k,m] of [['KeyK',10],['KeyU',11],['KeyM',12],['KeyF',13],['KeyO',14]])if(e.code===k&&modeOK(m))setMode(m);
@@ -707,7 +708,8 @@ let showStars=true,showCold=true,lastSrc=null,pendingEp=-1,fadeT0=-1e9,tlRun=0,t
 // ---- the view from Earth (E): the camera at the observer's place of this constrained realisation (data/sky.json:
 // the Earth -> Coma line of sight n, North and the distance from the BORG parent box; coma_300/compute_zoom_rotations.py),
 // a narrow field of view, North up and East left, with the real 2M++ galaxies drawn over the simulated sky ----
-let SKY=null,earth=false,FOV=0.62,camSave=null;
+let SKY=null,earth=false,FOV=0.62,camSave=null,webOn=false;   // the cosmic-web cube outside the sphere is opt-in (I / the button): 312 kpc/h voxels look blobby up close
+function toggleWeb(){webOn=!webOn;accN=0;document.getElementById('wb').classList.toggle('on',webOn);showCap(webOn?'COSMIC WEB ON · FLY OUT PAST THE EDGE':'COSMIC WEB OFF');}
 fetch('data/sky.json').then(r=>r.ok?r.json():null).then(k=>{if(!k)return;SKY=k;SKY.Du=k.D/META.half;const b=document.getElementById('eb');b.hidden=false;b.addEventListener('click',toggleEarth);}).catch(()=>{});
 function toggleEarth(){if(!SKY)return;earth=!earth;accN=0;document.getElementById('eb').classList.toggle('on',earth);
  if(earth){camSave=[pos.slice(),yaw,pitch,FOV];auto=false;vel=[0,0,0];pos=SKY.n.map(v=>-v*SKY.Du);FOV=0.075;select(null);showCap('THE VIEW FROM EARTH · NORTH UP · EAST LEFT · AMBER = 2M++ GALAXIES · W S ZOOM');}
@@ -816,7 +818,7 @@ function lookAt(p,t){const f3=[t[0]-p[0],t[1]-p[1],t[2]-p[2]];const N3=Math.hypo
 const poiK=k=>((META.pois||[]).find(q=>q.k===k)||{p:[0,0,0]}).p;
 const TOUR=[
  {n:'COMA CLUSTER · z = 0',t:[0,0,0],r:0.9,orbit:true,d:26,m:0},
- {n:'THE COSMIC WEB AROUND COMA',t:[0,0,0],r:4.5,orbit:true,d:22,m:0},
+ {n:'THE COSMIC WEB AROUND COMA',t:[0,0,0],r:4.5,orbit:true,d:22,m:0,web:true},
  {n:'NGC 4889 · THE BRIGHTEST CLUSTER GALAXY',t:[0,0,0],off:0.075,d:16},
  {n:'INTRACLUSTER LIGHT',t:[0,0,0],off:0.16,d:14,m:4},
  {n:'JELLYFISH GALAXY · RAM-PRESSURE STRIPPING',t:poiK('6'),off:0.06,d:16,m:0},
@@ -929,7 +931,7 @@ function frameInner(){
  if(moving){stillT=0;accN=0;}else stillT+=dt;
  const still=!BENCH&&postOn&&stillT>0.25, skipScene=still&&accN>=96;
  if(auto){atau+=dt;const tc=tourCam(atau);pos=tc[0];yaw=tc[1];pitch=tc[2];vel=[0,0,0];
-  if(tc[3]!==tourLeg){tourLeg=tc[3];const leg=TOUR[tourLeg];if(leg.m!==undefined&&leg.m!==mode&&modeOK(leg.m))setMode(leg.m);showCap(leg.n);
+  if(tc[3]!==tourLeg){tourLeg=tc[3];const leg=TOUR[tourLeg];if(leg.m!==undefined&&leg.m!==mode&&modeOK(leg.m))setMode(leg.m);if(!!leg.web!==webOn&&RAW0.out)toggleWeb();showCap(leg.n);
    if(leg.tl){if(MV){mvT=0;mvReq=1;mvPlay=true;}else timelapse();}else if(ep!==EP0||tlActive||mvOn){stopTimelapse();stopMovie();setEpoch(EP0);}}}
  else tourLeg=-1;
  for(let k=0;k<3;k++){vel[k]+=(f[k]*az+r[k]*ax+u[k]*ay)*sp3*dt*3.2;vel[k]*=Math.pow(0.06,dt);}
@@ -937,7 +939,7 @@ function frameInner(){
  const rr=Math.hypot(pos[0],pos[1],pos[2]);
  const expo=Math.min(Math.max(Math.pow(rr/1.15,1.6),0.06),1.0);
  const expoV=(mode===5||mode===7||mode===14)?Math.max(expo,0.4):expo;   // shocks are thin sheets: keep them readable inside the core
- const wide=rr>1.02&&!!(T0.out||RAW0.out)&&!mvOn&&!earth;   // outside the cluster sphere the outer cube is drawn (the wide branch of the shader)
+ const wide=webOn&&rr>1.02&&!!(T0.out||RAW0.out)&&!mvOn&&!earth;   // outside the cluster sphere the outer cube is drawn (the wide branch of the shader), if switched on
  if(ep===EP0){for(const k of (NEED[mode]||[]))needTex(k);if(wide)needTex('out');}
  fbos();const tgt=postOn?fboA:null;
  // an epoch or mode switch keeps the last frame of the old scene and crossfades to the new one
